@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('cliente_id')->constrained;
             $table->foreignId('profesional_id')->constrained;
             $table->foreignId('servicio_id')->constrained;
+            $table->foreignId('compra_paquete_id')->nullable()->constrained()->onDelete('cascade');
 
             //atributos de la reserva
             $table->date('fecha');
