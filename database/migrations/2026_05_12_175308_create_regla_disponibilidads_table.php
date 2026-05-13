@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('regla_disponibilidads', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('profesional_id')->constrained();
+            $table->foreignId('profesional_id')->constrained('profesionales')->onDelete('cascade');
 
             $table->integer('dia_semana'); // 0 (domingo) a 6 (sábado)
             $table->time('hora_inicio');
@@ -35,3 +35,4 @@ return new class extends Migration
         Schema::dropIfExists('regla_disponibilidads');
     }
 };
+

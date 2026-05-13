@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('excepciones_disponibilidad', function (Blueprint $table) {
             $table->id();
             
-            // Relación estricta con la tabla base de usuarios (Jerarquía)
-            $table->foreignId('profesional_id')->constrained('users')->onDelete('cascade');
+            // Relación estricta con la tabla profesional para mantener la integridad referencial y optimizar consultas
+            $table->foreignId('profesional_id')->constrained('profesionales')->onDelete('cascade');
             
             $table->date('fecha');
             
