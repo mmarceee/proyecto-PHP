@@ -58,9 +58,9 @@ class Profesional extends Model
         return $this->hasMany(Reserva::class);
     }
 
-    public function politicasCancelacion(): HasMany
+    public function politicaCancelacion(): HasOne
     {
-        return $this->hasMany(PoliticaCancelacion::class);
+        return $this->hasOne(PoliticaCancelacion::class);
     }
 
     public function paqueteServicio(): HasMany
