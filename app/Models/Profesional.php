@@ -39,9 +39,9 @@ class Profesional extends Model
         return $this->hasMany(Servicio::class);
     }
 
-    public function reglasDisponibilidad(): HasOne
+    public function reglasDisponibilidad(): HasMany
     {
-        return $this->hasOne(ReglaDisponibilidad::class);
+        return $this->hasMany(ReglaDisponibilidad::class);
     }
 
     public function excepcionDisponibilidad(): HasMany
