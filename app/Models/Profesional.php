@@ -39,12 +39,12 @@ class Profesional extends Model
         return $this->hasMany(Servicio::class);
     }
 
-    public function reglasDisponibilidad(): HasMany
+    public function reglasDisponibilidad(): HasOne
     {
-        return $this->hasMany(ReglaDisponibilidad::class);
+        return $this->hasOne(ReglaDisponibilidad::class);
     }
 
-    public function excepcionesDisponibilidad(): HasMany
+    public function excepcionDisponibilidad(): HasMany
     {
         return $this->hasMany(ExcepcionDisponibilidad::class);
     }
@@ -57,6 +57,16 @@ class Profesional extends Model
     public function politicasCancelacion(): HasMany
     {
         return $this->hasMany(PoliticaCancelacion::class);
+    }
+
+    public function paqueteServicio(): HasMany
+    {
+        return $this->hasMany(PaqueteServicio::class);
+    }
+
+    public function lugarAtencion(): HasOne
+    {
+        return $this->hasOne(LugarAtencion::class);
     }
 
     /*
