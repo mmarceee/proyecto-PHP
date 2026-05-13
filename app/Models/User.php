@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->hasOne(Admin::class);
     }
 
+    public function notificaciones()
+    {
+        return $this->hasMany(Notificacion::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Métodos de estado del usuario
