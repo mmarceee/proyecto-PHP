@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
 
             //claves foraneas
-            $table->foreignId('cliente_id')->constrained;
-            $table->foreignId('profesional_id')->constrained;
-            $table->foreignId('servicio_id')->constrained;
-            $table->foreignId('compra_paquete_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('cliente_id')->constrained('clientes');
+            $table->foreignId('profesional_id')->constrained('profesionales');
+            $table->foreignId('servicio_id')->constrained('servicios');
+            
 
             //atributos de la reserva
             $table->date('fecha');

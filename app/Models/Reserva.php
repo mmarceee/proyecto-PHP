@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[Fillable(['cliente_id', 'profesional_id', 'servicio_id','compra_paquete_id', 'fecha', 'hora_inicio', 'hora_fin', 'estado_reserva', 'motivo_cancelacion'])]
+#[Fillable(['cliente_id', 'profesional_id', 'servicio_id', 'fecha', 'hora_inicio', 'hora_fin', 'estado_reserva', 'motivo_cancelacion'])]
 class Reserva extends Model {
 
     
@@ -29,9 +29,7 @@ class Reserva extends Model {
     public function servicio(){
         return $this->belongsTo(Servicio::class);
     }
-    public function compraPaquete(){
-        return $this->belongsTo(CompraPaquete::class);
-    }
+   
     public function calificaciones(){
         return $this->hasMany(Calificacion::class);
     }
