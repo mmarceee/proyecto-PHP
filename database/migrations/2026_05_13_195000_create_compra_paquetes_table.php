@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('cliente_id')->constrained()->onDelete('cascade');
-            //$table->foreignId('paqueteSerivcio_id')->constrained()->onDelete('cascade');
-            //$table->foreignId('usoSesionPaquete_id')->constrained()->onDelete('cascade');
+            $table->foreignId('paquete_servicio_id')->constrained('paquetes_servicios')->onDelete('cascade');
+            
 
             $table->integer('sesiones_disponibles');
             $table->integer('sesiones_consumidas');

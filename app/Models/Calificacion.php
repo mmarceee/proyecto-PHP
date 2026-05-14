@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Calificacion extends Model
 {
+
+    /** @use HasFactory<\Database\Factories\CategoriaServicioFactory> */
+    use HasFactory;
+    
     protected $table = 'calificaciones';
 
     protected $fillable = [

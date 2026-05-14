@@ -11,20 +11,20 @@ return new class extends Migration
         Schema::create('uso_sesion_paquetes', function (Blueprint $table) {
             $table->id();
             
-            // Relación con el paquete que compró el cliente (1 ---- 0..*)
+            // Relación con la compra del cliente
             $table->foreignId('compra_paquete_id')
                   ->constrained('compra_paquetes')
                   ->cascadeOnDelete();
             
-            // Relación con la reserva específica (1 ---- 0..1)
-            // El índice unique() GARANTIZA a nivel SQL que una reserva no pueda consumir más de una sesión.
+            // Relación estricta 1 a 1 (0..1) con la reserva. 
+            // El unique() es vital para el control de concurrencia y evitar doble cobro/consumo.
             $table->foreignId('reserva_id')
                   ->unique()
                   ->constrained('reservas')
                   ->cascadeOnDelete();
             
-            // Atributo definido en el diagrama
-            $table->dateTime('fechaUso')->comment('Momento exacto en el que se consumió o registró la sesión');
+            // Atributo de negocio
+            $table->dateTime('fechaUso')->comment('Momento exacto en el que se consumió la sesión');
 
             $table->timestamps();
         });

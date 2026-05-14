@@ -21,7 +21,7 @@ class DisponibilidadService
         }
 
         // 2. Obtenemos el horario base del profesional para ese día de la semana
-        $diaSemana = $fecha->dayOfWeekIso; // 1 = Lunes, 7 = Domingo
+        $diaSemana = $fecha->dayOfWeekIso; // 0 = Domingo, 6 = Sabado
         $reglasBase = $profesional->reglasDisponibilidad()
                                   ->where('diaSemana', $diaSemana)
                                   ->get();
