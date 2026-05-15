@@ -59,7 +59,7 @@
                         </svg>
                     </a>
                     <!-- Agenda -->
-                    @if(Auth::user()->profesional?->estado === \App\Models\Profesional::ESTADO_APROBADO)
+                    @if(Auth::user()->puedeAccederPanelProfesional())
                         <a href="/prototipo/agenda"
                         class="w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
                             <svg xmlns="http://www.w3.org/2000/svg" 
