@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Http\Controllers\Api\DashboardApiController;
 
 Route::view('/', 'welcome');
 
@@ -37,5 +38,12 @@ Route::view('/prototipo/agenda', 'prototipos.agenda')
 Route::view('/prototipo/perfil', 'prototipos.perfil')
     ->middleware(['auth'])
     ->name('prototipo.perfil');
+
+Route::middleware(['auth', 'verified'])
+    ->prefix('api')
+    ->group(function () {
+        Route::get('/dashboard', [DashboardApiController::class, 'index'])
+            ->name('api.dashboard');
+    });
 
 require __DIR__.'/auth.php';
