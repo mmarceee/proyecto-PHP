@@ -1,115 +1,96 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Validation\Rule;
 use Livewire\Volt\Component;
 
+// 1. LIMPIEZA: Dejamos el bloque PHP casi vacío. 
+// Solo lo usamos para cargar los datos iniciales al abrir la pantalla.
+// Borramos toda la lógica de validación y guardado en base de datos.
 new class extends Component
 {
     public string $name = '';
     public string $email = '';
 
-    /**
-     * Mount the component.
-     */
     public function mount(): void
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
-    }
-
-    /**
-     * Update the profile information for the currently authenticated user.
-     */
-    public function updateProfileInformation(): void
-    {
-        $user = Auth::user();
-
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
-        ]);
-
-        $user->fill($validated);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
-
-        $this->dispatch('profile-updated', name: $user->name);
-    }
-
-    /**
-     * Send an email verification notification to the current user.
-     */
-    public function sendVerification(): void
-    {
-        $user = Auth::user();
-
-        if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false));
-
-            return;
-        }
-
-        $user->sendEmailVerificationNotification();
-
-        Session::flash('status', 'verification-link-sent');
     }
 }; ?>
 
 <section>
     <header>
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {{ __('Profile Information') }}
+            {{ __('Profile Information (API Version)') }}
         </h2>
-
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ __("Update your account's profile information and email address.") }}
+            Esta pantalla ahora guarda los datos consumiendo nuestra propia API REST.
         </p>
     </header>
 
-    <form wire:submit="updateProfileInformation" class="mt-6 space-y-6">
+    <form id="formulario-perfil-api" class="mt-6 space-y-6">
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <x-text-input wire:model="name" id="name" type="text" class="mt-1 block w-full" />
         </div>
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800 dark:text-gray-200">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button wire:click.prevent="sendVerification" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
-                </div>
-            @endif
+            <x-text-input wire:model="email" id="email" type="email" class="mt-1 block w-full" />
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            <x-action-message class="me-3" on="profile-updated">
-                {{ __('Saved.') }}
-            </x-action-message>
+            <button type="button" onclick="guardarPerfilPorAPI()" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700">
+                Guardar usando API
+            </button>
+            <span id="mensaje-exito" class="text-green-600 hidden">¡Guardado exitosamente!</span>
         </div>
     </form>
 </section>
+
+<script>
+    function guardarPerfilPorAPI() {
+        const nombreIngresado = document.getElementById('name').value;
+        const emailIngresado = document.getElementById('email').value;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Ocultamos el mensaje de éxito antes de intentar guardar
+        document.getElementById('mensaje-exito').classList.add('hidden');
+
+        fetch('/api/profile/info', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            // LA CLAVE MAGICA: Le dice a JS que envíe tu cookie de sesión a la API
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                name: nombreIngresado,
+                email: emailIngresado
+            })
+        })
+        .then(response => {
+            // AHORA SI: Verificamos si el servidor nos dio un OK (200)
+            if (!response.ok) {
+                throw new Error('Error del servidor: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Respuesta de la API:", data);
+            
+            // Solo mostramos el verde si realmente guardó
+            document.getElementById('mensaje-exito').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('mensaje-exito').classList.add('hidden');
+            }, 3000);
+        })
+        .catch(error => {
+            // Ahora los 401 o 500 caerán aquí
+            console.error('Hubo un error contactando a la API:', error);
+            alert("No se pudo guardar. Revisa la consola roja.");
+        });
+    }
+</script>
