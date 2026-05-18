@@ -107,9 +107,31 @@
                         </p>
 
                         <h2 class="font-serif text-6xl leading-none tracking-tight">
-                            Profesional.
+                            {{ !$profesional ? Auth::user()->name : 'Profesional.' }}
                         </h2>
                     </div>
+                    {{-- Boton de postulacion profesional --}}
+                    @if(!$profesional)
+                        <div class="border border-slate-800 bg-slate-900/60 p-8 mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div>
+                                <h3 class="font-serif text-2xl mb-1">¿Formás parte de nuestro equipo médico?</h3>
+                                <p class="text-sm text-slate-400">Postulate como profesional para comenzar a gestionar tus pacientes y agendas.</p>
+                            </div>
+                            <a href="{{ route('profesional.postularse') }}" wire:navigate class="whitespace-nowrap border border-slate-300 hover:bg-white hover:text-black px-6 py-3 text-xs font-bold uppercase tracking-wider transition">
+                                Postularse aquí
+                            </a>
+                        </div>
+                    @elseif($profesional->estado === 'pendiente')
+                        <div class="border border-amber-900/50 bg-amber-950/20 text-amber-200 p-8 mb-12 flex items-center gap-4">
+                            <svg class="w-6 h-6 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold text-lg">Tu solicitud está siendo revisada</h3>
+                                <p class="text-sm text-slate-400 mt-0.5">Un administrador verificará tus datos de especialidad para activar tu panel profesional.</p>
+                            </div>
+                        </div>
+                    @endif
 
                     <div>
                         <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">

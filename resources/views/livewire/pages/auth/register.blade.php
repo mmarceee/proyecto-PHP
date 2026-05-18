@@ -4,6 +4,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -41,26 +42,31 @@ new #[Layout('layouts.guest')] class extends Component
 
         $validated['password'] = Hash::make($validated['password']);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'apellido' => $validated['apellido'],
-            'email' => $validated['email'],
-            'telefono' => $validated['telefono'],
-            'password' => $validated['password'],
-            'estado_usuario' => 'activo',
-        ]);
+        $user = null;
 
-        $user->cliente()->create();
+        DB::transaction(function () use ($validated, &$user) {
 
-        if ($validated['tipo_registro'] === 'profesional') {
-            $user->profesional()->create([
-                'descripcion' => $validated['descripcion'],
-                'especialidad' => $validated['especialidad'],
-                'reputacion_promedio' => 0,
-                'nombre_comercial' => $validated['nombre_comercial'] ?? null,
-                'estado' => 'pendiente',
+            $user = User::create([
+                'name' => $validated['name'],
+                'apellido' => $validated['apellido'],
+                'email' => $validated['email'],
+                'telefono' => $validated['telefono'],
+                'password' => $validated['password'],
+                'estado_usuario' => 'activo',
             ]);
-        }
+
+            $user->cliente()->create();
+
+            if ($validated['tipo_registro'] === 'profesional') {
+                $user->profesional()->create([
+                    'descripcion' => $validated['descripcion'],
+                    'especialidad' => $validated['especialidad'],
+                    'reputacion_promedio' => 0,
+                    'nombre_comercial' => $validated['nombre_comercial'] ?? null,
+                    'estado' => 'pendiente',
+                ]);
+            }
+        });
 
         event(new Registered($user));
 
@@ -68,8 +74,8 @@ new #[Layout('layouts.guest')] class extends Component
 
         $this->redirect(route('dashboard', absolute: false), navigate: true);
     }
-    }; 
-    ?>
+}; 
+?>
 
 <div>
     <form wire:submit="register">

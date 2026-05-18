@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 
 Route::view('/', 'welcome');
 
@@ -12,8 +13,21 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-Route::view('/prototipo/busqueda', 'prototipos.busqueda')->middleware(['auth'])->name('prototipo.busqueda');
-Route::view('/prototipo/agenda', 'prototipos.agenda')->middleware(['auth'])->name('prototipo.agenda');
-Route::view('/prototipo/perfil', 'prototipos.perfil')->middleware(['auth'])->name('prototipo.perfil');
+//Ruta de postulacion en la carpeta 'pages'
+Volt::route('postularse', 'pages.postularse-profesional')
+    ->middleware(['auth', 'verified'])
+    ->name('profesional.postularse');
+
+Route::view('/prototipo/busqueda', 'prototipos.busqueda')
+    ->middleware(['auth'])
+    ->name('prototipo.busqueda');
+
+Route::view('/prototipo/agenda', 'prototipos.agenda')
+    ->middleware(['auth'])
+    ->name('prototipo.agenda');
+
+Route::view('/prototipo/perfil', 'prototipos.perfil')
+    ->middleware(['auth'])
+    ->name('prototipo.perfil');
 
 require __DIR__.'/auth.php';
