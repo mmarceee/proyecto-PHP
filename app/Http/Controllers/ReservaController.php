@@ -38,6 +38,17 @@ class ReservaController extends Controller
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
         ]);
 
+        $existeChoque = Reserva::where('profesional_id', $request->profesional_id)
+            ->where('fecha', $request->fecha)
+            ->where('hora_inicio', '<', $request->hora_fin)
+            ->where('hora_fin', '>', $request->hora_inicio)
+            ->exists();
+
+
+        if($existeChoque){
+            return redirect()->back()->withErrors(['fecha' => 'El profesional ya tiene una reserva en ese horario.']);
+        }
+
         $reserva = Reserva::create($validated);
 
         return redirect()->route('reservas.index')->with('success', 'Reserva creada exitosamente.');
@@ -69,6 +80,19 @@ class ReservaController extends Controller
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
             'servicio_id' => 'required|exists:servicios,id',
         ]);
+
+        $existeChoque = Reserva::where('profesional_id', $reserva->profesional_id)
+            ->where('fecha', $request->fecha)
+            ->where('id', '!=', $reserva->id) // Excluir la reserva actual en caso de actualización
+            ->where('hora_inicio', '<', $request->hora_fin)
+            ->where('hora_fin', '>', $request->hora_inicio)
+            ->exists();
+
+
+        if($existeChoque){
+            return redirect()->back()->withErrors([
+                'fecha' => 'El profesional ya tiene una reserva en ese horario.']);
+        }
 
         $usoSesion = $reserva->uso_sesion_paquete;
 
