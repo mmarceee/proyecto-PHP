@@ -74,10 +74,10 @@ class User extends Authenticatable
         return $this->cliente()->exists();
     }
 
-    public function esProfesional(): bool
+    public function esProfesionalAprobado(): bool
     {
         return $this->profesional()
-            ->where('estado', 'aprobado')
+            ->where('estado', Profesional::ESTADO_APROBADO)
             ->exists();
     }
 
@@ -99,7 +99,7 @@ class User extends Authenticatable
 
     public function puedeAccederPanelProfesional(): bool
     {
-        return $this->esProfesional() || $this->esAdmin();
+        return $this->esProfesionalAprobado() || $this->esAdmin();
     }
 
     public function puedeAccederPanelAdmin(): bool
