@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Models\Profesional;
 
 Route::view('/', 'welcome');
 
@@ -25,6 +26,18 @@ Volt::route('admin/solicitudes', 'admin.solicitudes-profesionales')
 Volt::route('admin/profesionales', 'admin.solicitudes-profesionales')
     ->middleware(['auth'])
     ->name('admin.profesionales');
+
+Route::post('/admin/dashboard/profesionales/{id}/aceptar', function ($id) {
+    $profesional = Profesional::findOrFail($id);
+    $profesional->update(['estado' => 'aprobado']);
+    return back()->with('success', 'Profesional aprobado con éxito.');
+})->middleware(['auth'])->name('admin.dashboard.aceptar');
+
+Route::post('/admin/dashboard/profesionales/{id}/rechazar', function ($id) {
+    $profesional = Profesional::findOrFail($id);
+    $profesional->delete(); // Se elimina la solicitud para permitirle re-postularse
+    return back()->with('error', 'La postulación fue rechazada.');
+})->middleware(['auth'])->name('admin.dashboard.rechazar');
 
 Route::view('/prototipo/busqueda', 'prototipos.busqueda')
     ->middleware(['auth'])

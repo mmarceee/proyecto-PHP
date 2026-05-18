@@ -11,7 +11,7 @@ new #[Layout('layouts.app')] class extends Component
     public function mount(): void
     {
         // Si el usuario NO es administrador, lo mandamos al dashboard
-        if (!Auth::user() || !Auth::user()->admin()) {
+        if (!Auth::user() || !Auth::user()->esAdmin()) {
             $this->redirect(route('dashboard'), navigate: true);
         }
     }

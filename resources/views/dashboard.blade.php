@@ -12,6 +12,15 @@
     $esProfesional = !$esAdmin && $user?->esProfesionalAprobado();
     $esCliente = !$esAdmin && !$esProfesional;
 
+    $solicitudesPendientes = collect();
+    if ($esAdmin) {
+        $solicitudesPendientes = \App\Models\Profesional::where('estado', 'pendiente')
+            ->with('user')
+            ->latest()
+            ->take(3) // Traemos solo las últimas 3 para el resumen del Home
+            ->get();
+    }
+
     $hora = now()->hour;
 
     if ($hora < 12) {
@@ -132,42 +141,57 @@
 
                     <div>
                         @if($esAdmin)
-
                             <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
                                 <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
                                     Profesionales pendientes
                                 </h3>
 
                                 <span class="font-serif italic text-slate-400 text-xl">
-                                    Solicitudes
+                                    {{ $solicitudesPendientes->count() }} {{ $solicitudesPendientes->count() === 1 ? 'solicitud' : 'solicitudes' }}
                                 </span>
                             </div>
 
                             <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
-                                <template x-for="professional in adminPendingProfessionals" :key="professional.name">
-                                    <article class="grid grid-cols-[1fr_auto] items-center gap-4 px-8 py-6 border-b border-slate-700">
-                                        <div>
-                                            <h4 class="font-serif text-3xl" x-text="professional.name"></h4>
+                                @if($solicitudesPendientes->isEmpty())
+                                    <div class="px-8 py-12 text-center text-slate-500 italic font-serif">
+                                        No hay solicitudes pendientes de revisión por el momento.
+                                    </div>
+                                @else
+                                    @foreach($solicitudesPendientes as $solicitud)
+                                        <article class="grid grid-cols-[1fr_auto] items-center gap-4 px-8 py-6 border-b border-slate-700 last:border-none">
+                                            <div>
+                                                <h4 class="font-serif text-3xl">
+                                                    {{ $solicitud->user->name }} {{ $solicitud->user->apellido }}
+                                                </h4>
 
-                                            <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
-                                                <span x-text="professional.specialty"></span>
-                                                ·
-                                                <span x-text="professional.date"></span>
-                                            </p>
-                                        </div>
+                                                <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
+                                                    <span>{{ $solicitud->especialidad }}</span>
+                                                    ·
+                                                    <span>{{ $solicitud->created_at->diffForHumans() }}</span>
+                                                </p>
+                                            </div>
 
-                                        <div class="flex items-center gap-3">
-                                            <button class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
-                                                Aceptar
-                                            </button>
+                                            {{-- Formas de acción directa --}}
+                                            <div class="flex items-center gap-3">
+                                                <form action="{{ route('admin.dashboard.aceptar', $solicitud->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider transition">
+                                                        Aceptar
+                                                    </button>
+                                                </form>
 
-                                            <button class="px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
-                                                Rechazar
-                                            </button>
-                                        </div>
-                                    </article>
-                                </template>
+                                                <form action="{{ route('admin.dashboard.rechazar', $solicitud->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider transition">
+                                                        Rechazar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </article>
+                                    @endforeach
+                                @endif
                             </div>
+                            
 
                             <div class="mt-8 grid gap-4 md:grid-cols-2">
                                 <a href="/admin/usuarios"
