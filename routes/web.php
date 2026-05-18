@@ -18,6 +18,14 @@ Volt::route('postularse', 'pages.postularse-profesional')
     ->middleware(['auth', 'verified'])
     ->name('profesional.postularse');
 
+Volt::route('admin/solicitudes', 'admin.solicitudes-profesionales')
+    ->middleware(['auth'])
+    ->name('admin.solicitudes');
+
+Volt::route('admin/profesionales', 'admin.solicitudes-profesionales')
+    ->middleware(['auth'])
+    ->name('admin.profesionales');
+
 Route::view('/prototipo/busqueda', 'prototipos.busqueda')
     ->middleware(['auth'])
     ->name('prototipo.busqueda');
