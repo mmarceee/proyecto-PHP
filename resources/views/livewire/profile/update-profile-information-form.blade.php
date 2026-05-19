@@ -30,12 +30,12 @@ new class extends Component
 
     <form id="formulario-perfil-api" class="mt-6 space-y-6">
         <div>
-            <x-input-label for="name" :value="__('Name')" />
+            <x-input-label for="name" :value="__('Nombre')" />
             <x-text-input wire:model="name" id="name" type="text" class="mt-1 block w-full" />
         </div>
 
         <div>
-            <x-input-label for="email" :value="__('Email')" />
+            <x-input-label for="email" :value="__('Correo')" />
             <x-text-input wire:model="email" id="email" type="email" class="mt-1 block w-full" />
         </div>
 

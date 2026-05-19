@@ -21,9 +21,13 @@ class ProfileApiController extends Controller
         $user = $profileService->updateInformation($request->user(), $validated);
 
         // 3. El Mozo devuelve el plato listo en formato JSON
-        return response()->json([
+       return response()->json([
             'mensaje' => 'Perfil actualizado exitosamente',
-            'usuario' => $user
+            'usuario' => [
+                'nombre' => $user->name,
+                'correo' => $user->email
+                // Solo mandamos esto. Ni el ID, ni fechas de creación, nada extra.
+            ] 
         ]);
     }
 }
