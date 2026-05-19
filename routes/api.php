@@ -1,5 +1,8 @@
-<?php
 
+
+
+<?php
+/*
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProfileApiController;
 
@@ -7,3 +10,4 @@ use App\Http\Controllers\Api\ProfileApiController;
 Route::middleware('web')->group(function () {
     Route::put('/profile/info', [ProfileApiController::class, 'updateInfo']);
 });
+*/

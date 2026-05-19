@@ -51,6 +51,10 @@ Route::middleware(['auth', 'verified'])
 
             Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
             ->name('api.profesionales.rechazar');
+
+        Route::put('/profile/info', [\App\Http\Controllers\Api\ProfileApiController::class, 'updateInfo'])->name('api.profile.update');
+        Route::put('/profile/password', [\App\Http\Controllers\Api\ProfileApiController::class, 'updatePassword'])->name('api.profile.password');
+        Route::delete('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy'])->name('api.profile.destroy');
     });
 
 

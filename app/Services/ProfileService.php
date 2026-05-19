@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileService
 {
@@ -21,5 +22,19 @@ class ProfileService
         $user->save();
 
         return $user;
+    }
+    public function updatePassword($user, string $newPassword): void
+    {
+        $user->update([
+            'password' => Hash::make($newPassword),
+        ]);
+    }
+    public function deleteAccount($user): void
+    {
+        // NOTA PARA TUS COMPAÑEROS: 
+        // Aquí adentro en el futuro controlaremos si es profesional o cliente
+        // para cancelar sus reservas antes de borrarlo.
+        
+        $user->delete();
     }
 }
