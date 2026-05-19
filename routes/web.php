@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Http\Controllers\Api\DashboardApiController;
+use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 
 Route::view('/', 'welcome');
 
@@ -44,6 +45,14 @@ Route::middleware(['auth', 'verified'])
     ->group(function () {
         Route::get('/dashboard', [DashboardApiController::class, 'index'])
             ->name('api.dashboard');
+
+            Route::patch('/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
+            ->name('api.profesionales.aprobar');
+
+            Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
+            ->name('api.profesionales.rechazar');
     });
+
+
 
 require __DIR__.'/auth.php';
