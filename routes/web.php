@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
+use App\Http\Controllers\Api\ProfesionalApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 
@@ -16,7 +16,7 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 //Ruta de postulacion en la carpeta 'pages'
-Volt::route('postularse', 'pages.postularse-profesional')
+Route::view('postularse', 'livewire.pages.postularse-profesional')
     ->middleware(['auth', 'verified'])
     ->name('profesional.postularse');
 
@@ -51,6 +51,9 @@ Route::middleware(['auth', 'verified'])
 
             Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
             ->name('api.profesionales.rechazar');
+
+            Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
+            ->name('api.profesionales.postularse');
     });
 
 
