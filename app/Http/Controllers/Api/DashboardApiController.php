@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Profesional;
+use App\Services\ProfesionalService;
 
 class DashboardApiController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ProfesionalService $profesionalService)
     {
         $user = $request->user();
 
@@ -40,30 +41,7 @@ class DashboardApiController extends Controller
         $profesionalesPendientes = [];
 
         if ($esAdmin) {
-            $profesionalesPendientes = Profesional::with('user')
-                ->where('estado', 'pendiente')
-                ->latest()
-                ->get()
-                ->map(function ($profesional) {
-                    return [
-                        'id' => $profesional->id,
-                        'user_id' => $profesional->user_id,
-
-                        'name' => trim(
-                            ($profesional->user?->name ?? '') . ' ' . ($profesional->user?->apellido ?? '')
-                        ),
-
-                        'email' => $profesional->user?->email,
-                        'phone' => $profesional->user?->telefono,
-
-                        'specialty' => $profesional->especialidad,
-                        'commercial_name' => $profesional->nombre_comercial,
-                        'description' => $profesional->descripcion,
-
-                        'status' => $profesional->estado,
-                        'date' => $profesional->created_at?->diffForHumans(),
-                    ];
-                });
+            $profesionalesPendientes = $profesionalService->obtenerPendientes();
         }
 
         $consultasHoy = [];

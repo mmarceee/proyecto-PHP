@@ -64,15 +64,15 @@
                                                 <h4 class="font-serif text-3xl" x-text="professional.name"></h4>
 
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
-                                                    <span x-text="professional.specialty"></span>
+                                                    <span x-text="professional.especialidad"></span>
                                                     ·
-                                                    <span x-text="professional.date"></span>
+                                                    <span x-text="professional.created_at"></span>
                                                 </p>
 
                                                 <!-- Opcional: solo se muestra si existe nombre comercial -->
-                                                <p class="text-sm text-slate-300 mt-2" x-show="professional.commercial_name">
+                                                <p class="text-sm text-slate-300 mt-2" x-show="professional.nombre_comercial">
                                                     Nombre comercial: 
-                                                    <span x-text="professional.commercial_name"></span>
+                                                    <span x-text="professional.nombre_comercial"></span>
                                                 </p>
                                             </div>
 

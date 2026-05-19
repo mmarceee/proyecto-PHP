@@ -4,10 +4,19 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
+use App\Services\ProfesionalService;
 use Illuminate\Http\Request;
 
 class ProfesionalAdminApiController extends Controller
 {
+    protected $profesionalService;
+
+    // Inyectamos el servicio en el constructor del controlador
+    public function __construct(ProfesionalService $profesionalService)
+    {
+        $this->profesionalService = $profesionalService;
+    }
+
     public function aprobar(Request $request, Profesional $profesional)
     {
         $user = $request->user();
@@ -18,9 +27,8 @@ class ProfesionalAdminApiController extends Controller
             ], 403);
         }
 
-        $profesional->update([
-            'estado' => 'aprobado',
-        ]);
+        //LLamo al servicio
+        $this->profesionalService->aprobar($profesional->id);
 
         return response()->json([
             'message' => 'Profesional aprobado correctamente',
@@ -38,9 +46,8 @@ class ProfesionalAdminApiController extends Controller
             ], 403);
         }
 
-        $profesional->update([
-            'estado' => 'rechazado',
-        ]);
+        //LLamo al servicio para cambiar el estado a 'rechazado' sin borrar
+        $this->profesionalService->rechazar($profesional->id);
 
         return response()->json([
             'message' => 'Solicitud profesional rechazada',

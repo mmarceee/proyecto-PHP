@@ -20,11 +20,11 @@ Volt::route('postularse', 'pages.postularse-profesional')
     ->middleware(['auth', 'verified'])
     ->name('profesional.postularse');
 
-Volt::route('admin/solicitudes', 'admin.solicitudes-profesionales')
+Route::view('admin/solicitudes', 'livewire.admin.solicitudes-profesionales')
     ->middleware(['auth'])
     ->name('admin.solicitudes');
 
-Volt::route('admin/profesionales', 'admin.solicitudes-profesionales')
+Route::view('admin/profesionales', 'livewire.admin.solicitudes-profesionales')
     ->middleware(['auth'])
     ->name('admin.profesionales');
 
