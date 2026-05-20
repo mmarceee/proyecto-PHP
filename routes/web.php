@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProfesionalApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
+use App\Http\Controllers\Api\AgendaApiController;
 
 Route::view('/', 'welcome');
 
@@ -54,6 +55,9 @@ Route::middleware(['auth', 'verified'])
 
             Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
             ->name('api.profesionales.postularse');
+
+            Route::get('/profesional/agenda', [AgendaApiController::class, 'obtenerAgenda'])
+            ->name('api.profesional.agenda');
     });
 
 
