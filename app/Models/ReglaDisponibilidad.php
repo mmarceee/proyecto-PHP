@@ -7,20 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[Fillable(['profesional_id', 'dia_semana', 'hora_inicio', 'hora_fin'])]
+#[Fillable(['profesional_id', 'dia_semana', 'hora_inicio', 'hora_fin', 'duracion_turno', 'buffer_tiempo'])]
 class ReglaDisponibilidad extends Model
 {
     use HasFactory;
 
+    protected $table = 'regla_disponibilidads';
+
     public function profesional(){
         return $this->belongsTo(Profesional::class);
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'hora_inicio' => 'time:H:i',
-            'hora_fin' => 'time:H:i'
-        ];
     }
 }

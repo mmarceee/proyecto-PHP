@@ -58,6 +58,15 @@ Route::middleware(['auth', 'verified'])
 
             Route::get('/profesional/agenda', [AgendaApiController::class, 'obtenerAgenda'])
             ->name('api.profesional.agenda');
+
+            Route::post('/profesional/agenda/reglas', [AgendaApiController::class, 'guardarReglas'])
+            ->name('api.profesional.agenda.reglas');
+
+            Route::post('/profesional/agenda/excepciones', [AgendaApiController::class, 'guardarExcepcion'])
+            ->name('api.profesional.agenda.excepciones');
+
+            Route::delete('/profesional/agenda/excepciones', [AgendaApiController::class, 'desbloquearDia'])
+            ->name('api.profesional.agenda.desbloquear');
     });
 
 
