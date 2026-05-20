@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\ProfileService;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,17 +14,28 @@ class ProfileApiController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($request->user()->id)],
+            'apellido' => ['nullable', 'string', 'max:255'],
+            'telefono' => ['nullable', 'string', 'max:30'],
+            'descripcion' => ['nullable', 'string', 'max:1000'],
+            'nombre_comercial' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = $profileService->updateInformation($request->user(), $validated);
 
-       return response()->json([
+        $profesional = $user->profesional;
+
+        return response()->json([
             'mensaje' => 'Perfil actualizado exitosamente',
             'usuario' => [
                 'nombre' => $user->name,
-                'correo' => $user->email
-            ] 
+                'apellido' => $user->apellido,
+                'correo' => $user->email,
+                'telefono' => $user->telefono,
+            ],
+            'profesional' => $user->esProfesionalAprobado() && $profesional ? [
+                'descripcion' => $profesional->descripcion,
+                'nombre_comercial' => $profesional->nombre_comercial,
+            ] : null,
         ]);
     }
 
