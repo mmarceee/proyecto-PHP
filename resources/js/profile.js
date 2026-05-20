@@ -100,7 +100,6 @@ document.addEventListener('alpine:init', () => {
                     name: this.name,
                     apellido: this.apellido,
                     telefono: this.telefono,
-                    direccion: this.direccion,
                     descripcion: this.descripcion,
                     nombre_comercial: this.nombre_comercial,
                 };
