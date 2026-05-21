@@ -154,10 +154,12 @@
                                                     x-text="session.status">
                                                 </span>
 
-                                                <a href="#"
-                                                class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
-                                                x-text="session.action_label">
-                                                </a>
+                                                <template x-if="session.action_label">
+                                                    <button 
+                                                        @click.stop="avanzarEstadoReserva(session.id)" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
+                                                        x-text="session.action_label">
+                                                    </button>
+                                                </template>
                                             </div>
                                         </article>
                                     </template>
@@ -395,133 +397,4 @@
             </div>
         </main>
     </div>
-
-    <script>
-        function dashboardData() {
-            return {
-                cargando: true,
-
-                tipo: null,
-                saludo: '',
-                usuario: {
-                    id: null,
-                    nombre: '',
-                    email: ''
-                },
-
-                profesional: {
-                    tieneSolicitud: false,
-                    estado: null,
-                    pendiente: false,
-                    aprobado: false
-                },
-
-                selectedItem: null,
-
-                consultasHoy: [],
-                proximasSesiones: [],
-                adminPendingProfessionals: [],
-
-                async cargarDashboard() {
-                    try {
-                        const response = await fetch('/api/dashboard', {
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        });
-
-                        const data = await response.json();
-
-                        this.tipo = data.tipo;
-                        this.saludo = data.saludo;
-                        this.usuario = data.usuario;
-                        this.profesional = data.profesional;
-                        this.adminPendingProfessionals = data.datos.profesionalesPendientes ?? [];
-                        this.consultasHoy = data.datos.consultasHoy ?? [];
-                        this.proximasSesiones = data.datos.proximasSesiones ?? [];
-
-                        if (this.tipo === 'profesional' && this.consultasHoy.length > 0) {
-                            this.selectedItem = this.consultasHoy[0].id;
-                        } else if (this.tipo === 'cliente' && this.proximasSesiones.length > 0) {
-                            this.selectedItem = this.proximasSesiones[0].id;
-                        } else {
-                            this.selectedItem = null;
-                        }
-
-                    } catch (error) {
-                        console.error('Error cargando dashboard:', error);
-                    } finally {
-                        this.cargando = false;
-                    }
-                },
-
-                async aprobarProfesional(id) {
-                    try {
-                        const response = await fetch(`/api/profesionales/${id}/aprobar`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('No se pudo aprobar el profesional');
-                        }
-
-                        this.adminPendingProfessionals = this.adminPendingProfessionals.filter(
-                            professional => professional.id !== id
-                        );
-
-                    } catch (error) {
-                        console.error('Error aprobando profesional:', error);
-                        alert('No se pudo aprobar el profesional.');
-                    }
-                },
-
-                async rechazarProfesional(id) {
-                    try {
-                        const response = await fetch(`/api/profesionales/${id}/rechazar`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('No se pudo rechazar el profesional');
-                        }
-
-                        this.adminPendingProfessionals = this.adminPendingProfessionals.filter(
-                            professional => professional.id !== id
-                        );
-
-                    } catch (error) {
-                        console.error('Error rechazando profesional:', error);
-                        alert('No se pudo rechazar el profesional.');
-                    }
-                },
-
-                get selectedProfessionalSession() {
-                    return this.consultasHoy.find(
-                        session => session.id === this.selectedItem
-                    ) ?? {
-                        client_name: '',
-                        packages: []
-                    };
-                },
-
-                get selectedClientReservation() {
-                    return this.proximasSesiones.find(
-                        reservation => reservation.id === this.selectedItem
-                    ) ?? {
-                        professional_name: '',
-                        specialty: '',
-                        packages: []
-                    };
-                }
-            }
-        }
-    </script>
 </x-app-layout>

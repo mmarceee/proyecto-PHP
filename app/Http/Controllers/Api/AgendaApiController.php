@@ -4,110 +4,55 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Services\AgendaService;
+use App\Services\ReservaService; //Inyectamos tu servicio de control
+use App\Models\Servicio;
+use Carbon\Carbon;
 
 class AgendaApiController extends Controller
 {
-    protected $agendaService;
-
-    public function __construct(AgendaService $agendaService)
-    {
-        $this->agendaService = $agendaService;
-    }
-
-    public function obtenerAgenda(Request $request)
-    {
-        $user = $request->user();
-
-        if (!$user || !$user->profesional || $user->profesional->estado !== 'aprobado') {
-            return response()->json(['error' => 'No autorizado'], 403);
-        }
-
-        //Capturamos la fecha de inicio opcional de la URL (ej: ?fecha=2026-05-25)
-        $fechaInicio = $request->query('fecha');
-
-        $semana = $this->agendaService->obtenerAgendaSemana($user->profesional, $fechaInicio);
-
-        $reglasActuales = $user->profesional->reglasDisponibilidad->map(function($r) {
-            return [
-                'dia_semana' => $r->dia_semana,
-                'hora_inicio' => substr($r->hora_inicio, 0, 5),
-                'hora_fin' => substr($r->hora_fin, 0, 5),
-                'duracion_turno' => $r->duracion_turno,
-                'buffer_tiempo' => $r->buffer_tiempo,
-            ];
-        });
-
-        return response()->json([
-            'semana' => $semana,
-            'reglas_actuales' => $reglasActuales
-        ]);
-    }
-
-    public function guardarReglas(Request $request)
-    {
-        $user = $request->user();
-
-        if (!$user || !$user->profesional || $user->profesional->estado !== 'aprobado') {
-            return response()->json(['error' => 'No autorizado'], 403);
-        }
-
-        $request->validate([
-            'reglas'                  => ['required', 'array'],
-            'reglas.*.dia_semana'     => ['required', 'integer', 'between:0,6'],
-            'reglas.*.activo'         => ['required', 'boolean'],
-            'reglas.*.hora_inicio'    => ['required_if:reglas.*.activo,true', 'nullable', 'date_format:H:i'],
-            'reglas.*.hora_fin'       => ['required_if:reglas.*.activo,true', 'nullable', 'date_format:H:i', 'after:reglas.*.hora_inicio'],
-            'reglas.*.duracion_turno' => ['required_if:reglas.*.activo,true', 'integer'],
-            'reglas.*.buffer_tiempo'  => ['required_if:reglas.*.activo,true', 'integer'],
-        ]);
-
-        $this->agendaService->guardarReglasBase($user->profesional, $request->input('reglas'));
-
-        return response()->json(['message' => 'Configuración guardada correctamente.']);
-    }
-
-    public function guardarExcepcion(Request $request)
-    {
-        $user = $request->user();
-
-        if (!$user || !$user->profesional || $user->profesional->estado !== 'aprobado') {
-            return response()->json(['error' => 'No autorizado'], 403);
-        }
-
-        // Validamos que la fecha sea válida y corresponda a las reglas del enum que tienen en la migración
-        $validated = $request->validate([
-            'fecha'  => ['required', 'date'],
-            'tipo'   => ['required', 'in:no_disponible,licencia,feriado'],
-            'motivo' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $this->agendaService->guardarExcepcion($user->profesional, $validated);
-
-        return response()->json([
-            'message' => 'El día ha sido bloqueado correctamente.'
-        ]);
-    }
-
     /**
-     * Eliminar bloqueo/excepción de una fecha
+     * Procesa la reserva del paciente impidiendo superposiciones
      */
-    public function desbloquearDia(Request $request)
+    public function agendarTurno(Request $request, ReservaService $reservaService)
     {
-        $user = $request->user();
+        $validated = $request->validate([
+            'profesional_id' => ['required', 'exists:profesionales,id'],
+            'servicio_id'    => ['required', 'exists:servicios,id'],
+            'fecha'          => ['required', 'date', 'after_or_equal:today'],
+            'hora_inicio'    => ['required', 'date_format:H:i'],
+        ]);
 
-        if (!$user || !$user->profesional || $user->profesional->estado !== 'aprobado') {
-            return response()->json(['error' => 'No autorizado'], 403);
+        // 1. Obtener el servicio para saber cuántos minutos dura
+        $servicio = Servicio::findOrFail($validated['servicio_id']);
+        
+        // 2. Calcular la hora_fin sumando la duración
+        $horaInicio = Carbon::parse($validated['hora_inicio']);
+        $horaFin = $horaInicio->copy()->addMinutes($servicio->duracion)->format('H:i');
+
+        // 3. Obtener el ID de cliente del usuario logueado
+        $clienteId = $request->user()->cliente->id;
+
+        try {
+            // 4. Delegamos la creación al ReservaService, el cual correrá 
+            // la validación estricta de "verificarChoqueHorario" antes de insertar
+            $reserva = $reservaService->crear([
+                'cliente_id'     => $clienteId,
+                'profesional_id' => $validated['profesional_id'],
+                'servicio_id'    => $validated['servicio_id'],
+                'fecha'          => $validated['fecha'],
+                'hora_inicio'    => $validated['hora_inicio'],
+                'hora_fin'       => $horaFin,
+                'estado_reserva' => 'pendiente', // Nace en tu enum inicial
+            ]);
+
+            return response()->json([
+                'message' => '¡Tu turno ha sido reservado con éxito!',
+                'reserva' => $reserva
+            ], 201);
+
+        } catch (\Exception $e) {
+            // Si el profesional se ocupó justo antes, frena el insert y devuelve un 422
+            return response()->json(['error' => $e->getMessage()], 422);
         }
-
-        $request->validate([
-            'fecha' => ['required', 'date'],
-        ]);
-
-        $this->agendaService->eliminarExcepcion($user->profesional, $request->input('fecha'));
-
-        return response()->json([
-            'message' => 'El día ha sido desbloqueado. Se restauraron los horarios base.'
-        ]);
     }
 }

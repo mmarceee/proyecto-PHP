@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\ProfesionalApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 use App\Http\Controllers\Api\AgendaApiController;
+use App\Http\Controllers\Api\BusquedaApiController;
+use App\Http\Controllers\Api\ServicioApiController;
 
 Route::view('/', 'welcome');
 
@@ -41,6 +43,10 @@ Route::view('/prototipo/perfil', 'prototipos.perfil')
     ->middleware(['auth'])
     ->name('prototipo.perfil');
 
+Route::get('/profesional/servicios', function () {
+    return view('profesional.servicios');
+})->middleware(['auth'])->name('profesional.servicios');
+
 Route::middleware(['auth', 'verified'])
     ->prefix('api')
     ->group(function () {
@@ -67,6 +73,33 @@ Route::middleware(['auth', 'verified'])
 
             Route::delete('/profesional/agenda/excepciones', [AgendaApiController::class, 'desbloquearDia'])
             ->name('api.profesional.agenda.desbloquear');
+
+            Route::post('/paciente/agenda/reservar', [AgendaApiController::class, 'agendarTurno'])
+            ->name('api.paciente.agenda.reservar');
+
+            Route::get('/servicios/buscar', [BusquedaApiController::class, 'buscar'])
+            ->name('api.servicios.buscar');
+
+            Route::get('/servicios/profesionales/{id}/agenda', [BusquedaApiController::class, 'obtenerAgendaProfesional'])
+            ->name('api.servicios.agenda');
+
+            Route::apiResource('/profesional/servicios', ServicioApiController::class)
+            ->names('api.profesional.servicios');
+
+            Route::post('/clientes/registro', [\App\Http\Controllers\Api\ClienteApiController::class, 'store'])
+            ->name('api.clientes.registro');
+
+            Route::post('/reservas', [\App\Http\Controllers\Api\ReservaApiController::class, 'store'])
+            ->name('api.reservas.store');
+
+            Route::put('/reservas/{id}', [\App\Http\Controllers\Api\ReservaApiController::class, 'update'])
+            ->name('api.reservas.update');
+
+            Route::delete('/reservas/{id}', [\App\Http\Controllers\Api\ReservaApiController::class, 'destroy'])
+            ->name('api.reservas.destroy');
+
+            Route::post('/reservas/{id}/avanzar-estado', [\App\Http\Controllers\Api\ReservaApiController::class, 'avanzarEstado'])
+            ->name('api.reservas.avanzar-estado');
     });
 
 

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ReglaDisponibilidad;
 use App\Models\ExcepcionDisponibilidad;
+use App\Models\Reserva;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +30,17 @@ class AgendaService
             ->get()
             ->keyBy(function($e) {
                 return $e->fecha->toDateString();
+            });
+
+        //SOLUCIÓN AL CLUSTERING DE FECHAS:
+        // Forzamos el agrupamiento usando estrictamente el formato 'YYYY-MM-DD' string limpio
+        // para romper el conflicto del cast 'date' del modelo Reserva.
+        $reservasExistentes = Reserva::where('profesional_id', $profesional->id)
+            ->whereBetween('fecha', [$inicioSemana->toDateString(), $finSemana->toDateString()])
+            ->whereNotIn('estado_reserva', ['cancelada', 'no_asistida'])
+            ->get()
+            ->groupBy(function($reserva) {
+                return Carbon::parse($reserva->fecha)->toDateString();
             });
 
         // 3. Iteramos 7 días hacia adelante a partir del día de inicio
@@ -74,6 +86,47 @@ class AgendaService
                 $esLaboral = count($bloques) > 0;
             }
 
+            //COMPROBACIÓN DE COLISIONES ULTRA-SEGURA
+            if ($esLaboral && count($bloques) > 0) {
+                foreach ($bloques as &$bloque) {
+                    
+                    // Convertimos la hora del bloque a string "H:i" de forma segura sin importar su tipo base
+                    if ($bloque instanceof Carbon) {
+                        $horaBloqueClean = $bloque->format('H:i');
+                    } elseif (is_array($bloque)) {
+                        $horaStr = $bloque['hora'] ?? $bloque[0] ?? '00:00';
+                        $horaBloqueClean = date('H:i', strtotime($horaStr));
+                    } else {
+                        $horaBloqueClean = date('H:i', strtotime($bloque));
+                    }
+
+                    $estaOcupado = false;
+
+                    // Ahora la comparación de llaves del array va a dar TRUE perfectamente
+                    if (isset($reservasExistentes[$fechaString])) {
+                        foreach ($reservasExistentes[$fechaString] as $reserva) {
+                            
+                            // Normalizamos los tiempos de la reserva para evitar fallos de tipos
+                            $inicioReserva = date('H:i', strtotime($reserva->hora_inicio));
+                            $finReserva = date('H:i', strtotime($reserva->hora_fin));
+
+                            // Si se pisa el rango horario, encendemos el flag
+                            if ($horaBloqueClean >= $inicioReserva && $horaBloqueClean < $finReserva) {
+                                $estaOcupado = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Re-mapeamos el bloque con su estructura final para Alpine
+                    $bloque = [
+                        'hora' => $horaBloqueClean,
+                        'ocupado' => $estaOcupado
+                    ];
+                }
+                unset($bloque); 
+            }
+
             // Marcamos si es "Hoy" para darle un toque visual en el frontend
             $esHoy = $fechaString === Carbon::now()->toDateString();
 
@@ -93,15 +146,23 @@ class AgendaService
         return $semana;
     }
 
-    private function calcularBloquesHorarios($inicio, $fin, $duracion, $buffer)
+    /**
+     * Fragmentador matemático que ahora cruza con las reservas reales de la BD
+     */
+    private function calcularBloquesHorarios($inicio, $fin, $duracion, $buffer, $reservasDelDia = [])
     {
         $bloques = [];
         $saltoTotal = $duracion + $buffer;
 
         while ($inicio->copy()->addMinutes($duracion)->lessThanOrEqualTo($fin)) {
+            $horaBloque = $inicio->format('H:i');
+            
+            //Si la hora del bloque ya existe en el array de reservas, se marca OCUPADO
+            $estaOcupado = isset($reservasDelDia[$horaBloque]);
+
             $bloques[] = [
-                'hora' => $inicio->format('H:i'),
-                'ocupado' => false,
+                'hora' => $horaBloque,
+                'ocupado' => $estaOcupado, // Ahora lee la realidad de reservas
                 'duracion' => $duracion,
                 'buffer' => $buffer
             ];
