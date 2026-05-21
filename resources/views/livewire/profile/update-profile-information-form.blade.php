@@ -11,7 +11,7 @@ new class extends Component
     public string $email = '';
 
     public string $descripcion = '';
-    public string $nombreComercial = '';
+    public string $nombre_comercial = '';
 
     public bool $esProfesionalAprobado = false;
 
@@ -30,36 +30,43 @@ new class extends Component
 
         if ($this->esProfesionalAprobado && $profesional) {
             $this->descripcion = $profesional->descripcion ?? '';
-            $this->nombreComercial = $profesional->nombre_comercial ?? '';
+            $this->nombre_comercial = $profesional->nombre_comercial ?? '';
         }
     }
 }; 
 ?>
 
 <section>
-    @vite(['resources/js/profile.js'])
+    <div  class="mt-6 space-y-6"
+    x-data="perfilForm(@js([
+        'name' => $name,
+        'apellido' => $apellido,
+        'email' => $email,
+        'telefono' => $telefono,
+        'descripcion' => $descripcion,
+        'nombre_comercial' => $nombre_comercial,
+        'esProfesionalAprobado' => $esProfesionalAprobado,
+    ]))"
+>
+    <header class="flex items-start justify-between gap-4">
+        <div>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Información del Perfil
+            </h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Actualiza los datos de tu cuenta.
+            </p>
+        </div>
 
-    <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            Información del Perfil
-        </h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Actualiza los datos de tu cuenta.
-        </p>
+        <template x-if="esProfesionalAprobado">
+            <a
+                href="/profesional/servicios"
+                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-white hover:text-gray-800 transition"
+            >
+                Mis servicios
+            </a>
+        </template>
     </header>
-
-    <div 
-        x-data="perfilForm(@js([
-            'name' => $name,
-            'apellido' => $apellido,
-            'email' => $email,
-            'telefono' => $telefono,
-            'descripcion' => $descripcion,
-            'nombre_comercial' => $nombreComercial,
-            'esProfesionalAprobado' => $esProfesionalAprobado,
-        ]))" 
-        class="mt-6 space-y-6"
-    >
         
         <template x-if="mensaje">
             <div class="mb-4 p-4 bg-green-950/40 border border-green-800 text-green-200 text-sm rounded" x-text="mensaje"></div>
