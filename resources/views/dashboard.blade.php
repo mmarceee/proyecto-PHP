@@ -7,7 +7,7 @@
         <!-- Sidebar -->
         <x-app-sidebar />
         <!-- Contenido principal -->
-        <main class="flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-12 py-6 lg:py-10">
+        <main class="flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-12 py-6 lg:py-10 md:ml-20">
             <div x-show="cargando" class="mb-6 rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">
                 Cargando información del dashboard...
             </div>
@@ -171,11 +171,11 @@
                             </div>
                         </template>
 
-                        <template x-if="tipo === 'cliente'">
-                            <div>
+                        <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                            <div class="mt-10 lg:mt-12">
                                 <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
                                     <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
-                                        Próximas sesiones
+                                        Tus próximas sesiones
                                     </h3>
 
                                     <span class="font-serif italic text-slate-400 text-xl">
@@ -329,8 +329,8 @@
                         </div>
                     </template>
 
-                    <template x-if="tipo === 'cliente'">
-                        <div class="border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
+                    <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                        <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
                                 Paquetes con este profesional
                             </h3>

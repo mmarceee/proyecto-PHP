@@ -26,11 +26,11 @@
         class="md:hidden fixed inset-0 bg-black/50 z-[55]"
     ></div>
         <aside
-            class="overflow-visible fixed md:sticky top-0 md:top-0 left-0 z-[60]
+            class="overflow-visible fixed inset-y-0 left-0 z-[60]
                 w-20 h-screen border-r border-slate-700 bg-slate-900
                 flex flex-col items-center justify-between py-8
                 transform transition-transform duration-300
-                -translate-x-full md:translate-x-0 md:self-start md:shrink-0"
+                -translate-x-full md:translate-x-0"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
         >
         <!-- Parte superior de la sidebar -->
@@ -109,6 +109,30 @@
                             Agenda personal
                         </span>
                     </a>
+
+                    <a href="/prototipo/servicios"
+                    class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="w-5 h-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M11.42 15.17L17.25 21A2.5 2.5 0 0021 17.25l-5.83-5.83M11.42 15.17l2.12-2.12M11.42 15.17l-4.24 4.24a2 2 0 01-2.83-2.83l4.24-4.24M13.54 13.05l-4.59-4.59M15.17 8.83l1.41-1.41a2 2 0 10-2.83-2.83l-1.41 1.41M8.95 8.46L5.12 4.64M8.95 8.46l-2.12 2.12"/>
+                        </svg>
+
+                        <span 
+                            class="absolute left-14 top-1/2 -translate-y-1/2 
+                                bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                                transition whitespace-nowrap z-50"
+                        >
+                            Mis servicios
+                        </span>
+                    </a>
+
                 @endif
 
             </nav>
