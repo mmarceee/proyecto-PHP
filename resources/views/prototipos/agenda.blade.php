@@ -34,7 +34,7 @@
                     </button>
                 </div>
                 <div class="text-sm font-serif italic text-gray-500 dark:text-gray-400">
-                    Vista de 7 días rodantes
+                    Vista de 7 días
                 </div>
                 <div>
                     <button @click="semanaSiguiente()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 transition">
