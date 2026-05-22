@@ -78,8 +78,10 @@ document.addEventListener('alpine:init', () => {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify(body)
                 });
 
@@ -140,8 +142,10 @@ document.addEventListener('alpine:init', () => {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         current_password: this.current_password,
                         password: this.password,
@@ -193,8 +197,10 @@ document.addEventListener('alpine:init', () => {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ password: this.password })
                 });
 

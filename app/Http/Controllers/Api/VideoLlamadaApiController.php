@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\VideoLlamadaService;
 use App\Models\Reserva; // Asegúrate de importar el modelo
 
-class VideoLlamadaController extends Controller
+class VideoLlamadaApiController extends Controller
 {
     protected $videoService;
 
