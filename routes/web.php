@@ -52,8 +52,6 @@ Route::middleware(['auth', 'verified'])
             Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
             ->name('api.profesionales.postularse');
 
-            Route::put('/profile/info', [\App\Http\Controllers\Api\ProfileApiController::class, 'updateInfo'])->name('api.profile.update');
-
             Route::put('/profile/password', [\App\Http\Controllers\Api\ProfileApiController::class, 'updatePassword'])->name('api.profile.password');
             
             Route::delete('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy'])->name('api.profile.destroy');
