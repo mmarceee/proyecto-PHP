@@ -116,8 +116,8 @@
                                 <div class="flex justify-between items-center mb-3">
                                     <span class="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">2. Horarios libres (7 días rodantes):</span>
                                     <div class="flex gap-1">
-                                        <button @click="retrocederSemana()" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-bold hover:bg-gray-200">◀</button>
-                                        <button @click="avanzarSemana()" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-bold hover:bg-gray-200">▶</button>
+                                        <button @click="retrocederSemana()" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-bold hover:bg-gray-200"><-</button>
+                                        <button @click="avanzarSemana()" class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-bold hover:bg-gray-200">-></button>
                                     </div>
                                 </div>
 
@@ -132,7 +132,7 @@
                                             </div>
 
                                             <template x-if="!dia.es_laboral">
-                                                <div class="text-[10px] text-center text-red-400 italic py-0.5" x-text="dia.motivo_cierre ? '🔒 ' + dia.motivo_cierre : '❌ No atiende'"></div>
+                                                <div class="text-[10px] text-center text-red-400 italic py-0.5" x-text="dia.motivo_cierre ? ' Cerrado: ' + dia.motivo_cierre : 'No atiende'"></div>
                                             </template>
 
                                             <div class="grid grid-cols-4 gap-1" x-show="dia.es_laboral">

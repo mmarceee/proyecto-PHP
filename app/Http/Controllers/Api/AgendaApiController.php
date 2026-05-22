@@ -11,6 +11,34 @@ use Carbon\Carbon;
 class AgendaApiController extends Controller
 {
     /**
+     * Obtiene la agenda semanal para el panel de configuración del profesional
+     */
+    public function obtenerAgenda(Request $request, \App\Services\AgendaService $agendaService)
+    {
+        // 1. Obtenemos el usuario logueado y verificamos que sea profesional
+        $user = $request->user();
+        if (!$user || !$user->profesional) {
+            return response()->json(['error' => 'Acceso denegado. No eres un profesional.'], 403);
+        }
+
+        // 2. Leemos la fecha de la URL (si viene)
+        $fechaInicio = $request->query('fecha');
+
+        try {
+            // 3. Llamamos al servicio que armamos con el cruce de datos inteligente
+            $semana = $agendaService->obtenerAgendaSemana($user->profesional, $fechaInicio);
+
+            return response()->json([
+                'semana' => $semana
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al cargar la agenda: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    /**
      * Procesa la reserva del paciente impidiendo superposiciones
      */
     public function agendarTurno(Request $request, ReservaService $reservaService)

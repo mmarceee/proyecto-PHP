@@ -27,10 +27,10 @@
             <div class="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
                 <div class="flex gap-2">
                     <button @click="semanaAnterior()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 transition">
-                        ◀ Seman. Anterior
+                        <- Seman. Anterior
                     </button>
                     <button @click="volverAHoy()" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold transition">
-                        📅 Volver a Hoy
+                        Volver a Hoy
                     </button>
                 </div>
                 <div class="text-sm font-serif italic text-gray-500 dark:text-gray-400">
@@ -38,7 +38,7 @@
                 </div>
                 <div>
                     <button @click="semanaSiguiente()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 transition">
-                        Seman. Siguiente ▶
+                        Seman. Siguiente ->
                     </button>
                 </div>
             </div>
@@ -61,24 +61,24 @@
                                 
                                 <template x-if="!dia.tiene_excepcion">
                                     <button @click="bloquearDia(dia.fecha)" title="Bloquear este día específico" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-950/40 hover:bg-red-900 p-1 rounded text-red-400 text-xs">
-                                        🔒
+                                        Bloquear
                                     </button>
                                 </template>
 
                                 <template x-if="dia.tiene_excepcion">
                                     <button @click="confirmarDesbloqueo(dia.fecha)" title="Quitar excepción de este día" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 p-1 rounded text-white text-[10px] font-bold shadow-sm transition">
-                                        🔓
+                                        Desbloquear
                                     </button>
                                 </template>
                             </div>
 
                             <template x-if="!dia.es_laboral">
                                 <div class="p-4 text-center bg-red-50/30 dark:bg-red-950/10 h-full flex flex-col items-center justify-center gap-3 min-h-[180px]">
-                                    <span class="text-xs text-red-400 dark:text-red-300 font-serif italic font-bold" x-text="dia.motivo_cierre ? '🔒 Cerrado: ' + dia.motivo_cierre : '❌ No laboral'"></span>
+                                    <span class="text-xs text-red-400 dark:text-red-300 font-serif italic font-bold" x-text="dia.motivo_cierre ? 'Cerrado: ' + dia.motivo_cierre : 'X - No laboral'"></span>
                                     
                                     <template x-if="dia.tiene_excepcion">
                                         <button @click="confirmarDesbloqueo(dia.fecha)" class="inline-flex items-center px-3 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-red-600 dark:text-red-400 border border-gray-200 dark:border-gray-600 rounded-xl text-[10px] font-extrabold tracking-wide uppercase shadow-sm transition-all duration-150">
-                                            🔓 Desbloquear día
+                                            Desbloquear día
                                         </button>
                                     </template>
                                 </div>
@@ -156,7 +156,7 @@
             <div x-show="mostrarModalExcepcion" class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;" @click.away="mostrarModalExcepcion = false" @keydown.escape.window="mostrarModalExcepcion = false">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700">
                     <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">🔒 Registrar Bloqueo de Día</h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Registrar Bloqueo de Día</h3>
                         <button @click="mostrarModalExcepcion = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl">&times;</button>
                     </div>
                     <div class="space-y-4">
@@ -189,7 +189,7 @@
             <div x-show="mostrarModalDesbloquear" class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="mostrarModalDesbloquear = false">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-150" @click.away="mostrarModalDesbloquear = false">
                     <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-500 mb-4 text-xl">⚠️</div>
+                        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-500 mb-4 text-xl">!</div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">¿Restaurar Horarios?</h3>
                         <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed px-2">¿Estás seguro de que quieres quitar el bloqueo de este día y restaurar tus horarios habituales de consultorio?</p>
                     </div>

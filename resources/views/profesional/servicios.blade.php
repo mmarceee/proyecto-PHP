@@ -14,7 +14,7 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">Agrega o edita los servicios que los clientes podrán buscar y reservar en tu agenda.</p>
                 </div>
                 <button @click="abrirModalCrear()" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition shadow-sm">
-                    ✨ Nuevo Servicio
+                     Nuevo Servicio
                 </button>
             </div>
 
@@ -42,10 +42,10 @@
                             <span class="text-xl font-serif font-extrabold text-gray-900 dark:text-white" x-text="'$' + servicio.precio"></span>
                             <div class="flex gap-2">
                                 <button @click="abrirModalEditar(servicio)" class="px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-xl transition">
-                                    ✏ Editar
+                                    Editar
                                 </button>
                                 <button @click="eliminarServicio(servicio.id)" class="px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100 rounded-xl transition">
-                                    🗑 Borrar
+                                    Borrar
                                 </button>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                 <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-150" @click.away="mostrarModal = false">
                     
                     <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white" x-text="modoEdicion ? '✏ Editar Servicio' : '✨ Registrar Nuevo Servicio'"></h3>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white" x-text="modoEdicion ? 'Editar Servicio' : 'Registrar Nuevo Servicio'"></h3>
                         <button @click="mostrarModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl">&times;</button>
                     </div>
 
@@ -96,8 +96,8 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Modalidad:</label>
                                 <select x-model="form.modalidad" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
-                                    <option value="Virtual">💻 Virtual</option>
-                                    <option value="Presencial">🏢 Presencial</option>
+                                    <option value="Virtual">Virtual</option>
+                                    <option value="Presencial">Presencial</option>
                                 </select>
                             </div>
                         </div>
