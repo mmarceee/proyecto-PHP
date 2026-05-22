@@ -9,8 +9,9 @@ export default defineConfig({
                     'resources/js/solicitudes-profesionales.js',
                     'resources/js/postularse-profesional.js',
                     'resources/js/profile.js',
-                    'resources/js/videollamada.js'],
-                    
+                    'resources/js/videollamada.js',
+                    'resources/js/agenda-profesional.js'
+            ], 
             refresh: true,
         }),
     ],
