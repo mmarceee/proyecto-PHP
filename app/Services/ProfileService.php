@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\DB;
 
 class ProfileService
 {
-    /**
-     * Contiene la regla estricta de negocio para actualizar un perfil.
-     */
     public function updateInformation(User $user, array $datosValidados): User
     {
         return DB::transaction(function () use ($user, $datosValidados) {
@@ -35,18 +32,34 @@ class ProfileService
             return $user->fresh(['profesional']);
         });
     }
+
     public function updatePassword($user, string $newPassword): void
     {
         $user->update([
             'password' => Hash::make($newPassword),
         ]);
     }
-    public function deleteAccount($user): void
+
+    public function deleteAccount(User $user): void
     {
-        // NOTA PARA TUS COMPAÑEROS: 
-        // Aquí adentro en el futuro controlaremos si es profesional o cliente
-        // para cancelar sus reservas antes de borrarlo.
-        
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            
+            // 1. SI ES CLIENTE, lo borramos lógicamente
+            if ($user->esCliente()) { 
+                $user->cliente->delete(); 
+            }
+
+            // 2. SI ES PROFESIONAL, lo borramos lógicamente
+            if ($user->profesional()->exists()) { 
+                $user->profesional->delete();
+            }
+
+            // 3. CAMBIAMOS EL ESTADO VISUAL
+            $user->estado_usuario = 'eliminado';
+            $user->save();
+
+            // 4. ELIMINAMOS AL USUARIO
+            $user->delete();
+        });
     }
 }

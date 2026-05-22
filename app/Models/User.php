@@ -21,6 +21,7 @@ class User extends Authenticatable
 
     public const ESTADO_ACTIVO = 'activo';
     public const ESTADO_BLOQUEADO = 'bloqueado';
+    public const ESTADO_ELIMINADO = 'eliminado';
 
     /*
     |--------------------------------------------------------------------------
@@ -62,6 +63,11 @@ class User extends Authenticatable
     public function estaBloqueado(): bool
     {
         return $this->estado_usuario === self::ESTADO_BLOQUEADO;
+    }
+
+    public function estaEliminado(): bool
+    {
+        return $this->estado_usuario === self::ESTADO_ELIMINADO;
     }
 
     /*

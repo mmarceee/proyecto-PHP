@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Profesional;
 use App\Services\ProfesionalService;
+use App\Services\DashboardService;
 
 class DashboardApiController extends Controller
 {
-    public function index(Request $request, ProfesionalService $profesionalService)
+    public function index(Request $request, ProfesionalService $profesionalService, DashboardService $DashboardService)
     {
         $user = $request->user();
 
@@ -47,65 +48,12 @@ class DashboardApiController extends Controller
         $consultasHoy = [];
         $proximasSesiones = [];
 
-        //SIGUEN LOS DATOS HARCODEADOS HASTA QUE SE IMPLEMENTE LA LÓGICA REAL PARA OBTENER LAS CONSULTAS Y SESIONES DE LOS PROFESIONALES Y CLIENTES
-
-        if ($esProfesional) {
-            $consultasHoy = [
-                [
-                    'id' => 1,
-                    'time' => '10:00',
-                    'period' => 'AM',
-                    'client_name' => 'Maria G.',
-                    'reason' => 'Consulta inicial',
-                    'status' => 'Por comenzar',
-                    'action_label' => 'Enlace',
-                    'packages' => [
-                        ['name' => 'Flujo Premium', 'used' => 2, 'total' => 8],
-                        ['name' => 'Plan Base', 'used' => 1, 'total' => 5],
-                        ['name' => 'Consulta Inicial', 'used' => 1, 'total' => 1],
-                    ],
-                ],
-                [
-                    'id' => 2,
-                    'time' => '12:30',
-                    'period' => 'PM',
-                    'client_name' => 'Carlos T.',
-                    'reason' => 'Seguimiento',
-                    'status' => 'Confirmada',
-                    'action_label' => 'Detalles',
-                    'packages' => [
-                        ['name' => 'Seguimiento Mensual', 'used' => 5, 'total' => 5],
-                        ['name' => 'Plan Base', 'used' => 3, 'total' => 5],
-                        ['name' => 'Asesoría Técnica', 'used' => 2, 'total' => 4],
-                    ],
-                ],
-            ];
+        if ($esProfesional && $profesional) {
+            $consultasHoy = $DashboardService->obtenerConsultasHoy($profesional->id);
         }
 
         if ($esCliente) {
-            $proximasSesiones = [
-                [
-                    'id' => 1,
-                    'date_label' => 'Mañana',
-                    'time' => '15:00',
-                    'professional_name' => 'Ana Rodríguez',
-                    'specialty' => 'Asesoría legal',
-                    'status' => 'Confirmada',
-                    'packages' => [
-                        ['name' => 'Pack Consulta Legal', 'used' => 1, 'total' => 4],
-                        ['name' => 'Seguimiento Jurídico', 'used' => 0, 'total' => 3],
-                    ],
-                ],
-                [
-                    'id' => 2,
-                    'date_label' => 'Viernes',
-                    'time' => '09:30',
-                    'professional_name' => 'Martín Silva',
-                    'specialty' => 'Técnico electricista',
-                    'status' => 'Pendiente',
-                    'packages' => [],
-                ],
-            ];
+            $proximasSesiones = $DashboardService->obtenerProximasSesiones($user->id);
         }
 
         return response()->json([
@@ -114,18 +62,14 @@ class DashboardApiController extends Controller
                 'nombre' => $user->name,
                 'email' => $user->email,
             ],
-
             'saludo' => $saludo,
-
             'tipo' => $tipo,
-
             'profesional' => [
                 'tieneSolicitud' => $profesional !== null,
                 'estado' => $estadoProfesional,
                 'pendiente' => $estadoProfesional === 'pendiente',
                 'aprobado' => $estadoProfesional === 'aprobado',
             ],
-
             'datos' => [
                 'profesionalesPendientes' => $profesionalesPendientes,
                 'consultasHoy' => $consultasHoy,

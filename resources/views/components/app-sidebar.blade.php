@@ -110,7 +110,7 @@
                         </span>
                     </a>
 
-                    <a href="/prototipo/servicios"
+                    <a href="/profesional/servicios"
                     class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
                         <svg xmlns="http://www.w3.org/2000/svg"
                             class="w-5 h-5"

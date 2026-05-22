@@ -49,8 +49,6 @@ class Reserva extends Model {
     {
         return [
             'fecha' => 'date',
-            'hora_inicio' => 'time',
-            'hora_fin' => 'time',
         ];
     }
 }
