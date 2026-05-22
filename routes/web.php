@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProfesionalApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
+use App\Models\Reserva;
 
 Route::view('/', 'welcome');
 
@@ -62,6 +63,10 @@ Route::middleware(['auth', 'verified'])
             Route::delete('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy'])->name('api.profile.destroy');
     });
 
-
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/reserva/{reserva}/sala', function (Reserva $reserva) {
+            return view('videollamada', compact('reserva'));
+        })->name('videollamada.sala');
+    });
 
 require __DIR__.'/auth.php';
