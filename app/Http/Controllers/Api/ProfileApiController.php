@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\ProfileService;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,23 +12,30 @@ class ProfileApiController extends Controller
 {
     public function updateInfo(Request $request, ProfileService $profileService)
     {
-        // 1. El Mozo toma y revisa el pedido
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($request->user()->id)],
+            'apellido' => ['nullable', 'string', 'max:255'],
+            'telefono' => ['nullable', 'string', 'max:30'],
+            'descripcion' => ['nullable', 'string', 'max:1000'],
+            'nombre_comercial' => ['nullable', 'string', 'max:255'],
         ]);
 
-        // 2. El Mozo le pasa el pedido al Chef (El Servicio)
         $user = $profileService->updateInformation($request->user(), $validated);
 
-        // 3. El Mozo devuelve el plato listo en formato JSON
-       return response()->json([
+        $profesional = $user->profesional;
+
+        return response()->json([
             'mensaje' => 'Perfil actualizado exitosamente',
             'usuario' => [
                 'nombre' => $user->name,
-                'correo' => $user->email
-                // Solo mandamos esto. Ni el ID, ni fechas de creación, nada extra.
-            ] 
+                'apellido' => $user->apellido,
+                'correo' => $user->email,
+                'telefono' => $user->telefono,
+            ],
+            'profesional' => $user->esProfesionalAprobado() && $profesional ? [
+                'descripcion' => $profesional->descripcion,
+                'nombre_comercial' => $profesional->nombre_comercial,
+            ] : null,
         ]);
     }
 

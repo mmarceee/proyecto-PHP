@@ -51,4 +51,23 @@ class ProfesionalService
         return $profesional;
         
     }
+
+    /**
+     * Crear una nueva postulación de profesional
+     */
+    public function crearPostulacion($user, array $datos)
+    {
+        // Si ya tiene perfil profesional, lanzamos excepción
+        if ($user->profesional()->exists()) {
+            throw new \Exception('Ya has enviado una solicitud previamente.');
+        }
+
+        return $user->profesional()->create([
+            'especialidad'        => $datos['especialidad'],
+            'descripcion'         => $datos['descripcion'],
+            'nombre_comercial'    => $datos['nombre_comercial'] ?? null,
+            'reputacion_promedio' => 0.00,
+            'estado'              => 'pendiente',
+        ]);
+    }
 }

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Livewire\Volt\Volt;
+use App\Http\Controllers\Api\ProfesionalApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 
@@ -16,7 +16,7 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 //Ruta de postulacion en la carpeta 'pages'
-Volt::route('postularse', 'pages.postularse-profesional')
+Route::view('postularse', 'livewire.pages.postularse-profesional')
     ->middleware(['auth', 'verified'])
     ->name('profesional.postularse');
 
@@ -52,9 +52,14 @@ Route::middleware(['auth', 'verified'])
             Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
             ->name('api.profesionales.rechazar');
 
-        Route::put('/profile/info', [\App\Http\Controllers\Api\ProfileApiController::class, 'updateInfo'])->name('api.profile.update');
-        Route::put('/profile/password', [\App\Http\Controllers\Api\ProfileApiController::class, 'updatePassword'])->name('api.profile.password');
-        Route::delete('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy'])->name('api.profile.destroy');
+            Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
+            ->name('api.profesionales.postularse');
+
+            Route::put('/profile/info', [\App\Http\Controllers\Api\ProfileApiController::class, 'updateInfo'])->name('api.profile.update');
+
+            Route::put('/profile/password', [\App\Http\Controllers\Api\ProfileApiController::class, 'updatePassword'])->name('api.profile.password');
+            
+            Route::delete('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy'])->name('api.profile.destroy');
     });
 
 

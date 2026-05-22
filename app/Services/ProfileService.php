@@ -4,21 +4,33 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB; // <- ESTO ES VITAL PARA LA TRANSACCIÓN
+use Illuminate\Support\Facades\DB;
 
 class ProfileService
 {
     public function updateInformation(User $user, array $datosValidados): User
     {
-        $user->fill($datosValidados);
+        return DB::transaction(function () use ($user, $datosValidados) {
 
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
+            $user->name = $datosValidados['name'];
+            $user->apellido = $datosValidados['apellido'] ?? null;
+            $user->telefono = $datosValidados['telefono'] ?? null;
 
-        $user->save();
+            $user->save();
 
-        return $user;
+            if ($user->esProfesionalAprobado()) {
+                $profesional = $user->profesional;
+
+                if ($profesional) {
+                    $profesional->descripcion = $datosValidados['descripcion'] ?? null;
+                    $profesional->nombre_comercial = $datosValidados['nombre_comercial'] ?? null;
+
+                    $profesional->save();
+                }
+            }
+
+            return $user->fresh(['profesional']);
+        });
     }
 
     public function updatePassword($user, string $newPassword): void

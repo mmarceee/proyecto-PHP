@@ -2,32 +2,32 @@
     <div
         x-data="dashboardData()"
         x-init="cargarDashboard()"
-        class="min-h-screen flex bg-slate-950 text-white">
+        class="min-h-screen flex bg-slate-950 text-white overflow-x-hidden">
 
         <!-- Sidebar -->
         <x-app-sidebar />
-        <div x-show="cargando" class="mb-6 rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">
-            Cargando información del dashboard...
-        </div>
         <!-- Contenido principal -->
-        <main class="flex-1 px-12 py-10">
-            <div class="grid grid-cols-1 xl:grid-cols-[1fr_365px] gap-12">
+        <main class="flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-12 py-6 lg:py-10 md:ml-20">
+            <div x-show="cargando" class="mb-6 rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">
+                Cargando información del dashboard...
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_365px] gap-8 xl:gap-12">
 
                 <!-- Columna izquierda -->
                 <section>
                     <!-- Saludo (implementacion desde API) -->
-                    <div class="mb-16">
-                        <h1 class="font-serif text-6xl leading-none tracking-tight" x-text="saludo + ','"></h1>
-                        <h2 class="font-serif italic text-6xl leading-none text-slate-400" x-text="usuario.nombre + '.'"></h2>
+                    <div class="mb-8 lg:mb-16">
+                        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-none tracking-tight" x-text="saludo + ','"></h1>
+                        <h2 class="font-serif italic text-4xl sm:text-5xl lg:text-6xl leading-none text-slate-400 break-words" x-text="usuario.nombre + '.'"></h2>
                     </div>
                     {{-- Boton de postulacion profesional --}}
                     <template x-if="tipo === 'cliente' && !profesional.tieneSolicitud">
-                        <div class="border border-slate-800 bg-slate-900/60 p-8 mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="border border-slate-800 bg-slate-900/60 p-5 sm:p-8 mb-8 lg:mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 rounded-lg">
                             <div>
                                 <h3 class="font-serif text-2xl mb-1">¿Eres un profesional que quiere ofrecer sus servicios con nosotros?</h3>
                                 <p class="text-sm text-slate-400">Postulate como profesional para comenzar a gestionar tus clientes y agendas.</p>
                             </div>
-                            <a href="{{ route('profesional.postularse') }}" wire:navigate class="whitespace-nowrap border border-slate-300 hover:bg-white hover:text-black px-6 py-3 text-xs font-bold uppercase tracking-wider transition">
+                            <a href="{{ route('profesional.postularse') }}" wire:navigate class="w-full sm:w-auto text-center whitespace-nowrap border border-slate-300 hover:bg-white hover:text-black px-6 py-3 text-xs font-bold uppercase tracking-wider transition">
                                 Postularse aquí
                             </a>
                         </div>
@@ -59,9 +59,9 @@
 
                                 <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
                                     <template x-for="professional in adminPendingProfessionals" :key="professional.id">
-                                        <article class="grid grid-cols-[1fr_auto] items-center gap-4 px-8 py-6 border-b border-slate-700">
+                                        <article class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-start lg:items-center gap-6 px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-700">
                                             <div>
-                                                <h4 class="font-serif text-3xl" x-text="professional.name"></h4>
+                                                <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="professional.name"></h4>
 
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     <span x-text="professional.especialidad"></span>
@@ -76,16 +76,16 @@
                                                 </p>
                                             </div>
 
-                                            <div class="flex items-center gap-3">
+                                            <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
                                                 <button 
                                                     @click="aprobarProfesional(professional.id)"
-                                                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
+                                                    class="w-full sm:w-auto px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
                                                     Aceptar
                                                 </button>
 
                                                 <button 
                                                     @click="rechazarProfesional(professional.id)"
-                                                    class="px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
+                                                    class="w-full sm:w-auto px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
                                                     Rechazar
                                                 </button>
                                             </div>
@@ -135,7 +135,7 @@
                                         <article 
                                             @click="selectedItem = session.id"
                                             :class="selectedItem === session.id ? 'ring-1 ring-blue-500 bg-slate-800' : 'bg-slate-900'"
-                                            class="cursor-pointer grid grid-cols-[130px_1fr_auto] items-center gap-4 px-8 py-8 border-b border-slate-700 transition hover:bg-slate-800">
+                                            class="cursor-pointer grid grid-cols-1 sm:grid-cols-[110px_minmax(0,1fr)] lg:grid-cols-[130px_minmax(0,1fr)_auto] items-start lg:items-center gap-4 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 border-b border-slate-700 transition hover:bg-slate-800">
 
                                             <div>
                                                 <span class="font-serif text-4xl tracking-widest" x-text="session.time"></span>
@@ -143,13 +143,13 @@
                                             </div>
 
                                             <div>
-                                                <h4 class="font-serif text-3xl" x-text="session.client_name"></h4>
+                                                <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="session.client_name"></h4>
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     ▫ <span x-text="session.reason"></span>
                                                 </p>
                                             </div>
 
-                                            <div class="flex items-center gap-4">
+                                            <div class="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-1">
                                                 <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider"
                                                     x-text="session.status">
                                                 </span>
@@ -171,11 +171,11 @@
                             </div>
                         </template>
 
-                        <template x-if="tipo === 'cliente'">
-                            <div>
+                        <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                            <div class="mt-10 lg:mt-12">
                                 <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
                                     <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
-                                        Próximas sesiones
+                                        Tus próximas sesiones
                                     </h3>
 
                                     <span class="font-serif italic text-slate-400 text-xl">
@@ -188,7 +188,7 @@
                                         <article 
                                             @click="selectedItem = reservation.id"
                                             :class="selectedItem === reservation.id ? 'ring-1 ring-blue-500 bg-slate-800' : 'bg-slate-900'"
-                                            class="cursor-pointer grid grid-cols-[150px_1fr_auto] items-center gap-4 px-8 py-8 border-b border-slate-700 transition hover:bg-slate-800">
+                                            class="cursor-pointer grid grid-cols-1 sm:grid-cols-[120px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)_auto] items-start lg:items-center gap-4 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 border-b border-slate-700 transition hover:bg-slate-800">
 
                                             <div>
                                                 <span class="font-serif text-2xl tracking-widest" x-text="reservation.date_label"></span>
@@ -220,7 +220,7 @@
                 </section>
 
                 <!-- Columna derecha -->
-                <aside class="xl:pt-32">
+                <aside class="w-full min-w-0 xl:pt-32">
                     <template x-if="profesional.tieneSolicitud">
                         <div class="mb-6 rounded-lg border p-4"
                              :class="profesional.pendiente 
@@ -254,7 +254,7 @@
                     </template>
 
                     <template x-if="tipo === 'admin'">
-                        <div class="border border-slate-300 rounded-lg p-6 bg-slate-900/60">
+                        <div class="border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
                                 Acciones rápidas
                             </h3>
@@ -281,7 +281,7 @@
                     </template>
 
                     <template x-if="tipo === 'profesional'">
-                        <div class="border border-slate-300 rounded-lg p-6 bg-slate-900/60">
+                        <div class="border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
                                 Paquetes disponibles
                             </h3>
@@ -329,8 +329,8 @@
                         </div>
                     </template>
 
-                    <template x-if="tipo === 'cliente'">
-                        <div class="border border-slate-300 rounded-lg p-6 bg-slate-900/60">
+                    <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                        <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
                                 Paquetes con este profesional
                             </h3>
