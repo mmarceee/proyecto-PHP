@@ -112,4 +112,6 @@ Route::middleware(['auth', 'verified'])
         })->name('videollamada.sala');
     });
 
+    
+
 require __DIR__.'/auth.php';

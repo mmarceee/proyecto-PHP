@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\VideoLlamadaService;
-use App\Models\Reserva; // Asegúrate de importar el modelo
+use App\Models\Reserva; 
 
-class VideoLlamadaController extends Controller
+class VideoLlamadaApiController extends Controller
 {
     protected $videoService;
 
@@ -17,21 +18,16 @@ class VideoLlamadaController extends Controller
 
     public function obtenerToken(Request $request, Reserva $reserva)
     {
-        $user = $request->user(); // El usuario autenticado
+        $user = $request->user();
 
-        // Aquí deberías agregar lógica de seguridad para comprobar si este usuario
-        // realmente pertenece a esta reserva (es el cliente que la pidió, o el profesional asignado).
-        // if (!$user->perteneceAReserva($reserva)) { return abort(403); }
-
-        // El nombre de la sala será "reserva_" + el ID de la reserva.
+        // El nombre de la sala ahora sí será el ID real de la base de datos
         $nombreSala = 'reserva_' . $reserva->id;
 
-        // Generamos el token mágico
         $token = $this->videoService->generarToken($user, $nombreSala);
 
         return response()->json([
             'token' => $token,
-            'url' => env('LIVEKIT_URL'), // Le mandamos también la URL al frontend
+            'url' => env('LIVEKIT_URL'),
             'sala' => $nombreSala
         ]);
     }
