@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProfesionalApiController;
-use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 use App\Models\Reserva;
 
@@ -44,8 +43,6 @@ Route::view('/prototipo/perfil', 'prototipos.perfil')
 Route::middleware(['auth', 'verified'])
     ->prefix('api')
     ->group(function () {
-        Route::get('/dashboard', [DashboardApiController::class, 'index'])
-            ->name('api.dashboard');
 
             Route::patch('/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
             ->name('api.profesionales.aprobar');
