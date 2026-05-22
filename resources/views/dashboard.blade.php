@@ -17,8 +17,8 @@
                 <section>
                     <!-- Saludo (implementacion desde API) -->
                     <div class="mb-8 lg:mb-16">
-                        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-none tracking-tight" x-text="saludo + ','"></h1>
-                        <h2 class="font-serif italic text-4xl sm:text-5xl lg:text-6xl leading-none text-slate-400 break-words" x-text="usuario.nombre + '.'"></h2>
+                        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-none tracking-tight" x-text="saludo ? saludo + ',' : ''"></h1>
+                        <h2 class="font-serif italic text-4xl sm:text-5xl lg:text-6xl leading-none text-slate-400 break-words" x-text="usuario.nombre ? usuario.nombre + '.' : ''"></h2>
                     </div>
                     {{-- Boton de postulacion profesional --}}
                     <template x-if="tipo === 'cliente' && !profesional.tieneSolicitud">
@@ -425,20 +425,48 @@
                 async cargarDashboard() {
                     try {
                         const response = await fetch('/api/dashboard', {
+                            method: 'GET',
                             headers: {
-                                'Accept': 'application/json'
-                            }
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            credentials: 'same-origin'
                         });
+
+                        const contentType = response.headers.get('content-type');
+
+                        if (!response.ok) {
+                            const text = await response.text();
+                            console.error('Error HTTP cargando dashboard:', response.status, text);
+                            return;
+                        }
+
+                        if (!contentType || !contentType.includes('application/json')) {
+                            const text = await response.text();
+                            console.error('La respuesta NO es JSON. Laravel devolvió esto:', text);
+                            return;
+                        }
 
                         const data = await response.json();
 
-                        this.tipo = data.tipo;
-                        this.saludo = data.saludo;
-                        this.usuario = data.usuario;
-                        this.profesional = data.profesional;
-                        this.adminPendingProfessionals = data.datos.profesionalesPendientes ?? [];
-                        this.consultasHoy = data.datos.consultasHoy ?? [];
-                        this.proximasSesiones = data.datos.proximasSesiones ?? [];
+                        console.log('Datos recibidos del dashboard:', data);
+
+                        this.tipo = data.tipo ?? null;
+                        this.saludo = data.saludo ?? '';
+                        this.usuario = data.usuario ?? {
+                            id: null,
+                            nombre: '',
+                            email: ''
+                        };
+                        this.profesional = data.profesional ?? {
+                            tieneSolicitud: false,
+                            estado: null,
+                            pendiente: false,
+                            aprobado: false
+                        };
+                        this.adminPendingProfessionals = data.datos?.profesionalesPendientes ?? [];
+                        this.consultasHoy = data.datos?.consultasHoy ?? [];
+                        this.proximasSesiones = data.datos?.proximasSesiones ?? [];
 
                         if (this.tipo === 'profesional' && this.consultasHoy.length > 0) {
                             this.selectedItem = this.consultasHoy[0].id;
@@ -462,7 +490,8 @@
                             headers: {
                                 'Accept': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
+                            },
+                            credentials: 'same-origin'
                         });
 
                         if (!response.ok) {
@@ -486,7 +515,8 @@
                             headers: {
                                 'Accept': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
+                            },
+                            credentials: 'same-origin'
                         });
 
                         if (!response.ok) {
