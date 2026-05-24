@@ -28,7 +28,11 @@ document.addEventListener('alpine:init', () => {
             this.cargando = true;
             try {
                 const response = await fetch('/api/profesional/servicios', {
-                    headers: { 'Accept': 'application/json' }
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
                 const data = await response.json();
                 
@@ -90,8 +94,10 @@ document.addEventListener('alpine:init', () => {
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify(this.form)
                 });
 
@@ -113,7 +119,12 @@ document.addEventListener('alpine:init', () => {
             try {
                 const response = await fetch(`/api/profesional/servicios/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    credentials: 'same-origin'
                 });
                 if (!response.ok) throw new Error('No se pudo eliminar.');
                 await this.cargarServicios();

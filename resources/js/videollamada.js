@@ -16,8 +16,10 @@ document.addEventListener('alpine:init', () => {
                 const response = await fetch(`/api/reserva/${reservaId}/videollamada/token`, {
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (!response.ok) throw new Error('No se pudo obtener el permiso de acceso');

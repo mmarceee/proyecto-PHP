@@ -9,13 +9,11 @@ document.addEventListener('alpine:init', () => {
             try {
                 const response = await fetch('/api/dashboard', {
                     headers: {
-                        'Accept': 'application/json'
-                    }
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
-
-                if (!response.ok) {
-                    throw new Error('No se pudieron cargar las solicitudes.');
-                }
 
                 const data = await response.json();
 
@@ -55,8 +53,10 @@ document.addEventListener('alpine:init', () => {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (!response.ok) {

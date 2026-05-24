@@ -80,8 +80,10 @@ document.addEventListener('alpine:init', () => {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 const data = await response.json();
@@ -103,8 +105,10 @@ document.addEventListener('alpine:init', () => {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 const data = await response.json();
@@ -127,6 +131,7 @@ document.addEventListener('alpine:init', () => {
                     method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
                     credentials: 'same-origin'
@@ -148,6 +153,7 @@ document.addEventListener('alpine:init', () => {
                     method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
                     credentials: 'same-origin'

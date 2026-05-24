@@ -14,7 +14,11 @@ document.addEventListener('alpine:init', () => {
         // Evitamos que entre si ya tiene solicitud
         async verificarEstado() {
             const response = await fetch('/api/dashboard', {
-                headers: { 'Accept': 'application/json' }
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
             });
             const data = await response.json();
             
@@ -39,8 +43,10 @@ document.addEventListener('alpine:init', () => {
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify(this.formulario)
                 });
 
