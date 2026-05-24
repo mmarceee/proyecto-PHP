@@ -1,17 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\DashboardApiController;
-use App\Http\Controllers\Api\ProfileApiController;
-use App\Http\Controllers\Api\VideoLlamadaApiController;
-use App\Http\Controllers\Api\ProfesionalApiController;
-use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 use App\Http\Controllers\Api\AgendaApiController;
 use App\Http\Controllers\Api\BusquedaApiController;
-use App\Http\Controllers\Api\ServicioApiController;
 use App\Http\Controllers\Api\ClienteApiController;
+use App\Http\Controllers\Api\DashboardApiController;
+use App\Http\Controllers\Api\ProfileApiController;
+use App\Http\Controllers\Api\ProfesionalApiController;
+use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 use App\Http\Controllers\Api\ReservaApiController;
-
+use App\Http\Controllers\Api\ServicioApiController;
+use App\Http\Controllers\Api\VideoLlamadaApiController;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
