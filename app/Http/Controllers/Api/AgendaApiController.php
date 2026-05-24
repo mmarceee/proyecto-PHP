@@ -83,4 +83,41 @@ class AgendaApiController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
+    /**
+     * Endpoint para guardar las reglas de disponibilidad desde el panel del profesional
+     */
+    public function guardarReglas(Request $request, \App\Services\AgendaService $agendaService)
+    {
+        $user = $request->user();
+        if (!$user || !$user->profesional) {
+            return response()->json(['error' => 'Acceso denegado. No eres un profesional.'], 403);
+        }
+
+        // Ahora validamos estrictamente el boolean "activo"
+        $validated = $request->validate([
+            'reglas'                 => ['required', 'array'],
+            'reglas.*.dia_semana'    => ['required', 'integer', 'between:0,6'],
+            'reglas.*.activo'        => ['required', 'boolean'],
+            'reglas.*.hora_inicio'   => ['nullable', 'date_format:H:i'],
+            'reglas.*.hora_fin'      => ['nullable', 'date_format:H:i'],
+            'reglas.*.duracion_turno'=> ['nullable', 'integer', 'min:1'],
+            'reglas.*.buffer_tiempo' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        try {
+            $agendaService->guardarReglasBase($user->profesional, $validated['reglas']);
+
+            // Limpiamos la caché del modelo en memoria
+            $user->profesional->unsetRelation('reglasDisponibilidad');
+
+            return response()->json([
+                'message' => 'Configuración de agenda guardada con éxito.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al procesar la solicitud: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

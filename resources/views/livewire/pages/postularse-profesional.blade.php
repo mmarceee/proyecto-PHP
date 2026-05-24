@@ -1,5 +1,4 @@
 <x-app-layout>
-    @vite(['resources/js/postularse-profesional.js'])
     <div 
         x-data="formularioPostulacion()" 
         x-init="verificarEstado()"
