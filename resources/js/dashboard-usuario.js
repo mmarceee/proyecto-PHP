@@ -12,38 +12,66 @@ document.addEventListener('alpine:init', () => {
 
         async cargarDashboard() {
             this.cargando = true;
-            try {
-                const response = await fetch('/api/dashboard', {
-                    headers: { 'Accept': 'application/json' }
-                });
+                try {
+                    const response = await fetch('/api/dashboard', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin'
+                    });
 
-                if (!response.ok) {
-                    throw new Error('Error al obtener datos del dashboard');
+                    const contentType = response.headers.get('content-type');
+
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.error('Error HTTP cargando dashboard:', response.status, text);
+                        return;
+                    }
+
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        console.error('La respuesta NO es JSON. Laravel devolvió esto:', text);
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    console.log('Datos recibidos del dashboard:', data);
+
+                    this.tipo = data.tipo ?? null;
+                    this.saludo = data.saludo ?? '';
+                    this.usuario = data.usuario ?? {
+                        id: null,
+                        nombre: '',
+                        email: ''
+                    };
+                    this.profesional = data.profesional ?? {
+                        tieneSolicitud: false,
+                        estado: null,
+                        pendiente: false,
+                        aprobado: false
+                    };
+                    this.adminPendingProfessionals = data.datos?.profesionalesPendientes ?? [];
+                    this.consultasHoy = data.datos?.consultasHoy ?? [];
+                    this.proximasSesiones = data.datos?.proximasSesiones ?? [];
+
+                    if (this.tipo === 'profesional' && this.consultasHoy.length > 0) {
+                        this.selectedItem = this.consultasHoy[0].id;
+                    } else if (this.tipo === 'cliente' && this.proximasSesiones.length > 0) {
+                        this.selectedItem = this.proximasSesiones[0].id;
+                    } else {
+                        this.selectedItem = null;
+                    }
+
+                } catch (error) {
+                        console.error('Error cargando dashboard:', error);
+                } finally {
+                        this.cargando = false;
                 }
-
-                const data = await response.json();
-
-                this.usuario = data.usuario;
-                this.saludo = data.saludo;
-                this.tipo = data.tipo;
-                this.profesional = data.profesional;
-                this.adminPendingProfessionals = data.datos.profesionalesPendientes;
-                this.consultasHoy = data.datos.consultasHoy;
-                this.proximasSesiones = data.datos.proximasSesiones;
-
-                // Inicializar selección automática si hay datos
-                if (this.tipo === 'profesional' && this.consultasHoy.length > 0) {
-                    this.selectedItem = this.consultasHoy[0].id;
-                } else if (this.tipo === 'cliente' && this.proximasSesiones.length > 0) {
-                    this.selectedItem = this.proximasSesiones[0].id;
-                }
-
-            } catch (error) {
-                console.error('Error cargando el dashboard:', error);
-            } finally {
-                this.cargando = false;
-            }
         },
+            
 
         async confirmarReserva(id) {
             try {
@@ -96,11 +124,12 @@ document.addEventListener('alpine:init', () => {
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 const response = await fetch(`/api/admin/profesionales/${id}/aprobar`, {
-                    method: 'POST',
+                    method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (!response.ok) throw new Error('No se pudo aprobar');
@@ -116,11 +145,12 @@ document.addEventListener('alpine:init', () => {
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 const response = await fetch(`/api/admin/profesionales/${id}/rechazar`, {
-                    method: 'POST',
+                    method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (!response.ok) throw new Error('No se pudo rechazar');

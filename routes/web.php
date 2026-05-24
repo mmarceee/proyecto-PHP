@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProfesionalApiController;
-use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
+use App\Models\Reserva;
 use App\Http\Controllers\Api\AgendaApiController;
 use App\Http\Controllers\Api\BusquedaApiController;
 use App\Http\Controllers\Api\ServicioApiController;
@@ -50,8 +50,6 @@ Route::get('/profesional/servicios', function () {
 Route::middleware(['auth', 'verified'])
     ->prefix('api')
     ->group(function () {
-        Route::get('/dashboard', [DashboardApiController::class, 'index'])
-            ->name('api.dashboard');
 
             Route::patch('/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
             ->name('api.profesionales.aprobar');
@@ -100,14 +98,12 @@ Route::middleware(['auth', 'verified'])
 
             Route::post('/reservas/{id}/avanzar-estado', [\App\Http\Controllers\Api\ReservaApiController::class, 'avanzarEstado'])
             ->name('api.reservas.avanzar-estado');
-            
-            Route::put('/profile/info', [\App\Http\Controllers\Api\ProfileApiController::class, 'updateInfo'])->name('api.profile.update');
-
-            Route::put('/profile/password', [\App\Http\Controllers\Api\ProfileApiController::class, 'updatePassword'])->name('api.profile.password');
-            
-            Route::delete('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy'])->name('api.profile.destroy');
     });
 
-
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/reserva/{reserva}/sala', function (Reserva $reserva) {
+            return view('videollamada', compact('reserva'));
+        })->name('videollamada.sala');
+    });
 
 require __DIR__.'/auth.php';

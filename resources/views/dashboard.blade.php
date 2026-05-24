@@ -17,8 +17,8 @@
                 <section>
                     <!-- Saludo (implementacion desde API) -->
                     <div class="mb-8 lg:mb-16">
-                        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-none tracking-tight" x-text="saludo + ','"></h1>
-                        <h2 class="font-serif italic text-4xl sm:text-5xl lg:text-6xl leading-none text-slate-400 break-words" x-text="usuario.nombre + '.'"></h2>
+                        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-none tracking-tight" x-text="saludo ? saludo + ',' : ''"></h1>
+                        <h2 class="font-serif italic text-4xl sm:text-5xl lg:text-6xl leading-none text-slate-400 break-words" x-text="usuario.nombre ? usuario.nombre + '.' : ''"></h2>
                     </div>
                     {{-- Boton de postulacion profesional --}}
                     <template x-if="tipo === 'cliente' && !profesional.tieneSolicitud">
