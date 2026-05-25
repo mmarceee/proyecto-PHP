@@ -9,7 +9,7 @@
         x-show="!sidebarOpen"
         x-cloak
         @click="sidebarOpen = true"
-        class="md:hidden fixed top-5 left-2 z-[70] inline-flex items-center justify-center w-8 h-8 rounded-md bg-slate-900 text-white border border-slate-600 hover:bg-slate-800"
+        class="lg:hidden fixed top-5 left-2 z-[70] inline-flex items-center justify-center w-8 h-8 rounded-md bg-slate-900 text-white border border-slate-600 hover:bg-slate-800"
         aria-label="Abrir menú"
     >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -23,14 +23,14 @@
         x-show="sidebarOpen"
         x-cloak
         @click="sidebarOpen = false"
-        class="md:hidden fixed inset-0 bg-black/50 z-[55]"
+        class="lg:hidden fixed inset-0 bg-black/50 z-[55]"
     ></div>
         <aside
             class="overflow-visible fixed inset-y-0 left-0 z-[60]
                 w-20 h-screen border-r border-slate-700 bg-slate-900
                 flex flex-col items-center justify-between py-8
                 transform transition-transform duration-300
-                -translate-x-full md:translate-x-0"
+                -translate-x-full lg:translate-x-0"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
         >
         <!-- Parte superior de la sidebar -->
@@ -85,6 +85,29 @@
                         Búsqueda de servicios
                     </span>
                 </a>
+
+                <a href="{{ route('reservas.historial') }}"
+                        class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800 border border-slate-400 hover:border-slate-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            class="w-5 h-5" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor">
+                            <path stroke-linecap="round" 
+                                stroke-linejoin="round" 
+                                stroke-width="2" 
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        
+                        <span 
+                            class="absolute left-14 top-1/2 -translate-y-1/2 
+                                bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                                transition whitespace-nowrap z-50"
+                        >
+                            Historial de Reservas
+                        </span>
+                    </a>
 
                 <!-- Agenda: profesional aprobado o admin -->
                 @if($user && $user->esProfesionalAprobado())

@@ -264,19 +264,18 @@
                             <div class="border-b border-slate-400 mb-6"></div>
 
                             <div class="space-y-4">
-                                <a href="/admin/usuarios"
+                                <a href="{{ route('admin.usuarios') }}"
                                 class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
                                     Gestionar usuarios
                                 </a>
 
-                                <a href="/admin/profesionales"
+                                <a href="{{ route('admin.profesionales') }}"
                                 class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
                                     Ver profesionales pendientes
                                 </a>
-
-                                <a href="/admin/paquetes"
-                                class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
-                                    Gestionar paquetes
+                                    <a href="{{ route('admin.categorias') }}"
+                                    class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
+                                    Gestionar Categorias
                                 </a>
                             </div>
                         </div>

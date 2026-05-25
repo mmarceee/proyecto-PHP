@@ -80,14 +80,16 @@ document.addEventListener('alpine:init', () => {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || 'No se pudo confirmar la reserva');
 
-                // 🔥 REFRESCO REACTIVO: Volvemos a cargar los datos del dashboard instantáneamente
+                //REFRESCO REACTIVO: Volvemos a cargar los datos del dashboard instantáneamente
                 await this.cargarDashboard();
 
             } catch (error) {
@@ -103,8 +105,10 @@ document.addEventListener('alpine:init', () => {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 const data = await response.json();
@@ -127,6 +131,7 @@ document.addEventListener('alpine:init', () => {
                     method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
                     credentials: 'same-origin'
@@ -148,6 +153,7 @@ document.addEventListener('alpine:init', () => {
                     method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
                     credentials: 'same-origin'

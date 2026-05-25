@@ -1,12 +1,11 @@
 <x-app-layout>
-    @vite(['resources/js/postularse-profesional.js'])
     <div 
         x-data="formularioPostulacion()" 
         x-init="verificarEstado()"
         class="max-w-2xl mx-auto p-6 mt-10 bg-white dark:bg-gray-800 rounded-lg shadow"
     >
         <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-            Postularse como Profesional de la Clínica
+            Postularse como profesional para ofrecer servicios
         </h2>
         
         <template x-if="mensajeExito">
@@ -18,7 +17,7 @@
 
         <form @submit.prevent="enviarPostulacion" class="space-y-4" x-show="!redireccionando">
             <div>
-                <x-input-label for="especialidad" :value="__('Especialidad Médica / Rubro')" />
+                <x-input-label for="especialidad" :value="__('Especialidad / Rubro')" />
                 <x-text-input x-model="formulario.especialidad" id="especialidad" class="block mt-1 w-full" type="text" required />
                 <template x-if="errores.especialidad">
                     <p class="text-sm text-red-600 mt-2" x-text="errores.especialidad[0]"></p>
