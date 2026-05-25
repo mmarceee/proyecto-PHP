@@ -87,7 +87,7 @@ document.addEventListener('alpine:init', () => {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || 'No se pudo confirmar la reserva');
 
-                // 🔥 REFRESCO REACTIVO: Volvemos a cargar los datos del dashboard instantáneamente
+                //REFRESCO REACTIVO: Volvemos a cargar los datos del dashboard instantáneamente
                 await this.cargarDashboard();
 
             } catch (error) {
