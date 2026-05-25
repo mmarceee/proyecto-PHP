@@ -86,7 +86,30 @@
                     </span>
                 </a>
 
-                <!-- Agenda: profesional aprobado -->
+                <a href="{{ route('reservas.historial') }}"
+                        class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800 border border-slate-400 hover:border-slate-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            class="w-5 h-5" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor">
+                            <path stroke-linecap="round" 
+                                stroke-linejoin="round" 
+                                stroke-width="2" 
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        
+                        <span 
+                            class="absolute left-14 top-1/2 -translate-y-1/2 
+                                bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                                transition whitespace-nowrap z-50"
+                        >
+                            Historial de Reservas
+                        </span>
+                    </a>
+
+                <!-- Agenda: profesional aprobado o admin -->
                 @if($user && $user->esProfesionalAprobado())
                     <a href="/prototipo/agenda"
                     class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">

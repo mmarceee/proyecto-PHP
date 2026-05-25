@@ -93,4 +93,49 @@ class ReservaApiController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
+    // En App\Http\Controllers\Api\ReservaApiController
+    
+    public function historial(Request $request)
+    {
+        $user = $request->user();
+
+        // Traemos las reservas donde el usuario sea el cliente o el profesional
+        $reservas = \App\Models\Reserva::with(['servicio', 'profesional.user', 'cliente.user', 'calificaciones'])
+            ->whereHas('cliente', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->orWhereHas('profesional', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        // Formateamos para el frontend
+        $historial = $reservas->map(function ($reserva) use ($user) {
+            $yaCalifico = $reserva->calificaciones->where('evaluador_id', $user->id)->isNotEmpty();
+
+            $fechaFormateada = $reserva->fecha 
+                ? \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y H:i') 
+                : 'Fecha sin definir';
+
+            $estadoReal = $reserva->estado ?? $reserva->estado_reserva ?? $reserva->estadoReserva ?? 'Pendiente';
+
+            // NUEVO: Identificamos qué rol cumplió el usuario en esta reserva
+            $rolContextual = ($reserva->cliente->user_id === $user->id) ? 'cliente' : 'profesional';
+
+            return [
+                'id' => $reserva->id,
+                'fecha' => $fechaFormateada,
+                'estado' => ucfirst($estadoReal),
+                'servicio_nombre' => $reserva->servicio->nombre ?? 'Servicio',
+                'profesional_nombre' => $reserva->profesional->user->name ?? 'Profesional',
+                'cliente_nombre' => $reserva->cliente->user->name ?? 'Cliente',
+                'ya_calificado' => $yaCalifico,
+                'rol_contextual' => $rolContextual // Mandamos el rol al frontend
+            ];
+        });
+
+        return response()->json($historial);
+    }
 }

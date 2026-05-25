@@ -70,7 +70,7 @@
                     <form @submit.prevent="guardarServicio()" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nombre del servicio:</label>
-                            <input type="text" x-model="form.nombre" placeholder="Ej: Consultoría TI Avanzada, Mentoría Psicológica" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500" required>
+                            <input type="text" x-model="form.nombre" placeholder="Ej: Consultoría TI Avanzada" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500" required>
                         </div>
 
                         <div>
@@ -85,17 +85,17 @@
 
                         <div>
                             <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Descripción / Qué incluye:</label>
-                            <textarea x-model="form.descripcion" rows="3" placeholder="Describe brevemente el alcance del servicio..." class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500"></textarea>
+                            <textarea x-model="form.descripcion" rows="2" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500"></textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Precio ($):</label>
-                                <input type="number" x-model="form.precio" placeholder="1500" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500" required>
+                                <input type="number" x-model="form.precio" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500" required>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Modalidad:</label>
-                                <select x-model="form.modalidad" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
+                                <select x-model="form.modalidad" @change="cambiarModalidad()" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
                                     <option value="Virtual">Virtual</option>
                                     <option value="Presencial">Presencial</option>
                                 </select>
@@ -106,27 +106,52 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Duración (min):</label>
                                 <select x-model="form.duracion" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
-                                    <option value="15">15 min</option>
                                     <option value="30">30 min</option>
-                                    <option value="45">45 min</option>
                                     <option value="60">1 hora</option>
-                                    <option value="90">1.5 horas</option>
-                                    <option value="120">2 horas</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Descanso posterior (min):</label>
                                 <select x-model="form.bufferEntreTurnos" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
                                     <option value="0">Sin descanso</option>
-                                    <option value="5">5 min</option>
-                                    <option value="10">10 min</option>
                                     <option value="15">15 min</option>
-                                    <option value="20">20 min</option>
-                                    <option value="30">30 min</option>
                                 </select>
                             </div>
                         </div>
 
+                        <template x-if="form.modalidad === 'Presencial'">
+                            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                                <h4 class="text-sm font-bold text-blue-600 dark:text-blue-400">Ubicación del Consultorio/Local</h4>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nombre del Lugar:</label>
+                                        <input type="text" x-model="form.lugar_nombre" placeholder="Ej: Clínica Central" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-white focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Dirección:</label>
+                                        <input type="text" x-model="form.lugar_direccion" placeholder="Ej: 18 de Julio 1234" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-white focus:ring-blue-500" required>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Ciudad:</label>
+                                        <input type="text" x-model="form.lugar_ciudad" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-white focus:ring-blue-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Departamento:</label>
+                                        <input type="text" x-model="form.lugar_departamento" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-white focus:ring-blue-500" required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Fija tu ubicación exacta en el mapa:</label>
+                                    <div x-ref="mapaFormulario" class="w-full h-[200px] rounded-lg border border-gray-400 z-0 relative"></div>
+                                    <p class="text-[10px] text-gray-400 mt-1">Haz clic en el mapa o arrastra el marcador azul para definir las coordenadas.</p>
+                                </div>
+                            </div>
+                        </template>
                         <div class="flex justify-end gap-3 mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                             <button type="button" @click="mostrarModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Cancelar</button>
                             <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition">

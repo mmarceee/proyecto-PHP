@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AgendaApiController;
 use App\Http\Controllers\Api\BusquedaApiController;
+use App\Http\Controllers\Api\CalificacionApiController;
 use App\Http\Controllers\Api\ClienteApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\ProfileApiController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Api\ReservaApiController;
 use App\Http\Controllers\Api\ServicioApiController;
 use App\Http\Controllers\Api\VideoLlamadaApiController;
 use App\Http\Controllers\Api\Admin\UsuarioAdminApiController;
+use App\Http\Controllers\Api\MapaApiController;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -53,12 +55,18 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/servicios/profesionales/{id}/agenda', [BusquedaApiController::class, 'obtenerAgendaProfesional'])
         ->name('api.servicios.agenda');
 
+    Route::get('/lugares-atencion', [MapaApiController::class, 'index'])
+        ->name('api.mapa.lugares');
+
     Route::apiResource('/profesional/servicios', ServicioApiController::class)
         ->names('api.profesional.servicios');
 
     Route::post('/clientes/registro', [ClienteApiController::class, 'store'])
         ->name('api.clientes.registro');
-
+        
+    Route::get('/reservas/historial', [ReservaApiController::class, 'historial'])
+    ->name('api.reservas.historial');
+    
     Route::post('/reservas', [ReservaApiController::class, 'store'])
         ->name('api.reservas.store');
 
@@ -70,7 +78,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::post('/reservas/{id}/avanzar-estado', [ReservaApiController::class, 'avanzarEstado'])
         ->name('api.reservas.avanzar-estado');
-
+        
+    Route::post('/reservas/{id}/calificar', [CalificacionApiController::class, 'store'])
+    ->name('api.reservas.calificar');
+    
     Route::middleware(['admin'])
     ->prefix('admin')
     ->group(function () {
@@ -92,4 +103,5 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::patch('/admin/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
             ->name('api.profesionales.rechazar');
     });
+
 });

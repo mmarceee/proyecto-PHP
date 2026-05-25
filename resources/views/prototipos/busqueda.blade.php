@@ -48,7 +48,29 @@
 
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-8 items-start">
+                    <template x-if="!cargando && profesionales.length === 0">
+                        <div class="p-8 bg-white dark:bg-gray-800 text-center rounded-xl text-sm text-gray-400 border border-dashed border-gray-300 dark:border-gray-700">
+                            Escribe el nombre de un especialista o servicio para comenzar.
+                        </div>
+                    </template>
+
+                    <div 
+                    x-data="mapaBusqueda()" 
+                    x-init="iniciarMapa()" 
+                    @filtrar-mapa.window="filtrarPorProfesional($event.detail)"
+                    class="mt-6 w-full h-[350px] rounded-lg shadow-md z-0 relative border border-gray-700">
+                    
+                    <div x-ref="mapaBusqueda" class="w-full h-full rounded-lg"></div>
+                </div>
+                </div>
+
+                <aside class="space-y-4">
+                    <h3 class="text-xs uppercase tracking-wider font-extrabold text-gray-400">Reserva de Turno</h3>
+                    
+                    <div x-show="error" class="p-4 bg-red-950/40 border border-red-800 text-red-200 text-xs rounded-xl" x-text="error" style="display: none;"></div>
+                    <div x-show="mensajeExito" class="p-4 bg-green-950/40 border border-green-800 text-green-200 text-xs rounded-xl" x-text="mensajeExito" style="display: none;"></div>
+
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm space-y-6">
                         
                         <div class="space-y-4">
                             <h3 class="text-xs uppercase tracking-wider font-extrabold text-gray-400">Especialistas Encontrados</h3>

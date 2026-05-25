@@ -51,5 +51,9 @@ Route::view('admin/usuarios', 'livewire.admin.usuarios')
 Route::view('admin/categorias', 'livewire.admin.categorias')
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.categorias');
+    
+Route::get('/reservas/historial', function () {
+        return view('historial'); // Llama al archivo historial.blade.php
+    })->name('reservas.historial');
 
 require __DIR__.'/auth.php';

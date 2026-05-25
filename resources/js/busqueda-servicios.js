@@ -51,6 +51,8 @@ document.addEventListener('alpine:init', () => {
             this.semana = [];
             this.error = '';
             this.mensajeExito = '';
+
+            window.dispatchEvent(new CustomEvent('filtrar-mapa', { detail: profesional.id }));
         },
 
         async seleccionarServicio(servicio) {
@@ -122,7 +124,7 @@ document.addEventListener('alpine:init', () => {
                 });
 
                 const data = await response.json();
-                // 🌟 Capturamos el error 422 del backend si falló la validación horaria
+                // Capturamos el error 422 del backend si falló la validación horaria
                 if (!response.ok) throw new Error(data.error || 'No se pudo agendar.');
 
                 this.mensajeExito = data.message;
@@ -132,4 +134,86 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }));
+
+    // ==========================================
+    // NUEVO: COMPONENTE DEL MAPA DE BÚSQUEDA
+    // ==========================================
+    Alpine.data('mapaBusqueda', () => ({
+        mapa: null,
+        marcadores: [], 
+        lugares: [],    
+
+        async iniciarMapa() {
+            this.mapa = L.map(this.$refs.mapaBusqueda).setView([-34.9011, -56.1645], 7); 
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(this.mapa);
+            
+            await this.cargarLugares();
+        },
+
+        async cargarLugares() {
+            try {
+                const response = await fetch('/api/lugares-atencion', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                // Si hay un error 500 o 403, atrapamos el JSON real para poder leerlo
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error HTTP: ${response.status}`);
+                }
+
+                this.lugares = await response.json();
+                this.dibujarPines(this.lugares); 
+            } catch (error) {
+                console.error("Error cargando ubicaciones de la API:", error);
+            }
+        },
+
+        dibujarPines(lugaresFiltrados) {
+            this.marcadores.forEach(m => this.mapa.removeLayer(m));
+            this.marcadores = [];
+
+            if (lugaresFiltrados.length === 0) return;
+
+            const bounds = L.latLngBounds();
+
+            lugaresFiltrados.forEach(lugar => {
+                const marker = L.marker([lugar.latitud, lugar.longitud]).addTo(this.mapa);
+                const nombreMostrar = lugar.profesional.nombre_comercial ?? `${lugar.profesional.nombre} ${lugar.profesional.apellido}`;
+                
+                marker.bindPopup(`
+                    <div class="text-sm p-1 text-slate-800">
+                        <strong class="text-blue-600 font-bold block">${nombreMostrar}</strong>
+                        <span class="font-medium">${lugar.nombre}</span><br>
+                        <span class="text-gray-500 text-xs block mt-1">${lugar.direccion}, ${lugar.ciudad}</span>
+                    </div>
+                `);
+                
+                this.marcadores.push(marker);
+                bounds.extend([lugar.latitud, lugar.longitud]);
+            });
+
+            if (this.marcadores.length > 0) {
+                this.mapa.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+            }
+        },
+
+        filtrarPorProfesional(profesionalId) {
+            if (!profesionalId) {
+                this.dibujarPines(this.lugares); 
+            } else {
+                const filtrados = this.lugares.filter(l => l.profesional_id === profesionalId);
+                this.dibujarPines(filtrados);
+            }
+        }
+    })); 
 });
