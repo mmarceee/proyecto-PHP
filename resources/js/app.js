@@ -7,3 +7,4 @@ import './postularse-profesional';
 import './gestion-usuarios';
 import './agenda-profesional';
 import './historial-reservas';
+import './solicitudes-profesionales';

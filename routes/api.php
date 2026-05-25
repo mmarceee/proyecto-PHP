@@ -97,11 +97,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::patch('/usuarios/{user}/hacer-admin', [UsuarioAdminApiController::class, 'hacerAdmin'])
             ->name('api.admin.usuarios.hacer-admin');
 
-        Route::patch('/admin/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
-            ->name('api.profesionales.aprobar');
+        Route::patch('/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
+            ->name('api.admin.profesionales.aprobar');
 
-        Route::patch('/admin/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
-            ->name('api.profesionales.rechazar');
+        Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
+            ->name('api.admin.profesionales.rechazar');
     });
 
 });
