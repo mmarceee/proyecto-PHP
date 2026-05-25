@@ -48,4 +48,8 @@ Route::middleware(['auth'])->group(function () {
         })->name('videollamada.sala');
     });
 
+Route::get('/reservas/historial', function () {
+        return view('historial'); // Llama al archivo historial.blade.php
+    })->name('reservas.historial');
+
 require __DIR__.'/auth.php';
