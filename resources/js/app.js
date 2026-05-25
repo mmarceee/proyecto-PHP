@@ -1,1 +1,10 @@
-//
+import './profile';
+import './videollamada';
+import './dashboard-usuario';
+import './busqueda-servicios';
+import './gestion-servicios';
+import './postularse-profesional';
+import './gestion-usuarios';
+import './agenda-profesional';
+import './historial-reservas';
+import './solicitudes-profesionales';

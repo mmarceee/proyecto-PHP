@@ -1,225 +1,398 @@
 <x-app-layout>
     <div
-    x-data="{
-        selectedClient: 'maria',
-
-        clients: {
-            maria: {
-                name: 'Maria G.',
-                packages: [
-                    { name: 'Flujo Premium', used: 2, total: 8 },
-                    { name: 'Plan Base', used: 1, total: 5 },
-                    { name: 'Consulta Inicial', used: 1, total: 1 }
-                ]
-            },
-
-            carlos: {
-                name: 'Carlos T.',
-                packages: [
-                    { name: 'Seguimiento Mensual', used: 5, total: 5 },
-                    { name: 'Plan Base', used: 3, total: 5 },
-                    { name: 'Asesoría Técnica', used: 2, total: 4 }
-                ]
-            }
-        }
-    }"
-    class="min-h-screen flex bg-slate-950 text-white">
+        x-data="dashboardData()"
+        x-init="cargarDashboard()"
+        class="min-h-screen flex bg-slate-950 text-white overflow-x-hidden">
 
         <!-- Sidebar -->
-       <aside class="sticky top-16 self-start w-20 h-[calc(100vh-4rem)] border-r border-slate-700 bg-slate-900 flex flex-col items-center justify-between py-8">
-
-            <!-- Parte superior de la sidebar -->
-            <div class="flex flex-col items-center gap-8">
-                <!-- Logo chico -->
-                <a href="{{ route('dashboard') }}"
-                   class="w-9 h-9 border border-slate-300 rounded-md flex items-center justify-center text-sm font-semibold">
-                   <img src="{{ asset('gendarSinFondo.png') }}" class="w-10 h-10 object-contain" alt="Logo">
-                </a>
-
-                <!-- Botones de navegación -->
-                <nav class="flex flex-col items-center gap-8">
-                    <a href="{{ route('dashboard') }}"
-                       class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                        <!-- Calendario -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
-                        </svg>
-                    </a>
-
-                    <a href="#"
-                       class="w-10 h-10 rounded-lg border border-slate-400 flex items-center justify-center text-white hover:bg-slate-800">
-                        <!-- Usuario -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 12a4 4 0 100-8 4 4 0 000 8zm-6 8a6 6 0 1112 0H6z"/>
-                        </svg>
-                    </a>
-
-                    <a href="#"
-                       class="w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
-                        <span class="w-5 h-5 border-2 border-dashed border-white rounded-full"></span>
-                    </a>
-                </nav>
-            </div>
-
-            <!-- Perfil abajo -->
-            <div>
-                <a href="{{ route('profile') }}"
-                   class="block w-10 h-10 rounded-lg overflow-hidden border border-slate-500 hover:ring-2 hover:ring-blue-500">
-                    <img
-                        src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=1e293b&color=fff"
-                        alt="Perfil"
-                        class="w-full h-full object-cover"
-                    >
-                </a>
-            </div>
-
-        </aside>
-
+        <x-app-sidebar />
         <!-- Contenido principal -->
-        <main class="flex-1 px-12 py-10">
-            <div class="grid grid-cols-1 xl:grid-cols-[1fr_365px] gap-12">
+        <main class="flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-12 py-6 lg:py-10 md:ml-20">
+            <div x-show="cargando" class="mb-6 rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300">
+                Cargando información del dashboard...
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_365px] gap-8 xl:gap-12">
 
                 <!-- Columna izquierda -->
                 <section>
-                    <div class="mb-16">
-                        <h1 class="font-serif text-6xl leading-none tracking-tight">
-                            Buenos
-                        </h1>
-
-                        <p class="font-serif italic text-6xl leading-none text-slate-400">
-                            Días,
-                        </p>
-
-                        <h2 class="font-serif text-6xl leading-none tracking-tight">
-                            Arquitecto.
-                        </h2>
+                    <!-- Saludo (implementacion desde API) -->
+                    <div class="mb-8 lg:mb-16">
+                        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-none tracking-tight" x-text="saludo ? saludo + ',' : ''"></h1>
+                        <h2 class="font-serif italic text-4xl sm:text-5xl lg:text-6xl leading-none text-slate-400 break-words" x-text="usuario.nombre ? usuario.nombre + '.' : ''"></h2>
                     </div>
+                    {{-- Boton de postulacion profesional --}}
+                    <template x-if="tipo === 'cliente' && !profesional.tieneSolicitud">
+                        <div class="border border-slate-800 bg-slate-900/60 p-5 sm:p-8 mb-8 lg:mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 rounded-lg">
+                            <div>
+                                <h3 class="font-serif text-2xl mb-1">¿Eres un profesional que quiere ofrecer sus servicios con nosotros?</h3>
+                                <p class="text-sm text-slate-400">Postulate como profesional para comenzar a gestionar tus clientes y agendas.</p>
+                            </div>
+                            <a href="{{ route('profesional.postularse') }}" wire:navigate class="w-full sm:w-auto text-center whitespace-nowrap border border-slate-300 hover:bg-white hover:text-black px-6 py-3 text-xs font-bold uppercase tracking-wider transition">
+                                Postularse aquí
+                            </a>
+                        </div>
+                    </template>    
+                    <template x-if="tipo === 'cliente' && profesional.pendiente">
+                        <div class="border border-amber-900/50 bg-amber-950/20 text-amber-200 p-8 mb-12 flex items-center gap-4">
+                            <svg class="w-6 h-6 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold text-lg">Tu solicitud está siendo revisada</h3>
+                                <p class="text-sm text-slate-400 mt-0.5">Un administrador verificará tus datos de especialidad para activar tu panel profesional.</p>
+                            </div>
+                        </div>
+                    </template>
 
                     <div>
-                        <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
-                            <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
-                                Próximas sesiones
-                            </h3>
+                        <template x-if="tipo === 'admin'">
+                            <div>
+                                <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
+                                    <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
+                                        Profesionales pendientes
+                                    </h3>
 
-                            <span class="font-serif italic text-slate-400 text-xl">
-                                3 hoy
-                            </span>
-                        </div>
-
-                        <div class="bg-slate-900 border border-slate-800">
-
-                            <article 
-                                @click="selectedClient = 'maria'"
-                                :class="selectedClient === 'maria' ? 'ring-1 ring-blue-500 bg-slate-800' : 'bg-slate-900'"
-                                class="cursor-pointer grid grid-cols-[130px_1fr_auto] items-center gap-4 px-8 py-8 border-b border-slate-300 transition">
-                                <div>
-                                    <span class="font-serif text-4xl tracking-widest">10:00</span>
-                                    <span class="text-xs font-bold ml-1">AM</span>
-                                </div>
-
-                                <div>
-                                    <h4 class="font-serif text-3xl">Maria G.</h4>
-                                    <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
-                                        ▫ Consulta inicial
-                                    </p>
-                                </div>
-
-                                <div class="flex items-center gap-4">
-                                    <span class="px-4 py-1 rounded-md bg-blue-700/70 text-xs font-bold uppercase tracking-wider text-blue-100">
-                                        Por comenzar
+                                    <span class="font-serif italic text-slate-400 text-xl">
+                                        Solicitudes
                                     </span>
+                                </div>
 
-                                    <a href="#"
-                                       class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
-                                        Enlace
+                                <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                                    <template x-for="professional in adminPendingProfessionals" :key="professional.id">
+                                        <article class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-start lg:items-center gap-6 px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-700">
+                                            <div>
+                                                <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="professional.name"></h4>
+
+                                                <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
+                                                    <span x-text="professional.especialidad"></span>
+                                                    ·
+                                                    <span x-text="professional.created_at"></span>
+                                                </p>
+
+                                                <!-- Opcional: solo se muestra si existe nombre comercial -->
+                                                <p class="text-sm text-slate-300 mt-2" x-show="professional.nombre_comercial">
+                                                    Nombre comercial: 
+                                                    <span x-text="professional.nombre_comercial"></span>
+                                                </p>
+                                            </div>
+
+                                            <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
+                                                <button 
+                                                    @click="aprobarProfesional(professional.id)"
+                                                    class="w-full sm:w-auto px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
+                                                    Aceptar
+                                                </button>
+
+                                                <button 
+                                                    @click="rechazarProfesional(professional.id)"
+                                                    class="w-full sm:w-auto px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
+                                                    Rechazar
+                                                </button>
+                                            </div>
+                                        </article>
+                                    </template>
+                                    <template x-if="adminPendingProfessionals.length === 0">
+                                        <div class="px-8 py-8 text-sm text-slate-400">
+                                            No hay profesionales pendientes de aprobación.
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="mt-8 grid gap-4 md:grid-cols-2">
+                                    <a href="/admin/usuarios"
+                                    class="rounded-lg border border-slate-600 bg-slate-900 p-6 hover:bg-slate-800 transition">
+                                        <h4 class="font-serif text-2xl">Panel de usuarios</h4>
+                                        <p class="mt-2 text-sm text-slate-400">
+                                            Bloquear, desbloquear usuarios o asignar permisos de administrador.
+                                        </p>
+                                    </a>
+
+                                    <a href="/admin/profesionales"
+                                    class="rounded-lg border border-slate-600 bg-slate-900 p-6 hover:bg-slate-800 transition">
+                                        <h4 class="font-serif text-2xl">Solicitudes profesionales</h4>
+                                        <p class="mt-2 text-sm text-slate-400">
+                                            Revisar profesionales pendientes de aprobación.
+                                        </p>
                                     </a>
                                 </div>
-                            </article>
+                            </div>
+                        </template>
 
-                            <article 
-                                @click="selectedClient = 'carlos'"
-                                :class="selectedClient === 'carlos' ? 'ring-1 ring-blue-500 bg-slate-800' : 'bg-slate-900'"
-                                class="cursor-pointer grid grid-cols-[130px_1fr_auto] items-center gap-4 px-8 py-8 border-b border-slate-300 transition">
-                                <div>
-                                    <span class="font-serif text-4xl tracking-widest">12:30</span>
-                                    <span class="text-xs font-bold ml-1">PM</span>
-                                </div>
+                        <template x-if="tipo === 'profesional'">
+                            <div>
+                                <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
+                                    <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
+                                        Consultas de hoy
+                                    </h3>
 
-                                <div>
-                                    <h4 class="font-serif text-3xl">Carlos T.</h4>
-                                    <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
-                                        ▫ Seguimiento
-                                    </p>
-                                </div>
-
-                                <div class="flex items-center gap-4">
-                                    <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider">
-                                        Confirmada
+                                    <span class="font-serif italic text-slate-400 text-xl">
+                                        <span x-text="consultasHoy.length"></span> hoy
                                     </span>
-
-                                    <a href="#"
-                                       class="px-4 py-2 rounded-md border border-slate-300 hover:bg-slate-800 text-xs font-bold uppercase tracking-wider">
-                                        Detalles
-                                    </a>
                                 </div>
-                            </article>
 
-                        </div>
+                                <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                                    <template x-for="session in consultasHoy" :key="session.id">
+                                        <article 
+                                            @click="selectedItem = session.id"
+                                            :class="selectedItem === session.id ? 'ring-1 ring-blue-500 bg-slate-800' : 'bg-slate-900'"
+                                            class="cursor-pointer grid grid-cols-1 sm:grid-cols-[110px_minmax(0,1fr)] lg:grid-cols-[130px_minmax(0,1fr)_auto] items-start lg:items-center gap-4 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 border-b border-slate-700 transition hover:bg-slate-800">
+
+                                            <div>
+                                                <span class="font-serif text-4xl tracking-widest" x-text="session.time"></span>
+                                                <span class="text-xs font-bold ml-1" x-text="session.period"></span>
+                                            </div>
+
+                                            <div>
+                                                <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="session.client_name"></h4>
+                                                <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
+                                                    ▫ <span x-text="session.reason"></span>
+                                                </p>
+                                            </div>
+
+                                            <div class="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-1">
+                                                <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider"
+                                                    x-text="session.status">
+                                                </span>
+
+                                                <template x-if="session.action_label">
+                                                    <button 
+                                                        @click.stop="avanzarEstadoReserva(session.id)" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
+                                                        x-text="session.action_label">
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </article>
+                                    </template>
+
+                                    <template x-if="consultasHoy.length === 0">
+                                        <div class="px-8 py-8 text-sm text-slate-400">
+                                            No tienes consultas agendadas para hoy.
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                            <div class="mt-10 lg:mt-12">
+                                <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
+                                    <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
+                                        Tus próximas sesiones
+                                    </h3>
+
+                                    <span class="font-serif italic text-slate-400 text-xl">
+                                        Reservas activas
+                                    </span>
+                                </div>
+
+                                <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                                    <template x-for="reservation in proximasSesiones" :key="reservation.id">
+                                        <article 
+                                            @click="selectedItem = reservation.id"
+                                            :class="selectedItem === reservation.id ? 'ring-1 ring-blue-500 bg-slate-800' : 'bg-slate-900'"
+                                            class="cursor-pointer grid grid-cols-1 sm:grid-cols-[120px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)_auto] items-start lg:items-center gap-4 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 border-b border-slate-700 transition hover:bg-slate-800">
+
+                                            <div>
+                                                <span class="font-serif text-2xl tracking-widest" x-text="reservation.date_label"></span>
+                                                <p class="text-xs font-bold mt-1" x-text="reservation.time"></p>
+                                            </div>
+
+                                            <div>
+                                                <h4 class="font-serif text-3xl" x-text="reservation.professional_name"></h4>
+                                                <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
+                                                    ▫ <span x-text="reservation.specialty"></span>
+                                                </p>
+                                            </div>
+
+                                            <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider"
+                                                x-text="reservation.status">
+                                            </span>
+                                        </article>
+                                    </template>
+
+                                    <template x-if="proximasSesiones.length === 0">
+                                        <div class="px-8 py-8 text-sm text-slate-400">
+                                            No tienes próximas sesiones agendadas.
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </section>
 
                 <!-- Columna derecha -->
-                <aside class="xl:pt-32">
-                    <div class="border border-slate-300 rounded-lg p-6 bg-slate-900/60">
-                        <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
-                            Paquetes disponibles
-                        </h3>
-
-                        <div class="border-b border-slate-400 mb-6"></div>
-
-                        <div class="mb-6">
-                            <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
-                                Cliente seleccionado
+                <aside class="w-full min-w-0 xl:pt-32">
+                    <template x-if="profesional.tieneSolicitud">
+                        <div class="mb-6 rounded-lg border p-4"
+                             :class="profesional.pendiente 
+                                ? 'border-yellow-500/60 bg-yellow-950/30' 
+                                : 'border-blue-500/50 bg-blue-950/30'"
+                        >
+                            <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-2">
+                                Estado profesional
                             </p>
 
-                            <h4 class="font-serif text-2xl" x-text="clients[selectedClient].name"></h4>
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="font-serif text-xl">
+                                    Solicitud de profesional
+                                </span>
+
+                                 <span 
+                                    class="rounded-md px-3 py-1 text-xs font-bold uppercase tracking-wider border"
+                                    :class="profesional.pendiente
+                                        ? 'bg-yellow-600/30 text-yellow-200 border-yellow-400/40'
+                                        : 'bg-blue-600/30 text-blue-200 border-blue-400/40'"
+                                    x-text="profesional.estado">               
+                                    </span>
+                            </div>
+
+                            <template x-if="profesional.pendiente">
+                                <p class="mt-3 text-sm text-yellow-100/80">
+                                    Tu solicitud para acceder como profesional está pendiente de aprobación.
+                                </p>
+                            </template>
                         </div>
+                    </template>
 
-                        <template x-for="package in clients[selectedClient].packages" :key="package.name">
-                            <div class="mb-8">
-                                <div class="flex justify-between items-start">
-                                    <h4 class="font-serif text-xl" x-text="package.name"></h4>
+                    <template x-if="tipo === 'admin'">
+                        <div class="border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
+                            <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
+                                Acciones rápidas
+                            </h3>
 
-                                    <span 
-                                        class="text-xs text-slate-300"
-                                        x-text="package.used + ' / ' + package.total"
-                                    ></span>
-                                </div>
+                            <div class="border-b border-slate-400 mb-6"></div>
 
-                                <div class="mt-3 flex gap-1">
-                                    <template x-for="index in package.total" :key="index">
+                            <div class="space-y-4">
+                                <a href="{{ route('admin.usuarios') }}"
+                                class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
+                                    Gestionar usuarios
+                                </a>
+
+                                <a href="{{ route('admin.profesionales') }}"
+                                class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
+                                    Ver profesionales pendientes
+                                </a>
+                                    <a href="{{ route('admin.categorias') }}"
+                                    class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
+                                    Gestionar Categorias
+                                </a>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="tipo === 'profesional'">
+                        <div class="border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
+                            <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
+                                Paquetes disponibles
+                            </h3>
+
+                            <div class="border-b border-slate-400 mb-6"></div>
+
+                            <div class="mb-6">
+                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
+                                    Cliente seleccionado
+                                </p>
+
+                                <h4 class="font-serif text-2xl" x-text="selectedProfessionalSession.client_name"></h4>
+                            </div>
+
+                            <template x-for="package in selectedProfessionalSession.packages" :key="package.name">
+                                <div class="mb-8">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="font-serif text-xl" x-text="package.name"></h4>
+
                                         <span 
-                                            class="w-2 h-2 border border-white"
-                                            :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
+                                            class="text-xs text-slate-300"
+                                            x-text="package.used + ' / ' + package.total"
                                         ></span>
+                                    </div>
+
+                                    <div class="mt-3 flex gap-1">
+                                        <template x-for="index in package.total" :key="index">
+                                            <span 
+                                                class="w-2 h-2 border border-white"
+                                                :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
+                                            ></span>
+                                        </template>
+                                    </div>
+
+                                    <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
+                                        Sesiones utilizadas
+                                    </p>
+                                </div>
+                            </template>
+
+                            <a href="#"
+                            class="block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
+                                Ver todos los registros
+                            </a>
+                        </div>
+                    </template>
+
+                    <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                        <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
+                            <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
+                                Paquetes con este profesional
+                            </h3>
+
+                            <div class="border-b border-slate-400 mb-6"></div>
+
+                            <div class="mb-6">
+                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
+                                    Profesional seleccionado
+                                </p>
+
+                                <h4 class="font-serif text-2xl" x-text="selectedClientReservation.professional_name"></h4>
+
+                                <p class="mt-1 text-sm text-slate-400" x-text="selectedClientReservation.specialty"></p>
+                            </div>
+
+                            <template x-if="selectedClientReservation.packages.length > 0">
+                                <div>
+                                    <template x-for="package in selectedClientReservation.packages" :key="package.name">
+                                        <div class="mb-8">
+                                            <div class="flex justify-between items-start">
+                                                <h4 class="font-serif text-xl" x-text="package.name"></h4>
+
+                                                <span 
+                                                    class="text-xs text-slate-300"
+                                                    x-text="package.used + ' / ' + package.total"
+                                                ></span>
+                                            </div>
+
+                                            <div class="mt-3 flex gap-1">
+                                                <template x-for="index in package.total" :key="index">
+                                                    <span 
+                                                        class="w-2 h-2 border border-white"
+                                                        :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
+                                                    ></span>
+                                                </template>
+                                            </div>
+
+                                            <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
+                                                Sesiones utilizadas
+                                            </p>
+                                        </div>
                                     </template>
                                 </div>
+                            </template>
 
-                                <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
-                                    Sesiones utilizadas
-                                </p>
-                            </div>
-                        </template>
+                            <template x-if="selectedClientReservation.packages.length === 0">
+                                <div class="rounded-md border border-slate-600 bg-slate-800/60 p-4">
+                                    <p class="text-sm text-slate-300">
+                                        No tienes paquetes activos con este profesional.
+                                    </p>
+                                </div>
+                            </template>
 
-                        <a href="#"
-                        class="block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
-                            Ver todos los registros
-                        </a>
-                    </div>
+                            <a href="/prototipo/busqueda"
+                            class="mt-6 block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
+                                Buscar paquetes
+                            </a>
+                        </div>
+                    </template>
                 </aside>
-
             </div>
         </main>
     </div>

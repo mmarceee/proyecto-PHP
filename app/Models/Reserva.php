@@ -29,7 +29,6 @@ class Reserva extends Model {
     public function servicio(){
         return $this->belongsTo(Servicio::class);
     }
-   
     public function calificaciones(){
         return $this->hasMany(Calificacion::class);
     }
@@ -42,13 +41,14 @@ class Reserva extends Model {
     public function pago(){
         return $this->hasOne(Pago::class);
     }
+    public function uso_sesion_paquete(){
+        return $this->hasOne(UsoSesionPaquete::class);
+    }
 
     protected function casts(): array
     {
         return [
             'fecha' => 'date',
-            'hora_inicio' => 'time',
-            'hora_fin' => 'time',
         ];
     }
 }

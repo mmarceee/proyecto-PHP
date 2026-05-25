@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -16,10 +17,11 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     public const ESTADO_ACTIVO = 'activo';
     public const ESTADO_BLOQUEADO = 'bloqueado';
+    public const ESTADO_ELIMINADO = 'eliminado';
 
     /*
     |--------------------------------------------------------------------------
@@ -63,6 +65,11 @@ class User extends Authenticatable
         return $this->estado_usuario === self::ESTADO_BLOQUEADO;
     }
 
+    public function estaEliminado(): bool
+    {
+        return $this->estado_usuario === self::ESTADO_ELIMINADO;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Métodos para saber qué tipo de usuario es
@@ -74,10 +81,10 @@ class User extends Authenticatable
         return $this->cliente()->exists();
     }
 
-    public function esProfesional(): bool
+    public function esProfesionalAprobado(): bool
     {
         return $this->profesional()
-            ->where('estado', 'aprobado')
+            ->where('estado', Profesional::ESTADO_APROBADO)
             ->exists();
     }
 
@@ -99,7 +106,7 @@ class User extends Authenticatable
 
     public function puedeAccederPanelProfesional(): bool
     {
-        return $this->esProfesional() || $this->esAdmin();
+        return $this->esProfesionalAprobado() || $this->esAdmin();
     }
 
     public function puedeAccederPanelAdmin(): bool

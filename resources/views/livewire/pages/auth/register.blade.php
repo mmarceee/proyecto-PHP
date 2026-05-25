@@ -4,6 +4,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -31,7 +32,7 @@ new #[Layout('layouts.guest')] class extends Component
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
             'apellido' => ['required', 'string', 'max:255'],
-            'telefono' => ['required', 'string', 'max:30'],
+            'telefono' => ['required', 'string', 'regex:/^[0-9]+$/', 'max:30'],
             'tipo_registro' => ['required', 'in:cliente,profesional'],
             'descripcion' => ['required_if:tipo_registro,profesional', 'string','nullable', 'max:1000'],
             'especialidad' => ['required_if:tipo_registro,profesional', 'string', 'nullable', 'max:255'],
@@ -41,26 +42,31 @@ new #[Layout('layouts.guest')] class extends Component
 
         $validated['password'] = Hash::make($validated['password']);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'apellido' => $validated['apellido'],
-            'email' => $validated['email'],
-            'telefono' => $validated['telefono'],
-            'password' => $validated['password'],
-            'estado_usuario' => 'activo',
-        ]);
+        $user = null;
 
-        $user->cliente()->create();
+        DB::transaction(function () use ($validated, &$user) {
 
-        if ($validated['tipo_registro'] === 'profesional') {
-            $user->profesional()->create([
-                'descripcion' => $validated['descripcion'],
-                'especialidad' => $validated['especialidad'],
-                'reputacion_promedio' => 0,
-                'nombre_comercial' => $validated['nombre_comercial'] ?? null,
-                'estado' => 'pendiente',
+            $user = User::create([
+                'name' => $validated['name'],
+                'apellido' => $validated['apellido'],
+                'email' => $validated['email'],
+                'telefono' => $validated['telefono'],
+                'password' => $validated['password'],
+                'estado_usuario' => 'activo',
             ]);
-        }
+
+            $user->cliente()->create();
+
+            if ($validated['tipo_registro'] === 'profesional') {
+                $user->profesional()->create([
+                    'descripcion' => $validated['descripcion'],
+                    'especialidad' => $validated['especialidad'],
+                    'reputacion_promedio' => 0,
+                    'nombre_comercial' => $validated['nombre_comercial'] ?? null,
+                    'estado' => 'pendiente',
+                ]);
+            }
+        });
 
         event(new Registered($user));
 
@@ -68,14 +74,14 @@ new #[Layout('layouts.guest')] class extends Component
 
         $this->redirect(route('dashboard', absolute: false), navigate: true);
     }
-    }; 
-    ?>
+}; 
+?>
 
 <div>
     <form wire:submit="register">
         <!-- Name -->
         <div>
-            <x-input-label for="name" :value="__('Name')" />
+            <x-input-label for="name" :value="__('Nombre')" />
             <x-text-input wire:model="name" id="name" class="block mt-1 w-full" type="text" name="name" required autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
@@ -97,13 +103,13 @@ new #[Layout('layouts.guest')] class extends Component
         <!-- Teléfono -->
         <div class="mt-4">
             <x-input-label for="telefono" :value="__('Teléfono')" />
-            <x-text-input wire:model="telefono" id="telefono" class="block mt-1 w-full" type="text" name="telefono" required />
+            <x-text-input wire:model.live="telefono" id="telefono" class="block mt-1 w-full" type="tel" name="telefono" required inputmode="numeric" pattern="[0-9]*" autocomplete="tel" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
             <x-input-error :messages="$errors->get('telefono')" class="mt-2" />
         </div>
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="password" :value="__('Contraseña')" />
 
             <x-text-input wire:model="password" id="password" class="block mt-1 w-full"
                             type="password"
@@ -115,7 +121,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            <x-input-label for="password_confirmation" :value="__('Confirmar contraseña')" />
 
             <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
                             type="password"
@@ -161,11 +167,11 @@ new #[Layout('layouts.guest')] class extends Component
 
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}" wire:navigate>
-                {{ __('Already registered?') }}
+                {{ __('¿Ya estás registrado?') }}
             </a>
 
             <x-primary-button class="ms-4">
-                {{ __('Register') }}
+                {{ __('Registrarse') }}
             </x-primary-button>
         </div>
     </form>
