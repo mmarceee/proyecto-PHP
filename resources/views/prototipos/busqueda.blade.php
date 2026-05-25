@@ -13,17 +13,17 @@
                     <div class="flex shadow-xs rounded-base -space-x-0.5">
                         
                         <div class="relative">
-                            <button @click="menuCategoriasAbierto = !menuCategoriasAbierto" type="button" class="inline-flex items-center shrink-0 z-10 text-body bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-2.5 rounded-s-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none">
+                            <button @click="menuCategoriasAbierto = !menuCategoriasAbierto" type="button" class="inline-flex items-center shrink-0 z-10 text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-2.5 rounded-s-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none">
                                 <svg class="w-4 h-4 me-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.143 4H4.857A.857.857 0 0 0 4 4.857v4.286c0 .473.384.857.857.857h4.286A.857.857 0 0 0 10 9.143V4.857A.857.857 0 0 0 9.143 4Zm10 0h-4.286a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286A.857.857 0 0 0 20 9.143V4.857A.857.857 0 0 0 19.143 4Zm-10 10H4.857a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286a.857.857 0 0 0 .857-.857v-4.286A.857.857 0 0 0 9.143 14Zm10 0h-4.286a.857.857 0 0 0-.857.857v4.286c0 .473.384.857.857.857h4.286a.857.857 0 0 0 .857-.857v-4.286a.857.857 0 0 0-.857-.857Z"/></svg>
                                 <span x-text="categoriaSeleccionada"></span>
                                 <svg class="w-4 h-4 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/></svg>
                             </button>
                             
                             <div x-show="menuCategoriasAbierto" @click.away="menuCategoriasAbierto = false" class="absolute z-50 mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg w-48 p-1" style="display: none;">
-                                <ul class="text-sm text-gray-700 dark:text-gray-200">
+                                <ul class="text-sm text-gray-900 dark:text-white">
                                     <template x-for="cat in ['Todas las categorías', 'Consultoría', 'Salud no clínica', 'Servicios Técnicos', 'Entrenamiento']">
                                         <li>
-                                            <button type="button" @click="categoriaSeleccionada = cat; menuCategoriasAbierto = false" class="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg" x-text="cat"></button>
+                                            <button type="button" @click="categoriaSeleccionada = cat; menuCategoriasAbierto = false" class="w-full text-left px-3 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600" x-text="cat"></button>
                                         </li>
                                     </template>
                                 </ul>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 use App\Http\Controllers\Api\ReservaApiController;
 use App\Http\Controllers\Api\ServicioApiController;
 use App\Http\Controllers\Api\VideoLlamadaApiController;
+use App\Http\Controllers\Api\Admin\UsuarioAdminApiController;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -27,12 +28,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         
     Route::delete('/profile', [ProfileApiController::class, 'destroy'])
         ->name('api.profile.destroy');
-
-    Route::patch('/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
-        ->name('api.profesionales.aprobar');
-
-    Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
-        ->name('api.profesionales.rechazar');
 
     Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
         ->name('api.profesionales.postularse');
@@ -75,4 +70,26 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::post('/reservas/{id}/avanzar-estado', [ReservaApiController::class, 'avanzarEstado'])
         ->name('api.reservas.avanzar-estado');
+
+    Route::middleware(['admin'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/usuarios', [UsuarioAdminApiController::class, 'index'])
+            ->name('api.admin.usuarios.index');
+
+        Route::patch('/usuarios/{user}/bloquear', [UsuarioAdminApiController::class, 'bloquear'])
+            ->name('api.admin.usuarios.bloquear');
+
+        Route::patch('/usuarios/{user}/desbloquear', [UsuarioAdminApiController::class, 'desbloquear'])
+            ->name('api.admin.usuarios.desbloquear');
+
+        Route::patch('/usuarios/{user}/hacer-admin', [UsuarioAdminApiController::class, 'hacerAdmin'])
+            ->name('api.admin.usuarios.hacer-admin');
+
+        Route::patch('/admin/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
+            ->name('api.profesionales.aprobar');
+
+        Route::patch('/admin/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
+            ->name('api.profesionales.rechazar');
+    });
 });
