@@ -1,10 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AgendaApiController;
+use App\Http\Controllers\Api\BusquedaApiController;
+use App\Http\Controllers\Api\ClienteApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\ProfileApiController;
+use App\Http\Controllers\Api\ProfesionalApiController;
+use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
+use App\Http\Controllers\Api\ReservaApiController;
+use App\Http\Controllers\Api\ServicioApiController;
 use App\Http\Controllers\Api\VideoLlamadaApiController;
-
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -16,9 +22,57 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/reserva/{reserva}/videollamada/token', [VideoLlamadaApiController::class, 'obtenerToken'])
         ->name('api.videollamada.token');
 
-    Route::put('/profile/password', [\App\Http\Controllers\Api\ProfileApiController::class, 'updatePassword'])
+    Route::put('/profile/password', [ProfileApiController::class, 'updatePassword'])
         ->name('api.profile.password');
         
-    Route::delete('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy'])
+    Route::delete('/profile', [ProfileApiController::class, 'destroy'])
         ->name('api.profile.destroy');
+
+    Route::patch('/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
+        ->name('api.profesionales.aprobar');
+
+    Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
+        ->name('api.profesionales.rechazar');
+
+    Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
+        ->name('api.profesionales.postularse');
+
+    Route::get('/profesional/agenda', [AgendaApiController::class, 'obtenerAgenda'])
+        ->name('api.profesional.agenda');
+
+    Route::post('/profesional/agenda/reglas', [AgendaApiController::class, 'guardarReglas'])
+        ->name('api.profesional.agenda.reglas');
+
+    Route::post('/profesional/agenda/excepciones', [AgendaApiController::class, 'guardarExcepcion'])
+        ->name('api.profesional.agenda.excepciones');
+
+    Route::delete('/profesional/agenda/excepciones', [AgendaApiController::class, 'desbloquearDia'])
+        ->name('api.profesional.agenda.desbloquear');
+
+    Route::post('/paciente/agenda/reservar', [AgendaApiController::class, 'agendarTurno'])
+        ->name('api.paciente.agenda.reservar');
+
+    Route::get('/servicios/buscar', [BusquedaApiController::class, 'buscar'])
+        ->name('api.servicios.buscar');
+
+    Route::get('/servicios/profesionales/{id}/agenda', [BusquedaApiController::class, 'obtenerAgendaProfesional'])
+        ->name('api.servicios.agenda');
+
+    Route::apiResource('/profesional/servicios', ServicioApiController::class)
+        ->names('api.profesional.servicios');
+
+    Route::post('/clientes/registro', [ClienteApiController::class, 'store'])
+        ->name('api.clientes.registro');
+
+    Route::post('/reservas', [ReservaApiController::class, 'store'])
+        ->name('api.reservas.store');
+
+    Route::put('/reservas/{id}', [ReservaApiController::class, 'update'])
+        ->name('api.reservas.update');
+
+    Route::delete('/reservas/{id}', [ReservaApiController::class, 'destroy'])
+        ->name('api.reservas.destroy');
+
+    Route::post('/reservas/{id}/avanzar-estado', [ReservaApiController::class, 'avanzarEstado'])
+        ->name('api.reservas.avanzar-estado');
 });

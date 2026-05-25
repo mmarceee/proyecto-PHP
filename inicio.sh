@@ -30,6 +30,8 @@ else
     echo -e "${VERDE}✅ Docker ya está funcionando.${NC}"
 fi
 
+code .
+
 echo -e "${CIAN}🚀 Arrancando Laravel Sail...${NC}"
 ./vendor/bin/sail up -d
 

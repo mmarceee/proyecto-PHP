@@ -37,7 +37,11 @@ document.addEventListener('alpine:init', () => {
             try {
                 //Enviamos la fecha actual del estado a la API
                 const response = await fetch(`/api/profesional/agenda?fecha=${this.fechaInicio}`, {
-                    headers: { 'Accept': 'application/json' }
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
                 if (!response.ok) throw new Error('No se pudo sincronizar la agenda.');
                 
@@ -96,7 +100,13 @@ document.addEventListener('alpine:init', () => {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 const response = await fetch('/api/profesional/agenda/reglas', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ reglas: this.formReglas })
                 });
                 const data = await response.json();
@@ -120,7 +130,13 @@ document.addEventListener('alpine:init', () => {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 const response = await fetch('/api/profesional/agenda/excepciones', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    credentials: 'same-origin',
                     body: JSON.stringify(this.formExcepcion)
                 });
                 const data = await response.json();
@@ -156,7 +172,12 @@ document.addEventListener('alpine:init', () => {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 const response = await fetch(`/api/profesional/agenda/excepciones?fecha=${this.fechaADesbloquear}`, {
                     method: 'DELETE',
-                    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    credentials: 'same-origin'
                 });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'No se pudo procesar.');
