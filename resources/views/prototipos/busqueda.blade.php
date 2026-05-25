@@ -77,6 +77,15 @@
                             Escribe el nombre de un especialista o servicio para comenzar.
                         </div>
                     </template>
+
+                    <div 
+                    x-data="mapaBusqueda()" 
+                    x-init="iniciarMapa()" 
+                    @filtrar-mapa.window="filtrarPorProfesional($event.detail)"
+                    class="mt-6 w-full h-[350px] rounded-lg shadow-md z-0 relative border border-gray-700">
+                    
+                    <div x-ref="mapaBusqueda" class="w-full h-full rounded-lg"></div>
+                </div>
                 </div>
 
                 <aside class="space-y-4">

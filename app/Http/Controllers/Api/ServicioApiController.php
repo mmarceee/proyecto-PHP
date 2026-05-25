@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\ServicioService;
-use App\Models\CategoriaServicio; //Importamos tu modelo de categorías
+use App\Models\CategoriaServicio; 
 
 class ServicioApiController extends Controller
 {
@@ -30,7 +30,6 @@ class ServicioApiController extends Controller
         $profesional = $this->verificarProfesional($request);
         $servicios = $this->servicioService->listarPorProfesional($profesional->id);
         
-        //Traemos las categorías reales para enviárselas a JavaScript
         $categorias = CategoriaServicio::orderBy('nombre', 'asc')->get();
 
         return response()->json([
@@ -50,9 +49,18 @@ class ServicioApiController extends Controller
             'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
             'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
-            'categoria_servicio_id' => ['required', 'exists:categoria_servicios,id'], //Validación real
+            'categoria_servicio_id' => ['required', 'exists:categoria_servicios,id'],
+            
+            // NUEVOS CAMPOS: Solo requeridos si la modalidad es Presencial
+            'lugar_nombre'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'lugar_direccion'       => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'lugar_ciudad'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'lugar_departamento'    => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'latitud'               => ['nullable', 'required_if:modalidad,Presencial', 'numeric'],
+            'longitud'              => ['nullable', 'required_if:modalidad,Presencial', 'numeric'],
         ]);
 
+        // Ahora $validated sí incluye las coordenadas, se las pasamos al servicio
         $servicio = $this->servicioService->crear($profesional, $validated);
 
         return response()->json(['message' => 'Servicio creado con éxito.', 'servicio' => $servicio], 201);
@@ -69,7 +77,15 @@ class ServicioApiController extends Controller
             'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
             'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
-            'categoria_servicio_id' => ['required', 'exists:categoria_servicios,id'], // Validación real
+            'categoria_servicio_id' => ['required', 'exists:categoria_servicios,id'],
+            
+            // NUEVOS CAMPOS PARA EDICIÓN
+            'lugar_nombre'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'lugar_direccion'       => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'lugar_ciudad'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'lugar_departamento'    => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
+            'latitud'               => ['nullable', 'required_if:modalidad,Presencial', 'numeric'],
+            'longitud'              => ['nullable', 'required_if:modalidad,Presencial', 'numeric'],
         ]);
 
         $servicio = $this->servicioService->actualizar($id, $profesional->id, $validated);

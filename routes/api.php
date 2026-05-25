@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\ProfesionalAdminApiController;
 use App\Http\Controllers\Api\ReservaApiController;
 use App\Http\Controllers\Api\ServicioApiController;
 use App\Http\Controllers\Api\VideoLlamadaApiController;
+use App\Http\Controllers\Api\MapaApiController;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -28,10 +29,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileApiController::class, 'destroy'])
         ->name('api.profile.destroy');
 
-    Route::patch('/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
+    Route::patch('admin/profesionales/{profesional}/aprobar', [ProfesionalAdminApiController::class, 'aprobar'])
         ->name('api.profesionales.aprobar');
 
-    Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
+    Route::patch('admin/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
         ->name('api.profesionales.rechazar');
 
     Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
@@ -58,6 +59,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/servicios/profesionales/{id}/agenda', [BusquedaApiController::class, 'obtenerAgendaProfesional'])
         ->name('api.servicios.agenda');
 
+    Route::get('/lugares-atencion', [MapaApiController::class, 'index'])
+        ->name('api.mapa.lugares');
+
     Route::apiResource('/profesional/servicios', ServicioApiController::class)
         ->names('api.profesional.servicios');
 
@@ -75,4 +79,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::post('/reservas/{id}/avanzar-estado', [ReservaApiController::class, 'avanzarEstado'])
         ->name('api.reservas.avanzar-estado');
+
+    
 });
