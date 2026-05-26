@@ -6,11 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['nombre', 'descripcion'])]
-class CategoriaServicio extends Model
+class Categoria extends Model
 {
-    /** @use HasFactory<\Database\Factories\CategoriaServicioFactory> */
     use HasFactory;
+
+    protected $table = 'categorias';
+
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        'activa',
+    ];
 
     /**
      * Una categoría puede tener muchos servicios asociados.
