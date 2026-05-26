@@ -27,7 +27,7 @@ class Reserva extends Model {
         return $this->belongsTo(Profesional::class);
     }
     public function servicio(){
-        return $this->belongsTo(Servicio::class);
+        return $this->belongsTo(Servicio::class)->withTrashed();
     }
     public function calificaciones(){
         return $this->hasMany(Calificacion::class);

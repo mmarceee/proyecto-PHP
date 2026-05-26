@@ -94,7 +94,6 @@ class ReservaApiController extends Controller
         }
     }
 
-    // En App\Http\Controllers\Api\ReservaApiController
     
     public function historial(Request $request)
     {
@@ -115,9 +114,21 @@ class ReservaApiController extends Controller
         $historial = $reservas->map(function ($reserva) use ($user) {
             $yaCalifico = $reserva->calificaciones->where('evaluador_id', $user->id)->isNotEmpty();
 
-            $fechaFormateada = $reserva->fecha 
-                ? \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y H:i') 
+            // 1. Formateamos solo la fecha (Ej: 26/05/2026)
+            $soloFecha = $reserva->fecha 
+                ? \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y') 
                 : 'Fecha sin definir';
+
+            // 2. Extraemos la hora exacta de tu columna hora_inicio
+            $soloHora = $reserva->hora_inicio 
+                ? \Carbon\Carbon::parse($reserva->hora_inicio)->format('H:i') 
+                : ''; 
+
+            $soloHoraFin = $reserva->hora_fin 
+                ? \Carbon\Carbon::parse($reserva->hora_fin)->format('H:i') 
+                : '';
+            // 3. Unimos ambas partes (Ej: "26/05/2026 14:30")
+            $fechaFormateada = trim($soloFecha . ' ' . $soloHora . ' a ' . $soloHoraFin);
 
             $estadoReal = $reserva->estado ?? $reserva->estado_reserva ?? $reserva->estadoReserva ?? 'Pendiente';
 
@@ -127,7 +138,7 @@ class ReservaApiController extends Controller
             return [
                 'id' => $reserva->id,
                 'fecha' => $fechaFormateada,
-                'estado' => ucfirst($estadoReal),
+                'estado' => ucfirst(str_replace('_', ' ', $estadoReal)),
                 'servicio_nombre' => $reserva->servicio->nombre ?? 'Servicio',
                 'profesional_nombre' => $reserva->profesional->user->name ?? 'Profesional',
                 'cliente_nombre' => $reserva->cliente->user->name ?? 'Cliente',
