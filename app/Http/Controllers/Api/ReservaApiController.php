@@ -119,7 +119,7 @@ class ReservaApiController extends Controller
                 ? \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y') 
                 : 'Fecha sin definir';
 
-            // 2. Extraemos la hora exacta de tu columna hora_inicio
+            // 2. Extraemos la hora exacta de la columna hora_inicio
             $soloHora = $reserva->hora_inicio 
                 ? \Carbon\Carbon::parse($reserva->hora_inicio)->format('H:i') 
                 : ''; 
@@ -127,6 +127,7 @@ class ReservaApiController extends Controller
             $soloHoraFin = $reserva->hora_fin 
                 ? \Carbon\Carbon::parse($reserva->hora_fin)->format('H:i') 
                 : '';
+                
             // 3. Unimos ambas partes (Ej: "26/05/2026 14:30")
             $fechaFormateada = trim($soloFecha . ' ' . $soloHora . ' a ' . $soloHoraFin);
 
