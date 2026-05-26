@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\ServicioService;
-use App\Models\CategoriaServicio; 
+use App\Models\Categoria; 
 
 class ServicioApiController extends Controller
 {
@@ -30,7 +30,7 @@ class ServicioApiController extends Controller
         $profesional = $this->verificarProfesional($request);
         $servicios = $this->servicioService->listarPorProfesional($profesional->id);
         
-        $categorias = CategoriaServicio::orderBy('nombre', 'asc')->get();
+        $categorias = Categoria::orderBy('nombre', 'asc')->get();
 
         return response()->json([
             'servicios' => $servicios,
