@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ServicioApiController;
 use App\Http\Controllers\Api\VideoLlamadaApiController;
 use App\Http\Controllers\Api\Admin\UsuarioAdminApiController;
 use App\Http\Controllers\Api\MapaApiController;
+use App\Http\Controllers\Api\Admin\CategoriaApiController;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -102,6 +103,21 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         Route::patch('/profesionales/{profesional}/rechazar', [ProfesionalAdminApiController::class, 'rechazar'])
             ->name('api.admin.profesionales.rechazar');
+
+        Route::get('/categorias', [CategoriaApiController::class, 'listarCategorias'])
+            ->name('api.admin.categorias.listar');
+
+        Route::post('/categorias', [CategoriaApiController::class, 'crearCategoria'])
+            ->name('api.admin.categorias.crear');
+
+        Route::put('/categorias/{id}', [CategoriaApiController::class, 'actualizarCategoria'])
+            ->name('api.admin.categorias.actualizar');
+            
+        Route::patch('/categorias/{id}/desactivar', [CategoriaApiController::class, 'desactivarCategoria'])
+            ->name('api.admin.categorias.desactivar');
+
+        Route::patch('/categorias/{id}/activar', [CategoriaApiController::class, 'activarCategoria'])
+            ->name('api.admin.categorias.activar');
     });
 
 });
