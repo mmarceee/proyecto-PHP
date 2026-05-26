@@ -13,6 +13,12 @@ return new class extends Migration
 {
     Schema::create('lugar_atencions', function (Blueprint $table) {
         $table->id();
+
+        $table->foreignId('profesional_id')
+            ->constrained('profesionales')
+            ->cascadeOnDelete()
+            ->unique();
+
         $table->string('nombre');
         $table->string('direccion');
         $table->string('ciudad');

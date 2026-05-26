@@ -49,7 +49,7 @@ class ServicioApiController extends Controller
             'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
             'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
-            'categoria_servicio_id' => ['required', 'exists:categoria_servicios,id'],
+            'categoria_id'          => ['required', 'exists:categorias,id'],
             
             // NUEVOS CAMPOS: Solo requeridos si la modalidad es Presencial
             'lugar_nombre'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
@@ -77,7 +77,7 @@ class ServicioApiController extends Controller
             'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
             'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
-            'categoria_servicio_id' => ['required', 'exists:categoria_servicios,id'],
+            'categoria_id'          => ['required', 'exists:categorias,id'],
             
             // NUEVOS CAMPOS PARA EDICIÓN
             'lugar_nombre'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
