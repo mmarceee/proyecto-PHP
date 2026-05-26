@@ -50,6 +50,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/paciente/agenda/reservar', [AgendaApiController::class, 'agendarTurno'])
         ->name('api.paciente.agenda.reservar');
 
+    Route::get('/servicios/categorias', [BusquedaApiController::class, 'categorias'])
+        ->name('api.servicios.categorias');
+
     Route::get('/servicios/buscar', [BusquedaApiController::class, 'buscar'])
         ->name('api.servicios.buscar');
 
@@ -82,6 +85,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         
     Route::post('/reservas/{id}/calificar', [CalificacionApiController::class, 'store'])
     ->name('api.reservas.calificar');
+
+    
     
     Route::middleware(['admin'])
     ->prefix('admin')

@@ -55,7 +55,7 @@
                                         style="display: none;"
                                     >
                                         <ul class="text-sm text-gray-900 dark:text-white">
-                                            <template x-for="cat in ['Todas las categorías', 'Consultoría', 'Salud no clínica', 'Servicios Técnicos', 'Entrenamiento']">
+                                            <template x-for="cat in categorias" :key="cat">
                                                 <li>
                                                     <button
                                                         type="button"
