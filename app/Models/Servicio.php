@@ -25,9 +25,9 @@ class Servicio extends Model
         return $this->hasMany(Reserva::class);
     }
 
-    public function CategoriaServicio()
+    public function Categoria()
     {
-        return $this->belongsTo(CategoriaServicio::class);
+        return $this->belongsTo(Categoria::class);
     }
 
     public function PaqueteServicio()
