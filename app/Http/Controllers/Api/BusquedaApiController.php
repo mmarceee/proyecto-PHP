@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Profesional;
 use App\Services\AgendaService;
 use App\Services\BusquedaService;
 
@@ -28,12 +27,8 @@ class BusquedaApiController extends Controller
      */
     public function obtenerAgendaProfesional(Request $request, $id, AgendaService $agendaService)
     {
-        $profesional = Profesional::findOrFail($id);
-        $fechaInicio = $request->query('fecha');
-
-        $semana = $agendaService->obtenerAgendaSemana($profesional, $fechaInicio);
-
-        return response()->json(['semana' => $semana]);
+        $semana = $agendaService->obtenerAgendaProfesional($id, $request->query('fecha'));
+            return response()->json(['semana' => $semana]);
     }
 
     public function categorias(BusquedaService $busquedaService)
