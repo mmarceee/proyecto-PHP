@@ -16,7 +16,6 @@
             <div
                 class="py-12"
                 x-data="busquedaServicios"
-                @filtrar-mapa.window="filtrarPorProfesional($event.detail)"
             >
                 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
@@ -157,10 +156,11 @@
                                 </div>
                             </div>
 
-                            {{-- Mapa (De Lucas) --}}
+                            {{-- Mapa --}}
                             <div 
                                 x-data="mapaBusqueda()" 
                                 x-init="iniciarMapa()"
+                                @filtrar-mapa.window="filtrarPorProfesional($event.detail)"
                                 class="w-full h-[350px] rounded-lg shadow-md z-0 relative border border-gray-700 overflow-hidden"
                             >
                                 <div x-ref="mapaBusqueda" class="w-full h-full rounded-lg"></div>
