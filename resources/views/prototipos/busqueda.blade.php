@@ -147,7 +147,7 @@
                                             <div class="grid grid-cols-4 gap-1" x-show="dia.es_laboral">
                                                 <template x-for="slot in dia.bloques" :key="slot.hora">
                                                     <button 
-                                                        @click="reservarTurno(dia.fecha, slot.hora, slot.ocupado)" :disabled="slot.ocupado" 
+                                                        @click="prepararReserva(dia.fecha, slot.hora, slot.ocupado)" :disabled="slot.ocupado" 
                                                         :class="slot.ocupado 
                                                             ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border-transparent cursor-not-allowed line-through' 
                                                             : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800 hover:bg-blue-600 hover:text-white'" 
@@ -164,7 +164,32 @@
                         </div>
                     </div>
                 </aside>
-
+            </div>
+        </div>
+            <div x-show="showConfirmModal" style="display: none;" x-cloak
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            
+            <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" 
+                @click.away="cerrarModalReserva()">
+                
+                <h3 class="text-xl font-serif text-white mb-4">Confirmar Reserva</h3>
+                
+                <p class="text-sm text-slate-300 mb-6">
+                    ¿Confirmas la reserva para el día <strong class="text-white" x-text="fechaSeleccionada"></strong> a las <strong class="text-white"><span x-text="horaSeleccionada"></span> hs</strong>?
+                </p>
+                
+                <div class="flex justify-end gap-3">
+                    <button 
+                        @click="cerrarModalReserva()" 
+                        class="px-4 py-2 rounded-md text-sm font-bold text-slate-400 hover:bg-slate-800 transition tracking-wide">
+                        CANCELAR
+                    </button>
+                    <button 
+                        @click="ejecutarReserva()" 
+                        class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition tracking-wide shadow-lg">
+                        ACEPTAR
+                    </button>
+                </div>
             </div>
         </div>
     </div>
