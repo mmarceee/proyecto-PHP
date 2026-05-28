@@ -172,8 +172,7 @@ document.addEventListener('alpine:init', () => {
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || 'No se pudo actualizar el estado de la reserva');
 
-                // REFRESCO INMEDIATO: Volvemos a pedir los datos a la API 
-                // para que pinte el nuevo estado y cambie el botón al vuelo
+                // REFRESCO INMEDIATO: Volvemos a pedir los datos a la API para que pinte el nuevo estado y cambie el botón al vuelo
                 await this.cargarDashboard();
 
             } catch (error) {
