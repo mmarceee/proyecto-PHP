@@ -18,12 +18,8 @@ Route::view('postularse', 'livewire.pages.postularse-profesional')
     ->middleware(['auth', 'verified'])
     ->name('profesional.postularse');
 
-Route::view('admin/solicitudes', 'livewire.admin.solicitudes-profesionales')
-    ->middleware(['auth'])
-    ->name('admin.solicitudes');
-
 Route::view('admin/profesionales', 'livewire.admin.solicitudes-profesionales')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.profesionales');
 
 Route::view('/prototipo/busqueda', 'prototipos.busqueda')
@@ -48,8 +44,21 @@ Route::middleware(['auth'])->group(function () {
         })->name('videollamada.sala');
     });
 
+Route::view('admin/usuarios', 'livewire.admin.usuarios')
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.usuarios');
+
+Route::view('admin/categorias', 'livewire.admin.categorias')
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.categorias');
+    
 Route::get('/reservas/historial', function () {
         return view('historial'); // Llama al archivo historial.blade.php
     })->name('reservas.historial');
+
+
+Route::get('/admin/categorias', function () {
+        return view('livewire.admin.categorias');
+    })->middleware(['auth', 'verified', 'admin'])->name('admin.categorias');
 
 require __DIR__.'/auth.php';

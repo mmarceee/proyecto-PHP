@@ -20,7 +20,7 @@ document.addEventListener('alpine:init', () => {
             duracion: '60',
             modalidad: 'Virtual',
             bufferEntreTurnos: '0',
-            categoria_servicio_id: '', 
+            categoria_id: '', 
             // Nuevos campos para LugarAtencion
             lugar_nombre: '',
             lugar_direccion: '',
@@ -110,7 +110,7 @@ document.addEventListener('alpine:init', () => {
             // Reseteamos el formulario completo
             this.form = { 
                 nombre: '', descripcion: '', precio: '', duracion: '60', 
-                modalidad: 'Virtual', bufferEntreTurnos: '0', categoria_servicio_id: '',
+                modalidad: 'Virtual', bufferEntreTurnos: '0', categoria_id: '',
                 lugar_nombre: '', lugar_direccion: '', lugar_ciudad: '', lugar_departamento: '',
                 latitud: -34.9011, longitud: -56.1645
             };
@@ -130,7 +130,7 @@ document.addEventListener('alpine:init', () => {
                 duracion: servicio.duracion.toString(),
                 modalidad: servicio.modalidad,
                 bufferEntreTurnos: (servicio.bufferEntreTurnos ?? 0).toString(),
-                categoria_servicio_id: servicio.categoria_servicio_id.toString(),
+                categoria_id: servicio.categoria_id.toString(),
                 
                 // Si el servicio ya tiene un lugar de atención asociado, lo cargamos.
                 // Ajusta 'servicio.lugar_atencion' según cómo venga el JSON desde tu API.

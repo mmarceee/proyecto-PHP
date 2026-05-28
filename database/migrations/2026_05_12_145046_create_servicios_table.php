@@ -22,7 +22,7 @@ return new class extends Migration
 
         // Claves Foráneas
         $table->foreignId('profesional_id')->constrained('profesionales')->onDelete('cascade');
-        $table->foreignId('categoria_servicio_id')->constrained('categoria_servicios');
+        $table->foreignId('categoria_id')->constrained('categorias');
         $table->foreignId('lugar_atencion_id')->nullable()->constrained('lugar_atencions');
 
         $table->timestamps();

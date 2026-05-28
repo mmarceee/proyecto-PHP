@@ -48,7 +48,7 @@ document.addEventListener('alpine:init', () => {
                 // Buscamos el token CSRF que Laravel inyecta en el meta tag del HTML por defecto
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-                const response = await fetch(`/api/profesionales/${id}/${accion}`, {
+                const response = await fetch(`/api/admin/profesionales/${id}/${accion}`, {
                     method: 'PATCH',
                     headers: {
                         'Accept': 'application/json',
