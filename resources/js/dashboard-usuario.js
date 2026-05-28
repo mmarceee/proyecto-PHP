@@ -9,6 +9,9 @@ document.addEventListener('alpine:init', () => {
         consultasHoy: [],
         proximasSesiones: [],
         selectedItem: null,
+        showCancelModal: false,
+        reservaACancelar: null,
+        motivoCancelacion: '',
 
         async cargarDashboard() {
             this.cargando = true;
@@ -72,6 +75,61 @@ document.addEventListener('alpine:init', () => {
                 }
         },
             
+        abrirModalCancelacion(reservaId) {
+            this.reservaACancelar = reservaId;
+            this.motivoCancelacion = '';
+            this.showCancelModal = true;
+        },
+
+        cerrarModalCancelacion() {
+            this.showCancelModal = false;
+            this.reservaACancelar = null;
+            this.motivoCancelacion = '';
+        },
+
+        async confirmarCancelacion() {
+            // Validamos que el profesional haya escrito un motivo
+            if (this.motivoCancelacion.trim() === '') {
+                alert('El motivo de cancelación es obligatorio.');
+                return; 
+            }
+
+            try {
+                // Golpeamos tu endpoint DELETE en la API
+                const response = await fetch(`/api/reservas/${this.reservaACancelar}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    },
+                    body: JSON.stringify({ 
+                        motivo_cancelacion: this.motivoCancelacion 
+                    })
+                });
+
+                if (response.ok) {
+                    // Buscamos la reserva en la pantalla y actualizamos su estado
+                    const index = this.consultasHoy.findIndex(r => r.id === this.reservaACancelar);
+                    if(index !== -1) {
+                        this.consultasHoy[index].status = 'Cancelada';
+                        this.consultasHoy[index].action_label = null; // Esto oculta el botón azul
+                    }
+                    
+                    // Cerramos el modal
+                    this.cerrarModalCancelacion();
+                    
+                } else {
+                    const error = await response.json();
+                    alert('Error al cancelar: ' + (error.message || 'Intenta nuevamente'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hubo un problema al conectar con el servidor.');
+            }
+        },
 
         async confirmarReserva(id) {
             try {
