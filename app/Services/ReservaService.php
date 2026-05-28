@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Reserva;
+use App\Jobs\EnviarNotificacionReserva;
 
 class ReservaService
 {
@@ -87,6 +88,9 @@ class ReservaService
             'motivo_cancelacion' => $motivo,
         ]);
 
+        //Despachamos a la cola de Redis
+        EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
+
         return $reserva;
     }
 
@@ -105,6 +109,9 @@ class ReservaService
         $reserva->update([
             'estado_reserva' => $nuevoEstado
         ]);
+
+        //Despachamos a la cola
+        EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
 
         return $reserva;
     }
