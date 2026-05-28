@@ -10,20 +10,19 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('categoria_servicios', function (Blueprint $table) {
-        $table->id();
-        $table->string('nombre');
-        $table->text('descripcion')->nullable();
-        $table->timestamps();
-    });
-}
+    {
+        Schema::table('servicios', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('categoria_servicios');
+        Schema::table('servicios', function (Blueprint $table) {
+           $table->dropSoftDeletes();
+        });
     }
 };

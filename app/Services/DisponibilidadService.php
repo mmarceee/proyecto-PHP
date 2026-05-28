@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Profesional;
+use App\Models\Reserva;
 use App\Models\Servicio;
 use Carbon\Carbon;
 
@@ -49,12 +50,56 @@ class DisponibilidadService
     }
 
     /**
-     * Motor matemático (Pendiente de implementar en el siguiente paso)
+     * Motor matemático para generar slots y filtrar ocupados
      */
     private function calcularSlotsLibres($reglasBase, Profesional $profesional, Servicio $servicio, Carbon $fecha): array
     {
         $slots = [];
-        // Aquí aplicaremos la duración del servicio y el bufferEntreTurnos
+        
+        // Obtenemos la duración real del servicio en minutos (por defecto 30 si no tuviera)
+        $duracion = $servicio->duracion ?? 30; 
+
+        // 1. Buscamos las reservas ACTIVAS de ese día para no encimar turnos
+        $reservasDelDia = Reserva::where('profesional_id', $profesional->id)
+            ->where('fecha', $fecha->toDateString())
+            ->where('estado_reserva', '!=', 'cancelada') // Filtramos las canceladas
+            ->get();
+
+        // 2. Iteramos sobre cada regla de horario (ej: de 08:00 a 16:00)
+        // Asumimos que $reglasBase trae arrays del tipo ['inicio' => '08:00', 'fin' => '16:00']
+        foreach ($reglasBase as $regla) {
+            $inicioBloque = Carbon::parse($fecha->toDateString() . ' ' . $regla['inicio']);
+            $finBloque = Carbon::parse($fecha->toDateString() . ' ' . $regla['fin']);
+
+            $slotActual = $inicioBloque->copy();
+
+            // 3. Mientras el slot actual + la duración no supere la hora de cierre
+            while ($slotActual->copy()->addMinutes($duracion)->lte($finBloque)) {
+                $slotFin = $slotActual->copy()->addMinutes($duracion);
+
+                // 4. Comprobar si el bloque choca con alguna reserva en la base de datos
+                $ocupado = $reservasDelDia->contains(function ($reserva) use ($slotActual, $slotFin, $fecha) {
+                    $reservaInicio = Carbon::parse($fecha->toDateString() . ' ' . $reserva->hora_inicio);
+                    $reservaFin = Carbon::parse($fecha->toDateString() . ' ' . $reserva->hora_fin);
+
+                    // Existe solapamiento si nuestro slot empieza antes de que termine la reserva 
+                    // Y termina después de que empiece la reserva
+                    return $slotActual->lt($reservaFin) && $slotFin->gt($reservaInicio);
+                });
+
+                // 5. Evitar mostrar turnos del pasado si el cliente está buscando turnos para "Hoy"
+                $esPasado = $fecha->isToday() && $slotActual->isPast();
+
+                // Si está totalmente libre, lo agregamos a la lista final
+                if (!$ocupado && !$esPasado) {
+                    $slots[] = $slotActual->format('H:i');
+                }
+
+                // Avanzamos el puntero para armar el siguiente turno (Ej: de 12:00 saltamos a 12:30)
+                $slotActual->addMinutes($duracion);
+            }
+        }
+
         return $slots;
     }
 }

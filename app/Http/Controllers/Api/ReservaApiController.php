@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Reserva;
 use App\Services\ReservaService;
+use App\Models\Servicio;
+use Carbon\Carbon;
+use Exception;
 
 class ReservaApiController extends Controller
 {
@@ -18,22 +21,36 @@ class ReservaApiController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validamos los datos, pero ya NO obligamos al frontend a mandar la 'hora_fin'
         $validated = $request->validate([
             'cliente_id'     => ['required', 'exists:clientes,id'],
             'profesional_id' => ['required', 'exists:profesionales,id'],
             'servicio_id'    => ['required', 'exists:servicios,id'],
             'fecha'          => ['required', 'date', 'after_or_equal:today'],
             'hora_inicio'    => ['required', 'date_format:H:i'],
-            'hora_fin'       => ['required', 'date_format:H:i', 'after:hora_inicio'],
         ]);
 
         try {
+            // 2. Buscamos cuánto dura el servicio elegido
+            $servicio = Servicio::findOrFail($validated['servicio_id']);
+            
+            // 3. Calculamos la hora_fin exacta matemáticamente
+            $horaFin = Carbon::parse($validated['hora_inicio'])
+                ->addMinutes($servicio->duracion)
+                ->format('H:i');
+            
+            // 4. Inyectamos la hora_fin correcta en el array antes de pasarlo a tu Service
+            $validated['hora_fin'] = $horaFin;
+
+            // 5. Creamos la reserva
             $reserva = $this->reservaService->crear($validated);
+            
             return response()->json([
                 'message' => 'Reserva creada exitosamente.',
                 'reserva' => $reserva
             ], 201);
-        } catch (\Exception $e) {
+            
+        } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
@@ -42,20 +59,33 @@ class ReservaApiController extends Controller
     {
         $reserva = Reserva::findOrFail($id);
 
+        // 1. Validamos los datos (quitamos 'hora_fin' de las reglas estrictas)
         $validated = $request->validate([
             'fecha'       => ['required', 'date', 'after_or_equal:today'],
             'hora_inicio' => ['required', 'date_format:H:i'],
-            'hora_fin'    => ['required', 'date_format:H:i', 'after:hora_inicio'],
             'servicio_id' => ['required', 'exists:servicios,id'],
         ]);
 
         try {
+            // 2. Buscamos el servicio (por si cambiaron de servicio o para leer su duración)
+            $servicio = Servicio::findOrFail($validated['servicio_id']);
+
+            // 3. Recalculamos la hora_fin de forma matemática en el servidor
+            $horaFin = Carbon::parse($validated['hora_inicio'])
+                ->addMinutes($servicio->duracion)
+                ->format('H:i');
+
+            // 4. Inyectamos la hora_fin correcta en el array de datos
+            $validated['hora_fin'] = $horaFin;
+
+            // 5. Enviamos los datos limpios al Service para procesar la reprogramación
             $reservaActualizada = $this->reservaService->actualizar($reserva, $validated);
+            
             return response()->json([
                 'message' => 'Reserva reprogramada exitosamente.',
                 'reserva' => $reservaActualizada
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
@@ -94,7 +124,6 @@ class ReservaApiController extends Controller
         }
     }
 
-    // En App\Http\Controllers\Api\ReservaApiController
     
     public function historial(Request $request)
     {
@@ -115,9 +144,22 @@ class ReservaApiController extends Controller
         $historial = $reservas->map(function ($reserva) use ($user) {
             $yaCalifico = $reserva->calificaciones->where('evaluador_id', $user->id)->isNotEmpty();
 
-            $fechaFormateada = $reserva->fecha 
-                ? \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y H:i') 
+            // 1. Formateamos solo la fecha (Ej: 26/05/2026)
+            $soloFecha = $reserva->fecha 
+                ? \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y') 
                 : 'Fecha sin definir';
+
+            // 2. Extraemos la hora exacta de la columna hora_inicio
+            $soloHora = $reserva->hora_inicio 
+                ? \Carbon\Carbon::parse($reserva->hora_inicio)->format('H:i') 
+                : ''; 
+
+            $soloHoraFin = $reserva->hora_fin 
+                ? \Carbon\Carbon::parse($reserva->hora_fin)->format('H:i') 
+                : '';
+                
+            // 3. Unimos ambas partes (Ej: "26/05/2026 14:30")
+            $fechaFormateada = trim($soloFecha . ' ' . $soloHora . ' a ' . $soloHoraFin);
 
             $estadoReal = $reserva->estado ?? $reserva->estado_reserva ?? $reserva->estadoReserva ?? 'Pendiente';
 
@@ -127,7 +169,7 @@ class ReservaApiController extends Controller
             return [
                 'id' => $reserva->id,
                 'fecha' => $fechaFormateada,
-                'estado' => ucfirst($estadoReal),
+                'estado' => ucfirst(str_replace('_', ' ', $estadoReal)),
                 'servicio_nombre' => $reserva->servicio->nombre ?? 'Servicio',
                 'profesional_nombre' => $reserva->profesional->user->name ?? 'Profesional',
                 'cliente_nombre' => $reserva->cliente->user->name ?? 'Cliente',

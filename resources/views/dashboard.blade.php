@@ -149,23 +149,36 @@
                                                 </p>
                                             </div>
 
-                                            <div class="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-1">
-                                                <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider"
+                                            <div class="flex flex-col items-center gap-2 sm:col-span-2 lg:col-span-1">
+                                                
+                                                <span class="px-3 py-0.5 rounded-md border border-slate-500 text-[10px] font-bold uppercase tracking-widest text-slate-300"
                                                     x-text="session.status">
                                                 </span>
 
-                                                <template x-if="session.action_label">
-                                                    <button 
-                                                        @click.stop="avanzarEstadoReserva(session.id)" class="px-4 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-xs font-bold uppercase tracking-wider"
-                                                        x-text="session.action_label">
-                                                    </button>
-                                                </template>
+                                                <div class="flex items-center gap-3">
+                                                    
+                                                    <template x-if="session.status.toLowerCase() !== 'cancelada' && session.status.toLowerCase() !== 'finalizada'">
+                                                        <button 
+                                                            @click.stop="abrirModalCancelacion(session.id)" 
+                                                            class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
+                                                            Cancelar
+                                                        </button>
+                                                    </template>
 
-                                                <a :href="'/reserva/' + session.id + '/sala'" 
-                                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                                    Sala Virtual
+                                                    <template x-if="session.action_label">
+                                                        <button 
+                                                            @click.stop="avanzarEstadoReserva(session.id)" 
+                                                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
+                                                            x-text="session.action_label">
+                                                        </button>
+                                                    </template>
+                                                    <a :href="'/reserva/' + session.id + '/sala'" 
+                                                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
+                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                        Sala Virtual
                                                 </a>
+                                                </div>
+
                                             </div>
                                         </article>
                                     </template>
@@ -409,5 +422,36 @@
                 </aside>
             </div>
         </main>
+        <div x-show="showCancelModal" style="display: none;" x-cloak
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            
+            <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" 
+                @click.away="cerrarModalCancelacion()">
+                
+                <h3 class="text-xl font-serif text-white mb-2">Cancelar Consulta</h3>
+                <p class="text-sm text-slate-400 mb-5">
+                    Por favor, indica el motivo de la cancelación. Este mensaje será enviado al cliente para notificarle.
+                </p>
+                
+                <textarea 
+                    x-model="motivoCancelacion" 
+                    class="w-full bg-slate-800 border border-slate-600 rounded-md p-3 text-white text-sm focus:ring-red-500 focus:border-red-500 placeholder-slate-500 mb-5" 
+                    rows="3" 
+                    placeholder="Ej: Inconveniente personal de fuerza mayor..."></textarea>
+                
+                <div class="flex justify-end gap-3">
+                    <button 
+                        @click="cerrarModalCancelacion()" 
+                        class="px-4 py-2 rounded-md text-sm font-bold text-slate-300 hover:bg-slate-800 transition tracking-wide">
+                        VOLVER
+                    </button>
+                    <button 
+                        @click="confirmarCancelacion()" 
+                        class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition tracking-wide shadow-lg">
+                        CONFIRMAR CANCELACIÓN
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </x-app-layout>

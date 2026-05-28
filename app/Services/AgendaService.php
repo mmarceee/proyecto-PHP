@@ -7,6 +7,7 @@ use App\Models\ExcepcionDisponibilidad;
 use App\Models\Reserva;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Models\Profesional;
 
 class AgendaService
 {
@@ -210,5 +211,12 @@ class AgendaService
         return \App\Models\ExcepcionDisponibilidad::where('profesional_id', $profesional->id)
             ->where('fecha', $fecha)
             ->delete();
+    }
+
+    public function obtenerAgendaProfesional($profesionalId, ?string $fechaInicio = null)
+    {
+        $profesional = Profesional::findOrFail($profesionalId);
+        
+        return $this->obtenerAgendaSemana($profesional, $fechaInicio);
     }
 }

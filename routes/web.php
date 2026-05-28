@@ -56,4 +56,9 @@ Route::get('/reservas/historial', function () {
         return view('historial'); // Llama al archivo historial.blade.php
     })->name('reservas.historial');
 
+
+Route::get('/admin/categorias', function () {
+        return view('livewire.admin.categorias');
+    })->middleware(['auth', 'verified', 'admin'])->name('admin.categorias');
+
 require __DIR__.'/auth.php';

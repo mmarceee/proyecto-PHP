@@ -4,6 +4,7 @@ document.addEventListener('alpine:init', () => {
         cargandoAgenda: false,
         query: '',
         categoriaSeleccionada: 'Todas las categorías',
+        categorias: ['Todas las categorías'],
         menuCategoriasAbierto: false,
         profesionales: [],
         
@@ -17,7 +18,14 @@ document.addEventListener('alpine:init', () => {
         mensajeExito: '',
         error: '',
 
+        //Modal reservar turno
+        showConfirmModal: false,
+        fechaSeleccionada: '',
+        horaSeleccionada: '',
+
         async init() {
+            await this.cargarCategorias();
+            
             //ESCUCHADORES EN TIEMPO REAL: Si el usuario escribe o cambia la categoría, busca solo
             this.$watch('query', () => this.ejecutarBusqueda());
             this.$watch('categoriaSeleccionada', () => this.ejecutarBusqueda());
@@ -25,17 +33,23 @@ document.addEventListener('alpine:init', () => {
             // Carga inicial al abrir la pantalla
             await this.ejecutarBusqueda();
         },
-
+        
         async ejecutarBusqueda() {
             this.cargando = true;
             try {
-                const response = await fetch(`/api/servicios/buscar?q=${this.query}&categoria=${this.categoriaSeleccionada}`, {
+                const params = new URLSearchParams({
+                    q: this.query,
+                    categoria: this.categoriaSeleccionada
+                });
+
+                const response = await fetch(`/api/servicios/buscar?${params.toString()}`, {
                     headers: {
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
                     credentials: 'same-origin'
                 });
+
                 const data = await response.json();
                 this.profesionales = data.profesionales;
             } catch (err) {
@@ -44,23 +58,23 @@ document.addEventListener('alpine:init', () => {
                 this.cargando = false;
             }
         },
-
+        
         verDisponibilidad(profesional) {
             this.profesionalSeleccionado = profesional;
             this.servicioSeleccionado = null; // Reseteamos el servicio para obligar a elegir uno
             this.semana = [];
             this.error = '';
             this.mensajeExito = '';
-
+            
             window.dispatchEvent(new CustomEvent('filtrar-mapa', { detail: profesional.id }));
         },
-
+        
         async seleccionarServicio(servicio) {
             this.servicioSeleccionado = servicio;
             this.fechaInicio = new Date().toISOString().split('T')[0]; // Reiniciamos a hoy
             await this.cargarAgenda();
         },
-
+        
         async cargarAgenda() {
             if (!this.profesionalSeleccionado) return;
             this.cargandoAgenda = true;
@@ -80,14 +94,14 @@ document.addEventListener('alpine:init', () => {
                 this.cargandoAgenda = false;
             }
         },
-
+        
         async avanzarSemana() {
             let fecha = new Date(this.fechaInicio + 'T00:00:00');
             fecha.setDate(fecha.getDate() + 7);
             this.fechaInicio = fecha.toISOString().split('T')[0];
             await this.cargarAgenda();
         },
-
+        
         async retrocederSemana() {
             let fecha = new Date(this.fechaInicio + 'T00:00:00');
             fecha.setDate(fecha.getDate() - 7);
@@ -95,15 +109,30 @@ document.addEventListener('alpine:init', () => {
             await this.cargarAgenda();
         },
 
-        async reservarTurno(fecha, hora, ocupado) {
-            //CLÁUSULA DE GUARDIA: Si el bloque está ocupado, morimos acá
+        //Función que reemplaza a el antiguo @click en la grilla
+        prepararReserva(fecha, hora, ocupado) {
+            // CLÁUSULA DE GUARDIA: Si el bloque está ocupado, morimos acá
             if (ocupado) return; 
 
-            if (!confirm(`¿Confirmas la reserva para el día ${fecha} a las ${hora} hs?`)) return;
-            
+            // Limpiamos mensajes anteriores y guardamos los datos
             this.error = '';
             this.mensajeExito = '';
+            this.fechaSeleccionada = fecha;
+            this.horaSeleccionada = hora;
             
+            // Abrimos el modal elegante
+            this.showConfirmModal = true;
+        },
+
+        // 3. Función para cancelar/cerrar
+        cerrarModalReserva() {
+            this.showConfirmModal = false;
+            this.fechaSeleccionada = '';
+            this.horaSeleccionada = '';
+        },
+
+        // 4. Tu lógica de fetch intacta (Se llama desde el botón ACEPTAR del modal)
+        async ejecutarReserva() {
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 const response = await fetch('/api/paciente/agenda/reservar', {
@@ -118,23 +147,53 @@ document.addEventListener('alpine:init', () => {
                     body: JSON.stringify({
                         profesional_id: this.profesionalSeleccionado.id,
                         servicio_id: this.servicioSeleccionado.id,
-                        fecha: fecha,
-                        hora_inicio: hora
+                        // Usamos las variables que guardamos en prepararReserva()
+                        fecha: this.fechaSeleccionada, 
+                        hora_inicio: this.horaSeleccionada
                     })
                 });
-
+                
                 const data = await response.json();
-                // Capturamos el error 422 del backend si falló la validación horaria
+                
                 if (!response.ok) throw new Error(data.error || 'No se pudo agendar.');
 
+                // Si todo sale bien:
                 this.mensajeExito = data.message;
+                this.cerrarModalReserva(); // Cerramos el modal
                 await this.cargarAgenda(); // Refrescamos grilla de inmediato
+                
             } catch (err) {
                 this.error = err.message;
+                this.cerrarModalReserva(); // Cerramos el modal para que el usuario pueda ver el mensaje de error en pantalla
             }
-        }
-    }));
+        },
+        async cargarCategorias() {
+            try {
+                const response = await fetch('/api/servicios/categorias', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
 
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+        
+                const data = await response.json();
+        
+                this.categorias = [
+                    'Todas las categorías',
+                    ...(data.categorias ?? [])
+                ];
+            } catch (err) {
+                console.error('Error al cargar categorías:', err);
+                this.categorias = ['Todas las categorías'];
+            }
+        },    
+    }));
+    
     // ==========================================
     // NUEVO: COMPONENTE DEL MAPA DE BÚSQUEDA
     // ==========================================
@@ -142,7 +201,7 @@ document.addEventListener('alpine:init', () => {
         mapa: null,
         marcadores: [], 
         lugares: [],    
-
+        
         async iniciarMapa() {
             this.mapa = L.map(this.$refs.mapaBusqueda).setView([-34.9011, -56.1645], 7); 
             
@@ -216,4 +275,5 @@ document.addEventListener('alpine:init', () => {
             }
         }
     })); 
+
 });
