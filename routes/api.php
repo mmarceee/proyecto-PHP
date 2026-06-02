@@ -16,7 +16,7 @@ use App\Http\Controllers\Api\Admin\UsuarioAdminApiController;
 use App\Http\Controllers\Api\MapaApiController;
 use App\Http\Controllers\Api\Admin\CategoriaApiController;
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
         ->name('api.dashboard');
 
