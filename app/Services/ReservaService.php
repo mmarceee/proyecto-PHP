@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\AgendaActualizada;
 use App\Models\Reserva;
 use App\Jobs\EnviarNotificacionReserva;
 
@@ -39,7 +40,7 @@ class ReservaService
             $datos['hora_fin']
         );
 
-        return Reserva::create([
+        $reserva = Reserva::create([
             'cliente_id'     => $datos['cliente_id'],
             'profesional_id' => $datos['profesional_id'],
             'servicio_id'    => $datos['servicio_id'],
@@ -48,6 +49,11 @@ class ReservaService
             'hora_fin'       => $datos['hora_fin'],
             'estado_reserva' => $datos['estado_reserva'] ?? 'pendiente',
         ]);
+
+        // Disparar actualización por WebSocket en tiempo real
+        $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
+
+        return $reserva;
     }
 
     /**
@@ -73,7 +79,19 @@ class ReservaService
             }
         }
 
+        // Guardamos la fecha vieja antes de actualizar por si se cambia de día la reserva
+        $fechaOriginal = $reserva->fecha;
+
         $reserva->update($datos);
+
+        // Notificar el cambio al día asignado
+        $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
+        
+        // Si se cambió de fecha, actualizamos también la vieja para liberar el hueco en el front
+        if ($fechaOriginal !== $reserva->fecha) {
+            $this->despacharCambioAgenda($reserva->profesional_id, $fechaOriginal);
+        }
+
         return $reserva;
     }
 
@@ -90,6 +108,9 @@ class ReservaService
 
         //Despachamos a la cola de Redis
         EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
+
+        // Disparar WebSocket para liberar el horario en las pantallas de los demás
+        $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
 
         return $reserva;
     }
@@ -113,6 +134,26 @@ class ReservaService
         //Despachamos a la cola
         EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
 
+        // Disparar WebSocket por si cambia la visualización del bloque según el estado
+        $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
+
         return $reserva;
+    }
+
+    /**
+     * Método Auxiliar Privado: Obtiene los bloques ocupados del día y emite el WebSocket.
+     * Mantiene el código limpio y centralizado sin duplicar lógica.
+     */
+    private function despacharCambioAgenda($profesionalId, $fecha)
+    {
+        // Obtenemos todos los turnos ocupados de ese día usando tus mismas reglas conceptuales
+        $bloquesOcupados = Reserva::where('profesional_id', $profesionalId)
+            ->where('fecha', $fecha)
+            ->where('estado_reserva', '!=', 'cancelada')
+            ->get(['hora_inicio', 'hora_fin', 'estado_reserva'])
+            ->toArray();
+
+        // Emitimos el evento a Reverb (excluyendo al usuario que gatilló la petición HTTP original)
+        broadcast(new AgendaActualizada($profesionalId, $bloquesOcupados))->toOthers();
     }
 }
