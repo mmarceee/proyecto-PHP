@@ -78,6 +78,14 @@ new #[Layout('layouts.guest')] class extends Component
 ?>
 
 <div>
+    <x-google-auth-button class="mb-6" />
+
+    <div class="mb-6 flex items-center gap-3">
+        <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+        <span class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ __('o') }}</span>
+        <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+    </div>
+
     <form wire:submit="register">
         <!-- Name -->
         <div>

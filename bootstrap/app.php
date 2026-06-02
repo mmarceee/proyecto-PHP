@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'perfil.completo' => \App\Http\Middleware\AsegurarPerfilCompletoMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

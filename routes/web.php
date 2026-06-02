@@ -2,41 +2,42 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Reserva;
+use Livewire\Volt\Volt;
 
 Route::view('/', 'welcome');
 
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'perfil.completo'])
     ->name('dashboard');
 
 Route::view('profile', 'profile')
-    ->middleware(['auth'])
+    ->middleware(['auth',])
     ->name('profile');
 
 //Ruta de postulacion en la carpeta 'pages'
 Route::view('postularse', 'livewire.pages.postularse-profesional')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'perfil.completo'])
     ->name('profesional.postularse');
 
 Route::view('admin/profesionales', 'livewire.admin.solicitudes-profesionales')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin', 'perfil.completo'])
     ->name('admin.profesionales');
 
 Route::view('/prototipo/busqueda', 'prototipos.busqueda')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'perfil.completo'])
     ->name('prototipo.busqueda');
 
 Route::view('/prototipo/agenda', 'prototipos.agenda')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'perfil.completo'])
     ->name('prototipo.agenda');
 
 Route::view('/prototipo/perfil', 'prototipos.perfil')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'perfil.completo'])
     ->name('prototipo.perfil');
 
 Route::get('/profesional/servicios', function () {
     return view('profesional.servicios');
-})->middleware(['auth'])->name('profesional.servicios');
+    })->middleware(['auth', 'perfil.completo'])->name('profesional.servicios');
 
 Route::middleware(['auth'])->group(function () {
         Route::get('/reserva/{reserva}/sala', function (Reserva $reserva) {
@@ -45,11 +46,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
 Route::view('admin/usuarios', 'livewire.admin.usuarios')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin', 'perfil.completo'])
     ->name('admin.usuarios');
 
 Route::view('admin/categorias', 'livewire.admin.categorias')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin', 'perfil.completo'])
     ->name('admin.categorias');
     
 Route::get('/reservas/historial', function () {
@@ -59,6 +60,10 @@ Route::get('/reservas/historial', function () {
 
 Route::get('/admin/categorias', function () {
         return view('livewire.admin.categorias');
-    })->middleware(['auth', 'verified', 'admin'])->name('admin.categorias');
+    })->middleware(['auth', 'admin', 'perfil.completo'])->name('admin.categorias');
+
+Volt::route('completar-perfil', 'pages.completar-perfil')
+    ->middleware(['auth'])
+    ->name('perfil.completar');
 
 require __DIR__.'/auth.php';
