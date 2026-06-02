@@ -176,17 +176,28 @@ class AgendaService
     public function guardarReglasBase($profesional, array $reglas)
     {
         DB::transaction(function () use ($profesional, $reglas) {
-            $profesional->reglasDisponibilidad()->delete();
-
+            
             foreach ($reglas as $regla) {
-                if (!empty($regla['activo']) && !empty($regla['hora_inicio']) && !empty($regla['hora_fin'])) {
-                    $profesional->reglasDisponibilidad()->create([
-                        'dia_semana'     => $regla['dia_semana'],
-                        'hora_inicio'    => $regla['hora_inicio'],
-                        'hora_fin'       => $regla['hora_fin'],
-                        'duracion_turno' => $regla['duracion_turno'] ?? 60,
-                        'buffer_tiempo'  => $regla['buffer_tiempo'] ?? 0,
-                    ]);
+                // Nos aseguramos de leer bien si viene en true o false
+                $activo = filter_var($regla['activo'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+                if ($activo && !empty($regla['hora_inicio']) && !empty($regla['hora_fin'])) {
+                    // SI ESTÁ MARCADO: updateOrCreate busca por dia_semana. 
+                    // Si ya existía, actualiza las horas. Si no existía, lo crea nuevo.
+                    $profesional->reglasDisponibilidad()->updateOrCreate(
+                        ['dia_semana' => $regla['dia_semana']],
+                        [
+                            'hora_inicio'    => $regla['hora_inicio'],
+                            'hora_fin'       => $regla['hora_fin'],
+                            'duracion_turno' => $regla['duracion_turno'] ?? 60,
+                            'buffer_tiempo'  => $regla['buffer_tiempo'] ?? 0,
+                        ]
+                    );
+                } else {
+                    //SI ESTÁ DESMARCADO (o le faltan datos): Lo borramos de la base de datos.
+                    $profesional->reglasDisponibilidad()
+                                ->where('dia_semana', $regla['dia_semana'])
+                                ->delete();
                 }
             }
         });

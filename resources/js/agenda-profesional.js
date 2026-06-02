@@ -35,7 +35,7 @@ document.addEventListener('alpine:init', () => {
             this.cargando = true;
             this.error = '';
             try {
-                //Enviamos la fecha actual del estado a la API
+                // Enviamos la fecha actual del estado a la API
                 const response = await fetch(`/api/profesional/agenda?fecha=${this.fechaInicio}`, {
                     headers: {
                         'Accept': 'application/json',
@@ -50,11 +50,12 @@ document.addEventListener('alpine:init', () => {
 
                 if (data.reglas_actuales && data.reglas_actuales.length > 0) {
                     this.formReglas.forEach(r => {
-                        const encontrada = data.reglas_actuales.find(x => x.dia_semana === r.dia_semana);
+                        const encontrada = data.reglas_actuales.find(x => Number(x.dia_semana) === Number(r.dia_semana));
+                        
                         if (encontrada) {
                             r.activo = true;
-                            r.hora_inicio = encontrada.hora_inicio;
-                            r.hora_fin = encontrada.hora_fin;
+                            r.hora_inicio = encontrada.hora_inicio.substring(0, 5);
+                            r.hora_fin = encontrada.hora_fin.substring(0, 5);
                             r.duracion_turno = encontrada.duracion_turno;
                             r.buffer_tiempo = encontrada.buffer_tiempo;
                         } else {
