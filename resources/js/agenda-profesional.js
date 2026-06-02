@@ -29,6 +29,8 @@ document.addEventListener('alpine:init', () => {
 
         async init() {
             await this.cargarAgenda();
+            // AGREGADO: Inicializamos la escucha en tiempo real de forma segura
+            this.iniciarEscuchaRealtime();
         },
 
         async cargarAgenda() {
@@ -187,6 +189,31 @@ document.addEventListener('alpine:init', () => {
             } catch (err) {
                 this.error = err.message;
                 this.cargando = false;
+            }
+        },
+
+        /**
+         * AGREGADO: Escucha en tiempo real mediante WebSockets
+         * No interfiere con las funciones nativas de la aplicación.
+         */
+        iniciarEscuchaRealtime() {
+            // Buscamos el ID del profesional desde el meta tag configurado en el HTML
+            const profesionalId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+
+            if (!profesionalId) {
+                console.warn("WebSocket Advertencia: No se encontró <meta name='user-id'>. No se pudo enlazar el canal en tiempo real.");
+                return;
+            }
+
+            // Validamos que Laravel Echo esté cargado globalmente en el navegador
+            if (window.Echo) {
+                window.Echo.private(`profesional.${profesionalId}`)
+                    .listen('.agenda.modificada', async (evento) => {
+                        console.log("¡Cambio detectado en la agenda vía Sockets! Re-sincronizando grilla...", evento);
+                        
+                        // Re-ejecuta el método original de los gurises para actualizar la UI limpiamente
+                        await this.cargarAgenda();
+                    });
             }
         }
     }));
