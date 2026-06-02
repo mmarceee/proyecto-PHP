@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Reserva;
 use App\Jobs\EnviarNotificacionReserva;
+use App\Jobs\EnviarSolicitudResenaJob;
 
 class ReservaService
 {
@@ -112,6 +113,10 @@ class ReservaService
 
         //Despachamos a la cola
         EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
+
+        if($nuevoEstado === 'finalizada') {
+            EnviarSolicitudResenaJob::dispatch($reserva)->delay(now()->addHour());
+        }
 
         return $reserva;
     }
