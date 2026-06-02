@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Events\AgendaActualizada;
 use App\Models\Reserva;
 use App\Jobs\EnviarNotificacionReserva;
+use App\Jobs\EnviarSolicitudResenaJob;
 
 class ReservaService
 {
@@ -134,8 +135,13 @@ class ReservaService
         //Despachamos a la cola
         EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
 
+        if($nuevoEstado === 'finalizada') {
+            EnviarSolicitudResenaJob::dispatch($reserva)->delay(now()->addHour());
+        }
+
         // Disparar WebSocket por si cambia la visualización del bloque según el estado
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
+       
 
         return $reserva;
     }
