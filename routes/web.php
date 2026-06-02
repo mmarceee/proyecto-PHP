@@ -16,7 +16,7 @@ Route::view('profile', 'profile')
 
 //Ruta de postulacion en la carpeta 'pages'
 Route::view('postularse', 'livewire.pages.postularse-profesional')
-    ->middleware(['auth', 'verified', 'perfil.completo'])
+    ->middleware(['auth', 'perfil.completo'])
     ->name('profesional.postularse');
 
 Route::view('admin/profesionales', 'livewire.admin.solicitudes-profesionales')
@@ -56,11 +56,6 @@ Route::view('admin/categorias', 'livewire.admin.categorias')
 Route::get('/reservas/historial', function () {
         return view('historial'); // Llama al archivo historial.blade.php
     })->name('reservas.historial');
-
-
-Route::get('/admin/categorias', function () {
-        return view('livewire.admin.categorias');
-    })->middleware(['auth', 'admin', 'perfil.completo'])->name('admin.categorias');
 
 Volt::route('completar-perfil', 'pages.completar-perfil')
     ->middleware(['auth'])
