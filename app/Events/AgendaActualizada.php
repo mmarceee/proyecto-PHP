@@ -5,21 +5,20 @@ namespace App\Events;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+// 🛠️ LA LÍNEA CLAVE: Le dice a PHP exactamente de dónde importar la interfaz
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow; 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-// 'ShouldBroadcast' le dice a Laravel que este evento debe viajar por WebSockets (Reverb)
-class AgendaActualizada implements ShouldBroadcast
+class AgendaActualizada implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // Estas variables públicas se convierten automáticamente en el JSON que recibirá el Frontend
     public $profesionalId;
     public $bloquesOcupados;
 
     /**
-     * El constructor recibe los datos desde el Service.
+     * Constructor del Evento
      */
     public function __construct(int $profesionalId, array $bloquesOcupados)
     {
@@ -28,8 +27,7 @@ class AgendaActualizada implements ShouldBroadcast
     }
 
     /**
-     * Definimos el canal de comunicación. 
-     * Como es información de agenda, usaremos un canal privado por seguridad.
+     * Canal privado seguro
      */
     public function broadcastOn(): array
     {
@@ -39,7 +37,7 @@ class AgendaActualizada implements ShouldBroadcast
     }
 
     /**
-     * El nombre con el que Alpine/JS va a identificar este evento en el frontend.
+     * Alias para el Frontend
      */
     public function broadcastAs(): string
     {

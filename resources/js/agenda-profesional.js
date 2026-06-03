@@ -192,30 +192,39 @@ document.addEventListener('alpine:init', () => {
                 this.cargando = false;
             }
         },
-
+    /**
+     * 
+     * 
+     * 
+     */
+       
         /**
-         * AGREGADO: Escucha en tiempo real mediante WebSockets
-         * No interfiere con las funciones nativas de la aplicación.
+         * AGREGADO CON SENSORES: Escucha en tiempo real mediante WebSockets
+         */
+        /**
+         * AGREGADO: Escucha en tiempo real sintonizando el ID de Profesional correcto
          */
         iniciarEscuchaRealtime() {
-            // Buscamos el ID del profesional desde el meta tag configurado en el HTML
-            const profesionalId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+            // 1. Intentamos buscar primero el ID de profesional real, si no, caemos al de usuario
+            const profesionalId = document.querySelector('meta[name="profesional-id"]')?.getAttribute('content') 
+                               || document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+            
+            console.log("[WS DIAGNÓSTICO] Sintonizando WebSocket en el ID de Entidad:", profesionalId);
 
             if (!profesionalId) {
-                console.warn("WebSocket Advertencia: No se encontró <meta name='user-id'>. No se pudo enlazar el canal en tiempo real.");
+                console.warn("[WS DIAGNÓSTICO] No se encontró ningún ID para enlazar el WebSocket.");
                 return;
             }
 
-            // Validamos que Laravel Echo esté cargado globalmente en el navegador
             if (window.Echo) {
+                // Ahora se va a suscribir a 'profesional.5' en lugar de 'profesional.13'
                 window.Echo.private(`profesional.${profesionalId}`)
                     .listen('.agenda.modificada', async (evento) => {
-                        console.log("¡Cambio detectado en la agenda vía Sockets! Re-sincronizando grilla...", evento);
-                        
-                        // Re-ejecuta el método original de los gurises para actualizar la UI limpiamente
+                        console.log("[WS DIAGNÓSTICO] 🚀 ¡LLEGÓ EL SOPLIDO! Re-sincronizando grilla...", evento);
                         await this.cargarAgenda();
                     });
             }
         }
+
     }));
 });

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\EstadoReservaCambiado;
 use App\Events\AgendaActualizada;
 use App\Models\Reserva;
 use App\Jobs\EnviarNotificacionReserva;
@@ -99,6 +100,9 @@ class ReservaService
     /**
      * Cancelar una reserva de forma ultra limpia
      */
+/**
+     * Cancelar una reserva de forma ultra limpia
+     */
     public function cancelar(Reserva $reserva, string $motivo)
     {
         // El servicio solo altera el estado del recurso en la BD
@@ -112,6 +116,10 @@ class ReservaService
 
         // Disparar WebSocket para liberar el horario en las pantallas de los demás
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
+
+        // Disparamos usando el user_id real del cliente para que coincida con el frontend
+        \Log::info("[WS BACKEND] Disparando cancelación al cliente (User ID): " . $reserva->cliente->user_id);
+        broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'cancelada'));
 
         return $reserva;
     }
@@ -141,25 +149,28 @@ class ReservaService
 
         // Disparar WebSocket por si cambia la visualización del bloque según el estado
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
-       
+
+        // Disparamos usando el user_id real del cliente para que coincida con el frontend
+        \Log::info("[WS BACKEND] Disparando evento de estado al cliente (User ID): " . $reserva->cliente->user_id);
+        broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, $nuevoEstado));
 
         return $reserva;
     }
 
     /**
      * Método Auxiliar Privado: Obtiene los bloques ocupados del día y emite el WebSocket.
-     * Mantiene el código limpio y centralizado sin duplicar lógica.
      */
     private function despacharCambioAgenda($profesionalId, $fecha)
     {
-        // Obtenemos todos los turnos ocupados de ese día usando tus mismas reglas conceptuales
         $bloquesOcupados = Reserva::where('profesional_id', $profesionalId)
             ->where('fecha', $fecha)
             ->where('estado_reserva', '!=', 'cancelada')
             ->get(['hora_inicio', 'hora_fin', 'estado_reserva'])
             ->toArray();
 
-        // Emitimos el evento a Reverb (excluyendo al usuario que gatilló la petición HTTP original)
-        broadcast(new AgendaActualizada($profesionalId, $bloquesOcupados))->toOthers();
+        \Log::info("[WS BACKEND] Disparando broadcast para el profesional ID: " . $profesionalId);
+
+        
+        broadcast(new AgendaActualizada($profesionalId, $bloquesOcupados));
     }
 }

@@ -13,6 +13,13 @@ document.addEventListener('alpine:init', () => {
         reservaACancelar: null,
         motivoCancelacion: '',
 
+        async init() {
+            await this.cargarDashboard();
+            
+            // 🛠️ 1. Iniciar la escucha de WebSockets apenas arranca el dashboard
+            this.iniciarEscuchaRealtime();
+        },
+
         async cargarDashboard() {
             this.cargando = true;
                 try {
@@ -225,12 +232,47 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        
+        //FUNCIÓN CORREGIDA Y COMPLETA
+        iniciarEscuchaRealtime() {
+            if (!window.Echo) return;
+
+            // --- 1. SI ES CLIENTE: Escucha cambios de estado ---
+            if (this.tipo === 'cliente') {
+                const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+                if (userId) {
+                    console.log(`[WS CLIENTE] Sintonizando radio: 'usuario.${userId}'`);
+                    window.Echo.private(`usuario.${userId}`)
+                        .listen('.reserva.estado.cambiado', async (evento) => {
+                            console.log("🚀 [WS CLIENTE] ¡El profesional cambió el estado!", evento);
+                            await this.cargarDashboard(); 
+                        });
+                }
+            }
+
+            // --- 2. SI ES PROFESIONAL: Escucha nuevas reservas (¡Lo que faltaba!) ---
+            if (this.tipo === 'profesional') {
+                const profesionalId = document.querySelector('meta[name="profesional-id"]')?.getAttribute('content');
+                if (profesionalId) {
+                    console.log(`[WS PROFESIONAL] Sintonizando radio de agenda: 'profesional.${profesionalId}'`);
+                    window.Echo.private(`profesional.${profesionalId}`)
+                        .listen('.agenda.modificada', async (evento) => {
+                            console.log("🚀 [WS PROFESIONAL] ¡Te cayó una nueva reserva!", evento);
+                            await this.cargarDashboard(); 
+                        });
+                }
+            }
+        },
+
         get selectedProfessionalSession() {
             return this.consultasHoy.find(s => s.id === this.selectedItem) ?? { client_name: '', packages: [] };
         },
 
         get selectedClientReservation() {
             return this.proximasSesiones.find(r => r.id === this.selectedItem) ?? { professional_name: '', specialty: '', packages: [] };
-        }
+        },
+
+
     }));
 });
+

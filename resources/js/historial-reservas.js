@@ -16,6 +16,9 @@ document.addEventListener('alpine:init', () => {
 
         async init() {
             await this.cargarHistorial();
+            
+            // 🛠️ 1. Iniciar la escucha de WebSockets apenas carga el historial
+            this.iniciarEscuchaRealtime();
         },
 
         async cargarHistorial() {
@@ -82,6 +85,31 @@ document.addEventListener('alpine:init', () => {
             } catch (err) {
                 this.error = err.message;
             }
+        },
+
+        // 🛠️ 2. NUEVA FUNCIÓN: Escucha de WebSockets para el Historial
+        iniciarEscuchaRealtime() {
+            // Buscamos el ID del usuario inyectado en el Blade
+            const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+
+            if (!userId) return;
+
+            // Verificamos que Reverb esté vivo
+            if (window.Echo) {
+                console.log(`[WS HISTORIAL] Sintonizando radio de reservas: 'usuario.${userId}'`);
+                
+                window.Echo.private(`usuario.${userId}`)
+                    .listen('.reserva.estado.cambiado', async (evento) => {
+                        console.log("🚀 [WS HISTORIAL] ¡El profesional cambió el estado de tu reserva!", evento);
+                        
+                        // Recargamos el historial para traer la etiqueta actualizada
+                        await this.cargarHistorial(); 
+                        
+                        // Cartelito de aviso nativo
+                        alert(`¡Atención! El estado de tu reserva en el historial ha cambiado a: ${evento.nuevoEstado.toUpperCase()}`);
+                    });
+            }
         }
+
     }));
 });
