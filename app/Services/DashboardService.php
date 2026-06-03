@@ -32,7 +32,7 @@ class DashboardService
                 'period' => $horaCarbon->format('A'), // "AM" o "PM"
                 'client_name' => $reserva->cliente?->user?->name ?? 'Paciente Anónimo',
                 'reason' => 'Consulta de control general', // Puedes cambiarlo si agregás columna motivo
-                'status'       => ucfirst($reserva->estado_reserva), // Ej: "Pendiente", "Confirmada", "En_curso"
+                'status'       => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)), // Ej: "Pendiente", "Confirmada", "En curso"
                 'status_raw'   => $reserva->estado_reserva, // Nos sirve para evaluar en el JS de Alpine sin formatear
                 
                 //BOTÓN DE ACCIÓN INTELIGENTE BASADO EN LA LISTA DE ENUMS
@@ -88,7 +88,7 @@ class DashboardService
                 'time' => $horaCarbon->format('H:i'),
                 'professional_name' => $reserva->profesional?->user?->name ?? 'Profesional',
                 'specialty' => $reserva->servicio?->nombre ?? 'Especialidad',
-                'status' => ucfirst($reserva->estado_reserva),
+                'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'packages' => [] // Estructura reservada para mantener reactividad en Alpine
             ];
         })->toArray();

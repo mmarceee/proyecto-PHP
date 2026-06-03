@@ -15,21 +15,22 @@ class AgendaApiController extends Controller
      */
     public function obtenerAgenda(Request $request, \App\Services\AgendaService $agendaService)
     {
-        // 1. Obtenemos el usuario logueado y verificamos que sea profesional
+        //Obtenemos el usuario logueado y verificamos que sea profesional
         $user = $request->user();
         if (!$user || !$user->profesional) {
             return response()->json(['error' => 'Acceso denegado. No eres un profesional.'], 403);
         }
 
-        // 2. Leemos la fecha de la URL (si viene)
+        // Leemos la fecha de la URL (si viene)
         $fechaInicio = $request->query('fecha');
 
         try {
-            // 3. Llamamos al servicio que armamos con el cruce de datos inteligente
+            //Llamamos al servicio que armamos con el cruce de datos inteligente
             $semana = $agendaService->obtenerAgendaSemana($user->profesional, $fechaInicio);
 
             return response()->json([
-                'semana' => $semana
+                'semana' => $semana,
+                'reglas_actuales' => $user->profesional->reglasDisponibilidad
             ]);
             
         } catch (\Exception $e) {

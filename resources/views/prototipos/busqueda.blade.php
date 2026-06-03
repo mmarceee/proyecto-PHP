@@ -16,7 +16,6 @@
             <div
                 class="py-12"
                 x-data="busquedaServicios"
-                @filtrar-mapa.window="filtrarPorProfesional($event.detail)"
             >
                 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
@@ -96,7 +95,6 @@
 
                         {{-- Columna izquierda: mapa + especialistas --}}
                         <section class="space-y-8">
-
                             
                             {{-- Especialistas encontrados --}}
                             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm space-y-6">
@@ -115,21 +113,21 @@
                                             :class="profesionalSeleccionado?.id === profesional.id ? 'border-2 border-blue-500 ring-2 ring-blue-500/10' : 'border border-gray-200 dark:border-gray-600'"
                                             class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm flex flex-col justify-between transition-all"
                                             >
-                                            <div>
-                                                <div class="flex justify-between items-start gap-3">
-                                                    <h4 class="text-lg font-bold text-gray-900 dark:text-white" x-text="profesional.nombre"></h4>
+                                                <div>
+                                                    <div class="flex justify-between items-start gap-3">
+                                                        <h4 class="text-lg font-bold text-gray-900 dark:text-white" x-text="profesional.nombre"></h4>
+                                                        
+                                                        <span
+                                                        class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded uppercase tracking-wider font-mono"
+                                                        x-text="profesional.nombre_comercial ?? 'Independiente'"
+                                                        ></span>
+                                                    </div>
                                                     
-                                                    <span
-                                                    class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded uppercase tracking-wider font-mono"
-                                                    x-text="profesional.nombre_comercial ?? 'Independiente'"
-                                                    ></span>
-                                                </div>
-                                                
-                                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                    Servicios que ofrece:
-                                                </p>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                        Servicios que ofrece:
+                                                    </p>
                                                     
-                                                <div class="mt-2 flex flex-wrap gap-1.5">
+                                                    <div class="mt-2 flex flex-wrap gap-1.5">
                                                         <template x-for="s in profesional.servicios" :key="s.id">
                                                             <span
                                                             class="text-[10px] font-bold px-2 py-0.5 rounded bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600"
@@ -144,30 +142,32 @@
                                                 @click="verDisponibilidad(profesional)"
                                                 class="w-full mt-5 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm font-semibold tracking-wide"
                                                 >
-                                                Ver Disponibilidad
-                                            </button>
+                                                    Ver Disponibilidad
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    
+                                    <template x-if="!cargando && profesionales.length === 0">
+                                        <div class="p-8 bg-white dark:bg-gray-800 text-center rounded-xl text-sm text-gray-400 border border-dashed border-gray-300 dark:border-gray-700">
+                                            Escribe el nombre de un especialista o servicio para comenzar.
                                         </div>
                                     </template>
                                 </div>
-                                
-                                <template x-if="!cargando && profesionales.length === 0">
-                                    <div class="p-8 bg-white dark:bg-gray-800 text-center rounded-xl text-sm text-gray-400 border border-dashed border-gray-300 dark:border-gray-700">
-                                        Escribe el nombre de un especialista o servicio para comenzar.
-                                    </div>
-                                </template>
                             </div>
-                        </div>
-                        {{-- Mapa --}}
-                        <div 
-                            x-data="mapaBusqueda()" 
-                            x-init="iniciarMapa()"
-                            class="w-full h-[350px] rounded-lg shadow-md z-0 relative border border-gray-700 overflow-hidden"
-                        >
-                            <div x-ref="mapaBusqueda" class="w-full h-full rounded-lg"></div>
-                        </div>
-                    </section>
-                    
-                    {{-- Columna derecha: reserva de turno --}}
+
+                            {{-- Mapa --}}
+                            <div 
+                                x-data="mapaBusqueda()" 
+                                x-init="iniciarMapa()"
+                                @filtrar-mapa.window="filtrarPorProfesional($event.detail)"
+                                class="w-full h-[350px] rounded-lg shadow-md z-0 relative border border-gray-700 overflow-hidden"
+                            >
+                                <div x-ref="mapaBusqueda" class="w-full h-full rounded-lg"></div>
+                            </div>
+                        </section>
+                        
+                        {{-- Columna derecha: reserva de turno --}}
                         <aside class="space-y-4">
                             <h3 class="text-xs uppercase tracking-wider font-extrabold text-gray-400">
                                 Reserva de Turno
@@ -296,7 +296,7 @@
                                                         <template x-for="slot in dia.bloques" :key="slot.hora">
                                                             <button 
                                                                 type="button"
-                                                                @click="reservarTurno(dia.fecha, slot.hora, slot.ocupado)"
+                                                                @click="prepararReserva(dia.fecha, slot.hora, slot.ocupado)"
                                                                 :disabled="slot.ocupado" 
                                                                 :class="slot.ocupado 
                                                                     ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border-transparent cursor-not-allowed line-through' 
@@ -316,6 +316,36 @@
                         </aside>
                     </div>
                 </div>
+
+                {{-- MODAL DE CONFIRMACIÓN DE RESERVA --}}
+                <div x-show="showConfirmModal" style="display: none;" x-cloak
+                    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    
+                    <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" 
+                        @click.away="cerrarModalReserva()">
+                        
+                        <h3 class="text-xl font-serif text-white mb-4">Confirmar Reserva</h3>
+                        
+                        <p class="text-sm text-slate-300 mb-6">
+                            ¿Confirmas la reserva para el día <strong class="text-white" x-text="fechaSeleccionada"></strong> a las <strong class="text-white"><span x-text="horaSeleccionada"></span> hs</strong>?
+                        </p>
+                        
+                        <div class="flex justify-end gap-3">
+                            <button 
+                                @click="cerrarModalReserva()" 
+                                class="px-4 py-2 rounded-md text-sm font-bold text-slate-400 hover:bg-slate-800 transition tracking-wide">
+                                CANCELAR
+                            </button>
+                            <button 
+                                @click="ejecutarReserva()" 
+                                class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition tracking-wide shadow-lg">
+                                ACEPTAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {{-- FIN DEL MODAL --}}
+
             </div>
         </main>
     </div>

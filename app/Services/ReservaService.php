@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Reserva;
+use App\Jobs\EnviarNotificacionReserva;
+use App\Jobs\EnviarSolicitudResenaJob;
 
 class ReservaService
 {
@@ -98,6 +100,9 @@ class ReservaService
 
         $this->notificacionService->notificarReservaCancelada($reserva);
 
+        //Despachamos a la cola de Redis
+        EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
+
         return $reserva;
     }
 
@@ -121,6 +126,25 @@ class ReservaService
 
         if ($estadoAnterior === 'pendiente' && $nuevoEstado === 'confirmada') {
             $this->notificacionService->notificarReservaConfirmada($reserva);
+        }
+            
+        //Despachamos a la cola
+        EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
+
+        if($nuevoEstado === 'finalizada') {
+            EnviarSolicitudResenaJob::dispatch($reserva)->delay(now()->addHour());
+        }
+
+        if ($estadoAnterior === 'confirmada' && $nuevoEstado === 'en_curso') {
+            $this->notificacionService->notificarReservaEnCurso($reserva);
+        }
+
+        if ($estadoAnterior === 'pagada' && $nuevoEstado === 'en_curso') {
+            $this->notificacionService->notificarReservaEnCurso($reserva);
+        }
+
+        if ($estadoAnterior === 'en_curso' && $nuevoEstado === 'finalizada') {
+            $this->notificacionService->notificarReservaFinalizada($reserva);
         }
 
         return $reserva;

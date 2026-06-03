@@ -17,7 +17,12 @@ document.addEventListener('alpine:init', () => {
         fechaInicio: new Date().toISOString().split('T')[0],
         mensajeExito: '',
         error: '',
-        
+
+        //Modal reservar turno
+        showConfirmModal: false,
+        fechaSeleccionada: '',
+        horaSeleccionada: '',
+
         async init() {
             await this.cargarCategorias();
             
@@ -103,16 +108,31 @@ document.addEventListener('alpine:init', () => {
             this.fechaInicio = fecha.toISOString().split('T')[0];
             await this.cargarAgenda();
         },
-        
-        async reservarTurno(fecha, hora, ocupado) {
-            //CLÁUSULA DE GUARDIA: Si el bloque está ocupado, morimos acá
+
+        //Función que reemplaza a el antiguo @click en la grilla
+        prepararReserva(fecha, hora, ocupado) {
+            // CLÁUSULA DE GUARDIA: Si el bloque está ocupado, morimos acá
             if (ocupado) return; 
-            
-            if (!confirm(`¿Confirmas la reserva para el día ${fecha} a las ${hora} hs?`)) return;
-            
+
+            // Limpiamos mensajes anteriores y guardamos los datos
             this.error = '';
             this.mensajeExito = '';
+            this.fechaSeleccionada = fecha;
+            this.horaSeleccionada = hora;
             
+            // Abrimos el modal elegante
+            this.showConfirmModal = true;
+        },
+
+        // 3. Función para cancelar/cerrar
+        cerrarModalReserva() {
+            this.showConfirmModal = false;
+            this.fechaSeleccionada = '';
+            this.horaSeleccionada = '';
+        },
+
+        // 4. Tu lógica de fetch intacta (Se llama desde el botón ACEPTAR del modal)
+        async ejecutarReserva() {
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 const response = await fetch('/api/paciente/agenda/reservar', {
@@ -127,19 +147,24 @@ document.addEventListener('alpine:init', () => {
                     body: JSON.stringify({
                         profesional_id: this.profesionalSeleccionado.id,
                         servicio_id: this.servicioSeleccionado.id,
-                        fecha: fecha,
-                        hora_inicio: hora
+                        // Usamos las variables que guardamos en prepararReserva()
+                        fecha: this.fechaSeleccionada, 
+                        hora_inicio: this.horaSeleccionada
                     })
                 });
                 
                 const data = await response.json();
-                // Capturamos el error 422 del backend si falló la validación horaria
-                if (!response.ok) throw new Error(data.error || 'No se pudo agendar.');
                 
+                if (!response.ok) throw new Error(data.error || 'No se pudo agendar.');
+
+                // Si todo sale bien:
                 this.mensajeExito = data.message;
+                this.cerrarModalReserva(); // Cerramos el modal
                 await this.cargarAgenda(); // Refrescamos grilla de inmediato
+                
             } catch (err) {
                 this.error = err.message;
+                this.cerrarModalReserva(); // Cerramos el modal para que el usuario pueda ver el mensaje de error en pantalla
             }
         },
         async cargarCategorias() {
