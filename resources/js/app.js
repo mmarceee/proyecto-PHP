@@ -9,3 +9,5 @@ import './agenda-profesional';
 import './historial-reservas';
 import './solicitudes-profesionales';
 import './categorias';
+import './paquetes-profesional'
+import './explorar-paquetes';

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\VideoLlamadaApiController;
 use App\Http\Controllers\Api\Admin\UsuarioAdminApiController;
 use App\Http\Controllers\Api\MapaApiController;
 use App\Http\Controllers\Api\Admin\CategoriaApiController;
+use App\Http\Controllers\Api\PaqueteApiController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -85,6 +86,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
         
     Route::post('/reservas/{id}/calificar', [CalificacionApiController::class, 'store'])
     ->name('api.reservas.calificar');
+
+    Route::prefix('profesional/paquetes')->group(function () {
+        Route::get('/', [PaqueteApiController::class, 'index']);
+        Route::post('/', [PaqueteApiController::class, 'store']);
+        Route::patch('/{id}/toggle', [PaqueteApiController::class, 'toggleActivo']);
+    });
+
+    Route::prefix('cliente/paquetes')->group(function () {
+        Route::get('/disponibles', [PaqueteApiController::class, 'disponibles']);
+        Route::get('/', [PaqueteApiController::class, 'misPaquetes']);
+        Route::post('/{idPaquete}/comprar', [PaqueteApiController::class, 'comprar']);
+    });
+
 
     
     
