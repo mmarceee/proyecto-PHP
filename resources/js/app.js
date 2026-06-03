@@ -11,3 +11,4 @@ import './solicitudes-profesionales';
 import './categorias';
 import './paquetes-profesional'
 import './explorar-paquetes';
+import './notificaciones';

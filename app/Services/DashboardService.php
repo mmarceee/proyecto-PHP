@@ -48,6 +48,51 @@ class DashboardService
     }
 
     /**
+     * Obtener reservas pendientes del profesional desde hoy en adelante
+     */
+    public function obtenerReservasPendientesProfesional($profesionalId)
+    {
+        $hoy = Carbon::today()->toDateString();
+
+        $reservas = Reserva::with(['cliente.user', 'servicio'])
+            ->where('profesional_id', $profesionalId)
+            ->where('fecha', '>=', $hoy)
+            ->where('estado_reserva', 'pendiente')
+            ->orderBy('fecha', 'asc')
+            ->orderBy('hora_inicio', 'asc')
+            ->get();
+
+        return $reservas->map(function ($reserva) {
+            $fechaReserva = Carbon::parse($reserva->fecha);
+            $horaInicio = Carbon::parse($reserva->hora_inicio);
+
+            if ($fechaReserva->isToday()) {
+                $dateLabel = 'Hoy';
+            } elseif ($fechaReserva->isTomorrow()) {
+                $dateLabel = 'Mañana';
+            } else {
+                $dateLabel = ucfirst($fechaReserva->isoFormat('dddd D/M'));
+            }
+
+            $userCliente = $reserva->cliente?->user;
+
+            $nombreCliente = trim(($userCliente?->name ?? '') . ' ' . ($userCliente?->apellido ?? ''));
+
+            return [
+                'id' => $reserva->id,
+                'date_label' => $dateLabel,
+                'date' => $fechaReserva->format('d/m/Y'),
+                'time' => $horaInicio->format('H:i'),
+                'client_name' => $nombreCliente,
+                'service_name' => $reserva->servicio?->nombre ?? 'Servicio',
+                'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
+                'status_raw' => $reserva->estado_reserva,
+                'action_label' => 'Confirmar',
+            ];
+        })->toArray();
+    }
+
+    /**
      * Obtener las próximas sesiones de un cliente (de hoy en adelante)
      */
     public function obtenerProximasSesiones($userId)

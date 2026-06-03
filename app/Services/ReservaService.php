@@ -8,6 +8,10 @@ use App\Jobs\EnviarSolicitudResenaJob;
 
 class ReservaService
 {
+    public function __construct(
+        private NotificacionService $notificacionService
+    ) {}
+
     /**
      * Valida que no existan superposiciones horarias para el mismo profesional
      */
@@ -40,7 +44,7 @@ class ReservaService
             $datos['hora_fin']
         );
 
-        return Reserva::create([
+        $reserva = Reserva::create([
             'cliente_id'     => $datos['cliente_id'],
             'profesional_id' => $datos['profesional_id'],
             'servicio_id'    => $datos['servicio_id'],
@@ -49,6 +53,11 @@ class ReservaService
             'hora_fin'       => $datos['hora_fin'],
             'estado_reserva' => $datos['estado_reserva'] ?? 'pendiente',
         ]);
+
+        $this->notificacionService->notificarNuevaReserva($reserva);
+
+        return $reserva;
+        
     }
 
     /**
@@ -89,6 +98,8 @@ class ReservaService
             'motivo_cancelacion' => $motivo,
         ]);
 
+        $this->notificacionService->notificarReservaCancelada($reserva);
+
         //Despachamos a la cola de Redis
         EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
 
@@ -100,6 +111,8 @@ class ReservaService
      */
     public function avanzarEstado(Reserva $reserva)
     {
+        $estadoAnterior = $reserva->estado_reserva;
+
         $nuevoEstado = match ($reserva->estado_reserva) {
             'pendiente'             => 'confirmada',
             'confirmada', 'pagada'  => 'en_curso',
@@ -114,8 +127,24 @@ class ReservaService
         //Despachamos a la cola
         EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
 
+        if ($estadoAnterior === 'pendiente' && $nuevoEstado === 'confirmada') {
+            $this->notificacionService->notificarReservaConfirmada($reserva);
+        }
+            
         if($nuevoEstado === 'finalizada') {
             EnviarSolicitudResenaJob::dispatch($reserva)->delay(now()->addHour());
+        }
+
+        if ($estadoAnterior === 'confirmada' && $nuevoEstado === 'en_curso') {
+            $this->notificacionService->notificarReservaEnCurso($reserva);
+        }
+
+        if ($estadoAnterior === 'pagada' && $nuevoEstado === 'en_curso') {
+            $this->notificacionService->notificarReservaEnCurso($reserva);
+        }
+
+        if ($estadoAnterior === 'en_curso' && $nuevoEstado === 'finalizada') {
+            $this->notificacionService->notificarReservaFinalizada($reserva);
         }
 
         return $reserva;

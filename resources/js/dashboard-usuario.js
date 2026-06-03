@@ -7,6 +7,7 @@ document.addEventListener('alpine:init', () => {
         profesional: { tieneSolicitud: false, estado: '', pendiente: false, aprobado: false },
         adminPendingProfessionals: [],
         consultasHoy: [],
+        reservasPendientes: [],
         proximasSesiones: [],
         selectedItem: null,
         showCancelModal: false,
@@ -58,6 +59,7 @@ document.addEventListener('alpine:init', () => {
                     };
                     this.adminPendingProfessionals = data.datos?.profesionalesPendientes ?? [];
                     this.consultasHoy = data.datos?.consultasHoy ?? [];
+                    this.reservasPendientes = data.datos?.reservasPendientes ?? [];
                     this.proximasSesiones = data.datos?.proximasSesiones ?? [];
 
                     if (this.tipo === 'profesional' && this.consultasHoy.length > 0) {
