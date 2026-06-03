@@ -458,7 +458,7 @@
                                 </div>
                             </template>
 
-                            <a href="/prototipo/busqueda"
+                            <a href="{{ route('cliente.paquetes.explorar') }}"
                             class="mt-6 block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
                                 Buscar paquetes
                             </a>
