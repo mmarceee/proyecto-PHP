@@ -54,7 +54,7 @@ class DashboardApiController extends Controller
             $reservasPendientes = $DashboardService->obtenerReservasPendientesProfesional($profesional->id);
         }
 
-        if ($esCliente) {
+        if (!$esAdmin) {
             $proximasSesiones = $DashboardService->obtenerProximasSesiones($user->id);
         }
 

@@ -83,7 +83,7 @@ class DashboardService
                 'date_label' => $dateLabel,
                 'date' => $fechaReserva->format('d/m/Y'),
                 'time' => $horaInicio->format('H:i'),
-                'client_name' => $nombreCliente,
+                'client_name' => $nombreCliente ?: 'Paciente Anónimo',
                 'service_name' => $reserva->servicio?->nombre ?? 'Servicio',
                 'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'status_raw' => $reserva->estado_reserva,

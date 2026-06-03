@@ -113,16 +113,8 @@ document.addEventListener('alpine:init', () => {
                 });
 
                 if (response.ok) {
-                    // Buscamos la reserva en la pantalla y actualizamos su estado
-                    const index = this.consultasHoy.findIndex(r => r.id === this.reservaACancelar);
-                    if(index !== -1) {
-                        this.consultasHoy[index].status = 'Cancelada';
-                        this.consultasHoy[index].action_label = null; // Esto oculta el botón azul
-                    }
-                    
-                    // Cerramos el modal
                     this.cerrarModalCancelacion();
-                    
+                    await this.cargarDashboard();
                 } else {
                     const error = await response.json();
                     alert('Error al cancelar: ' + (error.message || 'Intenta nuevamente'));
