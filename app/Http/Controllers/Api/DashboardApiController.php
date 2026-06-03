@@ -47,9 +47,11 @@ class DashboardApiController extends Controller
 
         $consultasHoy = [];
         $proximasSesiones = [];
+        $reservasPendientes = [];
 
         if ($esProfesional && $profesional) {
             $consultasHoy = $DashboardService->obtenerConsultasHoy($profesional->id);
+            $reservasPendientes = $DashboardService->obtenerReservasPendientesProfesional($profesional->id);
         }
 
         if ($esCliente) {
@@ -74,6 +76,7 @@ class DashboardApiController extends Controller
                 'profesionalesPendientes' => $profesionalesPendientes,
                 'consultasHoy' => $consultasHoy,
                 'proximasSesiones' => $proximasSesiones,
+                'reservasPendientes' => $reservasPendientes,
             ],
         ]);
     }
