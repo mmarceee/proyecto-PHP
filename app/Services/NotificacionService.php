@@ -57,7 +57,7 @@ class NotificacionService
             'user_id' => $reserva->profesional->user_id,
             'reserva_id' => $reserva->id,
             'titulo' => 'Nueva reserva',
-            'mensaje' => 'Tenés una nueva reserva pendiente.',
+            'mensaje' => 'Hay una nueva reserva pendiente.',
             'tipo_not' => 'confirmacion_reserva',
             'canal_not' => 'sistema',
             'estado_not' => 'pendiente',
@@ -103,5 +103,39 @@ class NotificacionService
                 'fechaCreacion' => now()->toDateString(),
             ]);
         }
+    }
+
+    public function notificarReservaEnCurso(Reserva $reserva): Notificacion
+    {
+        $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
+
+        return Notificacion::create([
+            'user_id' => $reserva->cliente->user_id,
+            'reserva_id' => $reserva->id,
+            'titulo' => 'Reserva en curso',
+            'mensaje' => 'Tu reserva está en curso.',
+            'tipo_not' => 'mensaje_relevante',
+            'canal_not' => 'sistema',
+            'estado_not' => 'pendiente',
+            'leida' => false,
+            'fechaCreacion' => now()->toDateString(),
+        ]);
+    }
+
+    public function notificarReservaFinalizada(Reserva $reserva): Notificacion
+    {
+        $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
+
+        return Notificacion::create([
+            'user_id' => $reserva->cliente->user_id,
+            'reserva_id' => $reserva->id,
+            'titulo' => 'Sesión finalizada',
+            'mensaje' => 'Tu sesión ha finalizado.',
+            'tipo_not' => 'mensaje_relevante',
+            'canal_not' => 'sistema',
+            'estado_not' => 'pendiente',
+            'leida' => false,
+            'fechaCreacion' => now()->toDateString(),
+        ]);
     }
 }

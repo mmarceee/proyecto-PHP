@@ -124,13 +124,13 @@ class ReservaService
             'estado_reserva' => $nuevoEstado
         ]);
 
+        //Despachamos a la cola
+        EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
+
         if ($estadoAnterior === 'pendiente' && $nuevoEstado === 'confirmada') {
             $this->notificacionService->notificarReservaConfirmada($reserva);
         }
             
-        //Despachamos a la cola
-        EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
-
         if($nuevoEstado === 'finalizada') {
             EnviarSolicitudResenaJob::dispatch($reserva)->delay(now()->addHour());
         }
