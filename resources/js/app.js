@@ -9,3 +9,4 @@ import './agenda-profesional';
 import './historial-reservas';
 import './solicitudes-profesionales';
 import './categorias';
+import './notificaciones';

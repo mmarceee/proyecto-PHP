@@ -6,6 +6,10 @@ use App\Models\Reserva;
 
 class ReservaService
 {
+    public function __construct(
+        private NotificacionService $notificacionService
+    ) {}
+
     /**
      * Valida que no existan superposiciones horarias para el mismo profesional
      */
@@ -38,7 +42,7 @@ class ReservaService
             $datos['hora_fin']
         );
 
-        return Reserva::create([
+        $reserva = Reserva::create([
             'cliente_id'     => $datos['cliente_id'],
             'profesional_id' => $datos['profesional_id'],
             'servicio_id'    => $datos['servicio_id'],
@@ -47,6 +51,11 @@ class ReservaService
             'hora_fin'       => $datos['hora_fin'],
             'estado_reserva' => $datos['estado_reserva'] ?? 'pendiente',
         ]);
+
+        $this->notificacionService->notificarNuevaReserva($reserva);
+
+        return $reserva;
+        
     }
 
     /**
@@ -87,6 +96,8 @@ class ReservaService
             'motivo_cancelacion' => $motivo,
         ]);
 
+        $this->notificacionService->notificarReservaCancelada($reserva);
+
         return $reserva;
     }
 
@@ -95,6 +106,8 @@ class ReservaService
      */
     public function avanzarEstado(Reserva $reserva)
     {
+        $estadoAnterior = $reserva->estado_reserva;
+
         $nuevoEstado = match ($reserva->estado_reserva) {
             'pendiente'             => 'confirmada',
             'confirmada', 'pagada'  => 'en_curso',
@@ -105,6 +118,10 @@ class ReservaService
         $reserva->update([
             'estado_reserva' => $nuevoEstado
         ]);
+
+        if ($estadoAnterior === 'pendiente' && $nuevoEstado === 'confirmada') {
+            $this->notificacionService->notificarReservaConfirmada($reserva);
+        }
 
         return $reserva;
     }
