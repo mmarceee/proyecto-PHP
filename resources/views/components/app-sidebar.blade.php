@@ -156,6 +156,31 @@
                         </span>
                     </a>
 
+                    <a href="/profesional/paquetes"
+                    class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
+                    
+                    {{-- Icono de Paquete (Caja/Cubo) --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                        class="w-5 h-5" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor">
+                        <path stroke-linecap="round" 
+                            stroke-linejoin="round" 
+                            stroke-width="2" 
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+
+                    {{-- Tooltip emergente --}}
+                    <span 
+                        class="absolute left-14 top-1/2 -translate-y-1/2 
+                            bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                            opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                            transition whitespace-nowrap z-50"
+                    >
+                        Mis paquetes
+                    </span>
+                </a>
                 @endif
 
             </nav>

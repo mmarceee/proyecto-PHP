@@ -57,6 +57,14 @@ Route::get('/reservas/historial', function () {
         return view('historial'); // Llama al archivo historial.blade.php
     })->name('reservas.historial');
 
+Route::get('/profesional/paquetes', function () {
+        return view('profesional.paquetes');
+    })->name('profesional.paquetes');
+
+Route::get('/cliente/paquetes/explorar', function () {
+        return view('explorarPaquetes'); 
+    })->name('cliente.paquetes.explorar');
+
 Volt::route('completar-perfil', 'pages.completar-perfil')
     ->middleware(['auth'])
     ->name('perfil.completar');
