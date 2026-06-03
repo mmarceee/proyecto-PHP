@@ -410,54 +410,6 @@
 
                             <div class="border-b border-slate-400 mb-6"></div>
 
-                            <div class="mb-6">
-                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
-                                    Profesional seleccionado
-                                </p>
-
-                                <h4 class="font-serif text-2xl" x-text="selectedClientReservation.professional_name"></h4>
-
-                                <p class="mt-1 text-sm text-slate-400" x-text="selectedClientReservation.specialty"></p>
-                            </div>
-
-                            <template x-if="selectedClientReservation.packages.length > 0">
-                                <div>
-                                    <template x-for="package in selectedClientReservation.packages" :key="package.name">
-                                        <div class="mb-8">
-                                            <div class="flex justify-between items-start">
-                                                <h4 class="font-serif text-xl" x-text="package.name"></h4>
-
-                                                <span 
-                                                    class="text-xs text-slate-300"
-                                                    x-text="package.used + ' / ' + package.total"
-                                                ></span>
-                                            </div>
-
-                                            <div class="mt-3 flex gap-1">
-                                                <template x-for="index in package.total" :key="index">
-                                                    <span 
-                                                        class="w-2 h-2 border border-white"
-                                                        :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
-                                                    ></span>
-                                                </template>
-                                            </div>
-
-                                            <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
-                                                Sesiones utilizadas
-                                            </p>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-
-                            <template x-if="selectedClientReservation.packages.length === 0">
-                                <div class="rounded-md border border-slate-600 bg-slate-800/60 p-4">
-                                    <p class="text-sm text-slate-300">
-                                        No tienes paquetes activos con este profesional.
-                                    </p>
-                                </div>
-                            </template>
-
                             <a href="{{ route('cliente.paquetes.explorar') }}"
                             class="mt-6 block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
                                 Buscar paquetes
