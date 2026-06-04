@@ -61,6 +61,10 @@ Route::get('/profesional/paquetes', function () {
         return view('profesional.paquetes');
     })->name('profesional.paquetes');
 
+Route::get('/cliente/mis-paquetes', function () {
+        return view('misPaquetes'); 
+    })->name('cliente.paquetes.mios');
+
 Route::get('/cliente/paquetes/explorar', function () {
         return view('explorarPaquetes'); 
     })->name('cliente.paquetes.explorar');

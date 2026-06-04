@@ -86,7 +86,7 @@
                     </span>
                 </a>
 
-                <a href="{{ route('reservas.historial') }}"
+                    <a href="{{ route('reservas.historial') }}"
                         class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800 border border-slate-400 hover:border-slate-300">
                         <svg xmlns="http://www.w3.org/2000/svg" 
                             class="w-5 h-5" 
@@ -106,6 +106,29 @@
                                 transition whitespace-nowrap z-50"
                         >
                             Historial de Reservas
+                        </span>
+                    </a>
+
+                    <a href="{{ route('cliente.paquetes.mios') }}"
+                        class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800 border border-slate-400 hover:border-slate-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            class="w-5 h-5" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor">
+                            <path stroke-linecap="round" 
+                                stroke-linejoin="round" 
+                                stroke-width="2" 
+                                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        
+                        <span 
+                            class="absolute left-14 top-1/2 -translate-y-1/2 
+                                bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                                transition whitespace-nowrap z-50"
+                        >
+                            Paquetes comprados
                         </span>
                     </a>
 

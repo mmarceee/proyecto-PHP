@@ -102,7 +102,14 @@ class PaqueteApiController extends Controller
         $cliente = $request->user()->cliente;
         if (!$cliente) return response()->json(['error' => 'No autorizado'], 403);
 
-        $compras = $cliente->compraPaquetes()->with('paqueteServicio.servicio')->get();
+        $compras = \App\Models\CompraPaquete::with([
+                'paqueteServicio.servicio', 
+                'paqueteServicio.profesional.user'
+            ])
+            ->where('cliente_id', $cliente->id)
+            ->orderBy('estado_paquete', 'asc') // Los 'activos' primero
+            ->orderBy('created_at', 'desc')    // Los más recientes primero
+            ->get();
 
         return response()->json($compras);
     }
