@@ -109,6 +109,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('cliente/paquetes')->group(function () {
         Route::get('/disponibles', [PaqueteApiController::class, 'disponibles']);
         Route::get('/', [PaqueteApiController::class, 'misPaquetes']);
+        Route::get('/{id}/historial', [PaqueteApiController::class, 'historialConsumo']);
         Route::post('/{idPaquete}/comprar', [PaqueteApiController::class, 'comprar']);
         Route::get('/verificar', [PaqueteApiController::class, 'verificarDisponibilidad']);
     });

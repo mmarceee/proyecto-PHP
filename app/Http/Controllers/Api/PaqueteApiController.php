@@ -185,4 +185,32 @@ class PaqueteApiController extends Controller
 
         return response()->json(['tiene_paquete' => false]);
     }
+
+    /**
+     * Devuelve el historial detallado de sesiones consumidas de un paquete
+     */
+    public function historialConsumo(Request $request, $id)
+    {
+        $cliente = $request->user()->cliente;
+
+        // Buscamos la compra asegurándonos de que sea de este cliente
+        $compra = \App\Models\CompraPaquete::where('id', $id)
+            ->where('cliente_id', $cliente->id)
+            ->with(['uso_sesion_paquete.reserva.profesional.user']) 
+            ->firstOrFail();
+
+        // Formateamos los datos para que el JS los dibuje fácil
+        $historial = $compra->uso_sesion_paquete->map(function ($uso) {
+            return [
+                'id' => $uso->id,
+                'fecha_consumo' => $uso->fechaUso ? $uso->fechaUso->format('d/m/Y') : 'N/A',
+                'reserva_fecha' => $uso->reserva ? \Carbon\Carbon::parse($uso->reserva->fecha)->format('d/m/Y') : 'N/A',
+                'reserva_hora' => $uso->reserva ? \Carbon\Carbon::parse($uso->reserva->hora_inicio)->format('H:i') : 'N/A',
+                'profesional' => $uso->reserva ? ($uso->reserva->profesional->user->name . ' ' . ($uso->reserva->profesional->user->last_name ?? '')) : 'N/A',
+                'estado_reserva' => $uso->reserva->estado_reserva ?? 'N/A'
+            ];
+        })->sortByDesc('id')->values(); // Los usos más recientes arriba
+
+        return response()->json($historial);
+    }
 }

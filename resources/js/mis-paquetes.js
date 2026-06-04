@@ -3,6 +3,10 @@ document.addEventListener('alpine:init', () => {
         compras: [],
         cargando: true,
         error: '',
+        historialAbierto: false,
+        paqueteActivoNombre: '',
+        historial: [],
+        cargandoHistorial: false,
 
         async init() {
             await this.cargarMisPaquetes();
@@ -22,6 +26,32 @@ document.addEventListener('alpine:init', () => {
             } finally {
                 this.cargando = false;
             }
+        },
+
+        async abrirHistorial(compra) {
+            this.paqueteActivoNombre = compra.paquete_servicio.nombre;
+            this.historialAbierto = true;
+            this.cargandoHistorial = true;
+            this.historial = [];
+
+            try {
+                const response = await fetch(`/api/cliente/paquetes/${compra.id}/historial`, {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    this.historial = await response.json();
+                }
+            } catch (err) {
+                console.error('Error al cargar historial:', err);
+            } finally {
+                this.cargandoHistorial = false;
+            }
+        },
+
+        cerrarHistorial() {
+            this.historialAbierto = false;
         },
 
         // Matemáticas para la barra de progreso
