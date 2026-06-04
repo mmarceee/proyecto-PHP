@@ -96,7 +96,7 @@ class ReservaService
         // 2. Validar consistencia de servicios si pertenece a un paquete contratado
         $usoSesion = $reserva->uso_sesion_paquete;
         if ($usoSesion) {
-            $paquete = $usoSesion->compra_paquete;
+            $paquete = $usoSesion->compraPaquete;
             if ($datos['servicio_id'] != $paquete->paquete_servicio_id) {
                 throw new \Exception('El nuevo servicio seleccionado no coincide con el paquete contratado para esta reserva.');
             }
@@ -107,22 +107,44 @@ class ReservaService
     }
 
     /**
-     * Cancelar una reserva de forma ultra limpia
+     * Cancelar una reserva de forma limpia y con reintegro automático de paquetes
      */
     public function cancelar(Reserva $reserva, string $motivo)
     {
-        // El servicio solo altera el estado del recurso en la BD
-        $reserva->update([
-            'estado_reserva'     => 'cancelada',
-            'motivo_cancelacion' => $motivo,
-        ]);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($reserva, $motivo) {
+            
+            // 1. Cancelamos la reserva normalmente
+            $reserva->update([
+                'estado_reserva'     => 'cancelada',
+                'motivo_cancelacion' => $motivo,
+            ]);
 
-        $this->notificacionService->notificarReservaCancelada($reserva);
+            // 2. LÓGICA DE REINTEGRO: Verificamos si esta reserva usó una sesión de un paquete
+            $usoSesion = $reserva->uso_sesion_paquete;
+            
+            if ($usoSesion) {
+                $compra = $usoSesion->compraPaquete;
+                
+                // Devolvemos la sesión al contador
+                $compra->increment('sesiones_disponibles');
+                $compra->decrement('sesiones_consumidas');
 
-        //Despachamos a la cola de Redis
-        EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
+                // Si el paquete se había quedado sin saldo ("completado"), lo "revivimos"
+                if ($compra->estado_paquete === 'completado' && $compra->sesiones_disponibles > 0) {
+                    $compra->update(['estado_paquete' => 'activo']);
+                }
 
-        return $reserva;
+                // Eliminamos el registro del consumo para que no aparezca en el historial
+                // como una sesión "gastada"
+                $usoSesion->delete();
+            }
+
+            // 3. Despachamos las notificaciones
+            $this->notificacionService->notificarReservaCancelada($reserva);
+            EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
+
+            return $reserva;
+        });
     }
 
     /**
