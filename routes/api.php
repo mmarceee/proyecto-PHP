@@ -110,6 +110,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/disponibles', [PaqueteApiController::class, 'disponibles']);
         Route::get('/', [PaqueteApiController::class, 'misPaquetes']);
         Route::post('/{idPaquete}/comprar', [PaqueteApiController::class, 'comprar']);
+        Route::get('/verificar', [PaqueteApiController::class, 'verificarDisponibilidad']);
     });
 
 

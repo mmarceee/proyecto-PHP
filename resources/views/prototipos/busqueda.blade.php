@@ -330,6 +330,38 @@
                             ¿Confirmas la reserva para el día <strong class="text-white" x-text="fechaSeleccionada"></strong> a las <strong class="text-white"><span x-text="horaSeleccionada"></span> hs</strong>?
                         </p>
                         
+                        <div 
+                            x-show="paqueteDisponible" 
+                            x-transition
+                            class="mt-6 p-4 bg-blue-950/40 border border-blue-800/60 rounded-xl flex items-start gap-4 shadow-inner" 
+                            style="display: none;"
+                        >
+                            <div class="bg-blue-900/50 p-2 rounded-lg text-blue-400 border border-blue-700/50">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                            </div>
+
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-blue-300 uppercase tracking-wide">¡Beneficio disponible!</h4>
+                                <p class="text-sm text-gray-300 mt-1">
+                                    Tienes activo el <strong class="text-white" x-text="paqueteDisponible?.nombre"></strong>. 
+                                    Te quedan <strong class="text-white bg-blue-900/50 px-1.5 py-0.5 rounded text-xs" x-text="paqueteDisponible?.disponibles"></strong> sesiones.
+                                </p>
+                                
+                                <label class="flex items-center gap-3 mt-4 cursor-pointer group">
+                                    <input 
+                                        type="checkbox" 
+                                        x-model="usarPaquete" 
+                                        class="w-5 h-5 text-blue-600 bg-gray-900 border-gray-600 rounded focus:ring-blue-600 focus:ring-offset-gray-900 cursor-pointer transition"
+                                    >
+                                    <span class="text-sm font-semibold text-white group-hover:text-blue-300 transition">
+                                        Usar 1 sesión para pagar este turno
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="flex justify-end gap-3">
                             <button 
                                 @click="cerrarModalReserva()" 

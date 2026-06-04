@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Reserva;
 use App\Jobs\EnviarNotificacionReserva;
 use App\Jobs\EnviarSolicitudResenaJob;
+use App\Models\CompraPaquete;
 
 class ReservaService
 {
@@ -37,6 +38,9 @@ class ReservaService
      */
     public function crear(array $datos)
     {
+        $compraPaqueteId = $datos['compra_paquete_id'] ?? null;
+        unset($datos['compra_paquete_id']);
+
         $this->verificarChoqueHorario(
             $datos['profesional_id'], 
             $datos['fecha'], 
@@ -44,15 +48,30 @@ class ReservaService
             $datos['hora_fin']
         );
 
-        $reserva = Reserva::create([
-            'cliente_id'     => $datos['cliente_id'],
-            'profesional_id' => $datos['profesional_id'],
-            'servicio_id'    => $datos['servicio_id'],
-            'fecha'          => $datos['fecha'],
-            'hora_inicio'    => $datos['hora_inicio'],
-            'hora_fin'       => $datos['hora_fin'],
-            'estado_reserva' => $datos['estado_reserva'] ?? 'pendiente',
-        ]);
+        $reserva = \Illuminate\Support\Facades\DB::transaction(function () use ($datos, $compraPaqueteId) {
+            
+            $reserva = Reserva::create([
+                'cliente_id'     => $datos['cliente_id'],
+                'profesional_id' => $datos['profesional_id'],
+                'servicio_id'    => $datos['servicio_id'],
+                'fecha'          => $datos['fecha'],
+                'hora_inicio'    => $datos['hora_inicio'],
+                'hora_fin'       => $datos['hora_fin'],
+                'estado_reserva' => $datos['estado_reserva'] ?? 'pendiente',
+            ]);
+
+            if ($compraPaqueteId) {
+                $compra = CompraPaquete::find($compraPaqueteId);
+                
+                if ($compra && $compra->sesiones_disponibles > 0) {
+                    // Invocamos a nuestro PaqueteService para registrar el consumo
+                    $paqueteService = app(PaqueteService::class);
+                    $paqueteService->consumirSesion($compra, $reserva->id);
+                }
+            }
+
+            return $reserva;
+        });
 
         $this->notificacionService->notificarNuevaReserva($reserva);
 

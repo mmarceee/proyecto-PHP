@@ -23,6 +23,10 @@ document.addEventListener('alpine:init', () => {
         fechaSeleccionada: '',
         horaSeleccionada: '',
 
+        //Paquetes
+        paqueteDisponible: null,
+        usarPaquete: false,
+
         async init() {
             await this.cargarCategorias();
             
@@ -109,18 +113,34 @@ document.addEventListener('alpine:init', () => {
             await this.cargarAgenda();
         },
 
-        //Función que reemplaza a el antiguo @click en la grilla
-        prepararReserva(fecha, hora, ocupado) {
-            // CLÁUSULA DE GUARDIA: Si el bloque está ocupado, morimos acá
+        async prepararReserva(fecha, hora, ocupado) {
             if (ocupado) return; 
 
-            // Limpiamos mensajes anteriores y guardamos los datos
             this.error = '';
             this.mensajeExito = '';
             this.fechaSeleccionada = fecha;
             this.horaSeleccionada = hora;
+            this.paqueteDisponible = null; // Reiniciamos
+            this.usarPaquete = false;      // Reiniciamos
+
+            // Verificamos si el usuario tiene un paquete activo para ESTE servicio
+            try {
+                const response = await fetch(`/api/cliente/paquetes/verificar?servicio_id=${this.servicioSeleccionado.id}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.tiene_paquete) {
+                        this.paqueteDisponible = data.paquete; // Guardamos el paquete para mostrarlo en el modal
+                    }
+                }
+            } catch (err) {
+                console.error('Error verificando paquetes:', err);
+                // No detenemos el flujo si falla, simplemente sigue la reserva normal
+            }
             
-            // Abrimos el modal elegante
             this.showConfirmModal = true;
         },
 
@@ -149,7 +169,8 @@ document.addEventListener('alpine:init', () => {
                         servicio_id: this.servicioSeleccionado.id,
                         // Usamos las variables que guardamos en prepararReserva()
                         fecha: this.fechaSeleccionada, 
-                        hora_inicio: this.horaSeleccionada
+                        hora_inicio: this.horaSeleccionada,
+                        compra_paquete_id: this.usarPaquete ? this.paqueteDisponible.id : null
                     })
                 });
                 

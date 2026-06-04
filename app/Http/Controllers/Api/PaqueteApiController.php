@@ -149,4 +149,40 @@ class PaqueteApiController extends Controller
 
         return response()->json($paquetes);
     }
+
+    /**
+     * Verifica si el cliente tiene un paquete con saldo para un servicio específico
+     */
+    public function verificarDisponibilidad(Request $request)
+    {
+        $cliente = $request->user()->cliente;
+        $servicioId = $request->query('servicio_id');
+
+        if (!$cliente || !$servicioId) {
+            return response()->json(['tiene_paquete' => false]);
+        }
+
+        // Buscamos una compra ACTIVA, que tenga saldo, y que coincida con el servicio
+        $compraActiva = \App\Models\CompraPaquete::where('cliente_id', $cliente->id)
+            ->where('estado_paquete', 'activo')
+            ->where('sesiones_disponibles', '>', 0)
+            ->whereHas('paqueteServicio', function($q) use ($servicioId) {
+                $q->where('servicio_id', $servicioId);
+            })
+            ->with('paqueteServicio')
+            ->first();
+
+        if ($compraActiva) {
+            return response()->json([
+                'tiene_paquete' => true,
+                'paquete' => [
+                    'id' => $compraActiva->id,
+                    'nombre' => $compraActiva->paqueteServicio->nombre,
+                    'disponibles' => $compraActiva->sesiones_disponibles
+                ]
+            ]);
+        }
+
+        return response()->json(['tiene_paquete' => false]);
+    }
 }
