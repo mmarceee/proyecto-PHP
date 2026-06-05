@@ -6,6 +6,8 @@ use App\Models\Reserva;
 use App\Jobs\EnviarNotificacionReserva;
 use App\Jobs\EnviarSolicitudResenaJob;
 use App\Models\CompraPaquete;
+use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 class ReservaService
 {
@@ -16,7 +18,7 @@ class ReservaService
     /**
      * Valida que no existan superposiciones horarias para el mismo profesional
      */
-    public function verificarChoqueHorario($profesionalId, $fecha, $horaInicio, $horaFin, $excluirReservaId = null)
+    public function verificarChoqueHorario($profesionalId, $fecha, $horaInicio, $horaFin, $excluirReservaId = null, $clienteId = null)
     {
         $query = Reserva::where('profesional_id', $profesionalId)
             ->where('fecha', $fecha)
@@ -30,6 +32,15 @@ class ReservaService
 
         if ($query->exists()) {
             throw new \Exception('El profesional ya tiene una reserva activa en ese rango horario.');
+        }
+
+        // Validar si existe un bloqueo temporal en caché
+        $horaInicioFormateada = Carbon::parse($horaInicio)->format('H:i:s');
+        $llaveCache = "lock_turno_{$profesionalId}_{$fecha}_{$horaInicioFormateada}";
+        $lockOwner = Cache::get($llaveCache);
+
+        if ($lockOwner && $lockOwner != $clienteId) {
+            throw new \Exception('El turno se encuentra temporalmente reservado por otro cliente en este momento.');
         }
     }
 
@@ -45,7 +56,9 @@ class ReservaService
             $datos['profesional_id'], 
             $datos['fecha'], 
             $datos['hora_inicio'], 
-            $datos['hora_fin']
+            $datos['hora_fin'],
+            null,
+            $datos['cliente_id'] ?? null
         );
 
         $reserva = \Illuminate\Support\Facades\DB::transaction(function () use ($datos, $compraPaqueteId) {
@@ -73,10 +86,36 @@ class ReservaService
             return $reserva;
         });
 
+        // Liberar el bloqueo temporal ya que la reserva real fue creada
+        $horaInicioFormateada = Carbon::parse($datos['hora_inicio'])->format('H:i:s');
+        $llaveCache = "lock_turno_{$datos['profesional_id']}_{$datos['fecha']}_{$horaInicioFormateada}";
+        Cache::forget($llaveCache);
+
         $this->notificacionService->notificarNuevaReserva($reserva);
 
         return $reserva;
         
+    }
+
+    /**
+     * Bloquea temporalmente un turno en caché para dar tiempo de pago al cliente.
+     */
+    public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 1)
+    {
+        $horaInicioFormateada = Carbon::parse($horaInicio)->format('H:i:s');
+        $llaveCache = "lock_turno_{$profesionalId}_{$fecha}_{$horaInicioFormateada}";
+
+        // Usamos add() para asegurar atomicidad. Si ya existe, retorna false.
+        $bloqueado = Cache::add($llaveCache, $clienteId, now()->addMinutes($minutos));
+
+        if (!$bloqueado) {
+            $lockOwner = Cache::get($llaveCache);
+            if ($lockOwner != $clienteId) {
+                 throw new \Exception('El turno acaba de ser tomado por otro cliente.');
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -106,6 +106,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::patch('/{id}/toggle', [PaqueteApiController::class, 'toggleActivo']);
     });
 
+    Route::post('/agenda/bloquear-turno', [AgendaApiController::class, 'bloquearTurno']);
+
     Route::prefix('cliente/paquetes')->group(function () {
         Route::get('/disponibles', [PaqueteApiController::class, 'disponibles']);
         Route::get('/', [PaqueteApiController::class, 'misPaquetes']);
