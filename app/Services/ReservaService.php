@@ -10,6 +10,10 @@ use App\Jobs\EnviarSolicitudResenaJob;
 
 class ReservaService
 {
+    public function __construct(
+        private NotificacionService $notificacionService
+    ) {}
+
     /**
      * Valida que no existan superposiciones horarias para el mismo profesional
      */
@@ -55,7 +59,11 @@ class ReservaService
         // Disparar actualización por WebSocket en tiempo real
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
 
+        
+        $this->notificacionService->notificarNuevaReserva($reserva);
+
         return $reserva;
+        
     }
 
     /**
@@ -111,6 +119,8 @@ class ReservaService
             'motivo_cancelacion' => $motivo,
         ]);
 
+        $this->notificacionService->notificarReservaCancelada($reserva);
+
         //Despachamos a la cola de Redis
         EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
 
@@ -129,6 +139,8 @@ class ReservaService
      */
     public function avanzarEstado(Reserva $reserva)
     {
+        $estadoAnterior = $reserva->estado_reserva;
+
         $nuevoEstado = match ($reserva->estado_reserva) {
             'pendiente'             => 'confirmada',
             'confirmada', 'pagada'  => 'en_curso',
@@ -143,6 +155,10 @@ class ReservaService
         //Despachamos a la cola
         EnviarNotificacionReserva::dispatch($reserva, $nuevoEstado);
 
+        if ($estadoAnterior === 'pendiente' && $nuevoEstado === 'confirmada') {
+            $this->notificacionService->notificarReservaConfirmada($reserva);
+        }
+            
         if($nuevoEstado === 'finalizada') {
             EnviarSolicitudResenaJob::dispatch($reserva)->delay(now()->addHour());
         }
@@ -151,8 +167,20 @@ class ReservaService
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
 
         // Disparamos usando el user_id real del cliente para que coincida con el frontend
-        \Log::info("[WS BACKEND] Disparando evento de estado al cliente (User ID): " . $reserva->cliente->user_id);
+        \Log::info("[WS BACKEND] Disparando evento de estado al cliente (User ID): " . $reserva->cliente->user_id); // es para ver si funciona, sale en la consola f12
         broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, $nuevoEstado));
+
+        if ($estadoAnterior === 'confirmada' && $nuevoEstado === 'en_curso') {
+            $this->notificacionService->notificarReservaEnCurso($reserva);
+        }
+
+        if ($estadoAnterior === 'pagada' && $nuevoEstado === 'en_curso') {
+            $this->notificacionService->notificarReservaEnCurso($reserva);
+        }
+
+        if ($estadoAnterior === 'en_curso' && $nuevoEstado === 'finalizada') {
+            $this->notificacionService->notificarReservaFinalizada($reserva);
+        }
 
         return $reserva;
     }
@@ -168,7 +196,7 @@ class ReservaService
             ->get(['hora_inicio', 'hora_fin', 'estado_reserva'])
             ->toArray();
 
-        \Log::info("[WS BACKEND] Disparando broadcast para el profesional ID: " . $profesionalId);
+        \Log::info("[WS BACKEND] Disparando broadcast para el profesional ID: " . $profesionalId); //lo mismo consola f12
 
         
         broadcast(new AgendaActualizada($profesionalId, $bloquesOcupados));

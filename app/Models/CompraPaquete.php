@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
 
-#[Fillable(['paqueteSerivcio_id','sesiones_disponibles', 'sesiones_consumidas', 'estado_paquete', 'fecha_compra'])]
+#[Fillable(['paquete_serivcio_id','cliente_id','sesiones_disponibles', 'sesiones_consumidas', 'estado_paquete', 'fecha_compra'])]
 class CompraPaquete extends Model
 {
     use HasFactory;

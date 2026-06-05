@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\VideoLlamadaApiController;
 use App\Http\Controllers\Api\Admin\UsuarioAdminApiController;
 use App\Http\Controllers\Api\MapaApiController;
 use App\Http\Controllers\Api\Admin\CategoriaApiController;
+use App\Http\Controllers\Api\PaqueteApiController;
+use App\Http\Controllers\Api\NotificacionApiController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -22,54 +24,54 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::put('/profile/info', [ProfileApiController::class, 'updateInfo'])
         ->name('api.profile.update');
-
-    Route::get('/reserva/{reserva}/videollamada/token', [VideoLlamadaApiController::class, 'obtenerToken'])
-        ->name('api.videollamada.token');
-
+  
     Route::put('/profile/password', [ProfileApiController::class, 'updatePassword'])
         ->name('api.profile.password');
-        
+    
     Route::delete('/profile', [ProfileApiController::class, 'destroy'])
         ->name('api.profile.destroy');
-
+    
     Route::post('/profesionales/postularse', [ProfesionalApiController::class, 'postularse'])
         ->name('api.profesionales.postularse');
-
+    
     Route::get('/profesional/agenda', [AgendaApiController::class, 'obtenerAgenda'])
         ->name('api.profesional.agenda');
-
+    
     Route::post('/profesional/agenda/reglas', [AgendaApiController::class, 'guardarReglas'])
         ->name('api.profesional.agenda.reglas');
-
+    
     Route::post('/profesional/agenda/excepciones', [AgendaApiController::class, 'guardarExcepcion'])
         ->name('api.profesional.agenda.excepciones');
-
+    
     Route::delete('/profesional/agenda/excepciones', [AgendaApiController::class, 'desbloquearDia'])
         ->name('api.profesional.agenda.desbloquear');
-
+    
     Route::post('/paciente/agenda/reservar', [AgendaApiController::class, 'agendarTurno'])
         ->name('api.paciente.agenda.reservar');
-
+    
     Route::get('/servicios/categorias', [BusquedaApiController::class, 'categorias'])
         ->name('api.servicios.categorias');
-
+    
     Route::get('/servicios/buscar', [BusquedaApiController::class, 'buscar'])
         ->name('api.servicios.buscar');
-
+    
     Route::get('/servicios/profesionales/{id}/agenda', [BusquedaApiController::class, 'obtenerAgendaProfesional'])
         ->name('api.servicios.agenda');
-
+    
     Route::get('/lugares-atencion', [MapaApiController::class, 'index'])
         ->name('api.mapa.lugares');
-
+    
     Route::apiResource('/profesional/servicios', ServicioApiController::class)
         ->names('api.profesional.servicios');
-
+    
     Route::post('/clientes/registro', [ClienteApiController::class, 'store'])
         ->name('api.clientes.registro');
         
+    Route::get('/reserva/{reserva}/videollamada/token', [VideoLlamadaApiController::class, 'obtenerToken'])
+        ->name('api.videollamada.token');
+
     Route::get('/reservas/historial', [ReservaApiController::class, 'historial'])
-    ->name('api.reservas.historial');
+        ->name('api.reservas.historial');
     
     Route::post('/reservas', [ReservaApiController::class, 'store'])
         ->name('api.reservas.store');
@@ -84,7 +86,32 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->name('api.reservas.avanzar-estado');
         
     Route::post('/reservas/{id}/calificar', [CalificacionApiController::class, 'store'])
-    ->name('api.reservas.calificar');
+        ->name('api.reservas.calificar');
+
+    Route::get('/notificaciones', [NotificacionApiController::class, 'index'])
+        ->name('api.notificaciones.index');
+
+    Route::get('/notificaciones/no-leidas', [NotificacionApiController::class, 'unreadCount'])
+        ->name('api.notificaciones.unread-count');
+        
+    Route::patch('/notificaciones/leer-todas', [NotificacionApiController::class, 'markAllAsRead'])
+        ->name('api.notificaciones.mark-all-as-read');
+
+    Route::patch('/notificaciones/{notificacion}/leer', [NotificacionApiController::class, 'markAsRead'])
+        ->name('api.notificaciones.mark-as-read');
+
+    Route::prefix('profesional/paquetes')->group(function () {
+        Route::get('/', [PaqueteApiController::class, 'index']);
+        Route::post('/', [PaqueteApiController::class, 'store']);
+        Route::patch('/{id}/toggle', [PaqueteApiController::class, 'toggleActivo']);
+    });
+
+    Route::prefix('cliente/paquetes')->group(function () {
+        Route::get('/disponibles', [PaqueteApiController::class, 'disponibles']);
+        Route::get('/', [PaqueteApiController::class, 'misPaquetes']);
+        Route::post('/{idPaquete}/comprar', [PaqueteApiController::class, 'comprar']);
+    });
+
 
     
     

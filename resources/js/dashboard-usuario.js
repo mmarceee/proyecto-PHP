@@ -7,6 +7,7 @@ document.addEventListener('alpine:init', () => {
         profesional: { tieneSolicitud: false, estado: '', pendiente: false, aprobado: false },
         adminPendingProfessionals: [],
         consultasHoy: [],
+        reservasPendientes: [],
         proximasSesiones: [],
         selectedItem: null,
         showCancelModal: false,
@@ -65,6 +66,7 @@ document.addEventListener('alpine:init', () => {
                     };
                     this.adminPendingProfessionals = data.datos?.profesionalesPendientes ?? [];
                     this.consultasHoy = data.datos?.consultasHoy ?? [];
+                    this.reservasPendientes = data.datos?.reservasPendientes ?? [];
                     this.proximasSesiones = data.datos?.proximasSesiones ?? [];
 
                     if (this.tipo === 'profesional' && this.consultasHoy.length > 0) {
@@ -118,16 +120,8 @@ document.addEventListener('alpine:init', () => {
                 });
 
                 if (response.ok) {
-                    // Buscamos la reserva en la pantalla y actualizamos su estado
-                    const index = this.consultasHoy.findIndex(r => r.id === this.reservaACancelar);
-                    if(index !== -1) {
-                        this.consultasHoy[index].status = 'Cancelada';
-                        this.consultasHoy[index].action_label = null; // Esto oculta el botón azul
-                    }
-                    
-                    // Cerramos el modal
                     this.cerrarModalCancelacion();
-                    
+                    await this.cargarDashboard();
                 } else {
                     const error = await response.json();
                     alert('Error al cancelar: ' + (error.message || 'Intenta nuevamente'));

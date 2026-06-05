@@ -10,3 +10,6 @@ import './historial-reservas';
 import './solicitudes-profesionales';
 import './categorias';
 import './echo';
+import './paquetes-profesional'
+import './explorar-paquetes';
+import './notificaciones';

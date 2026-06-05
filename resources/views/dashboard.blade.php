@@ -129,9 +129,66 @@
 
                         <template x-if="tipo === 'profesional'">
                             <div>
+                                <div class="mb-10 lg:mb-12">
+                                    <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
+                                        <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
+                                            Reservas pendientes
+                                        </h3>
+
+                                        <span class="font-serif italic text-slate-400 text-xl">
+                                            <span x-text="reservasPendientes.length"></span> por aprobar
+                                        </span>
+                                    </div>
+
+                                    <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                                        <template x-for="reserva in reservasPendientes" :key="reserva.id">
+                                            <article 
+                                                class="grid grid-cols-1 sm:grid-cols-[120px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)_auto] items-start lg:items-center gap-4 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 border-b border-slate-700 transition hover:bg-slate-800">
+
+                                                <div>
+                                                    <span class="font-serif text-2xl tracking-widest" x-text="reserva.date_label"></span>
+                                                    <p class="text-xs font-bold mt-1" x-text="reserva.time"></p>
+                                                </div>
+
+                                                <div>
+                                                    <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="reserva.client_name"></h4>
+                                                    <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
+                                                        ▫ <span x-text="reserva.service_name"></span>
+                                                    </p>
+                                                </div>
+
+                                                <div class="flex flex-col items-center gap-2 sm:col-span-2 lg:col-span-1">
+                                                    <span class="px-3 py-0.5 rounded-md border border-slate-500 text-[10px] font-bold uppercase tracking-widest text-slate-300"
+                                                        x-text="reserva.status">
+                                                    </span>
+
+                                                    <div class="flex items-center gap-3">
+                                                        <button 
+                                                            @click.stop="abrirModalCancelacion(reserva.id)" 
+                                                            class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
+                                                            Cancelar
+                                                        </button>
+
+                                                        <button 
+                                                            @click.stop="avanzarEstadoReserva(reserva.id)" 
+                                                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
+                                                            Confirmar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        </template>
+
+                                        <template x-if="reservasPendientes.length === 0">
+                                            <div class="px-8 py-8 text-sm text-slate-400">
+                                                No tienes reservas pendientes de aprobación.
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                                 <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
                                     <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
-                                        Consultas de hoy
+                                        Consultas de hoy (Como profesional)
                                     </h3>
 
                                     <span class="font-serif italic text-slate-400 text-xl">
@@ -204,10 +261,10 @@
                         <template x-if="tipo === 'cliente' || tipo === 'profesional'">
                             <div class="mt-10 lg:mt-12">
                                 <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
-                                    <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
-                                        Tus próximas sesiones
+                                    <h3 
+                                        class="uppercase tracking-[0.25em] text-sm font-bold"
+                                        x-text="tipo === 'profesional' ? 'Tus próximas sesiones (como cliente)' : 'Tus próximas sesiones'">
                                     </h3>
-
                                     <span class="font-serif italic text-slate-400 text-xl">
                                         Reservas activas
                                     </span>
@@ -374,55 +431,7 @@
 
                             <div class="border-b border-slate-400 mb-6"></div>
 
-                            <div class="mb-6">
-                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
-                                    Profesional seleccionado
-                                </p>
-
-                                <h4 class="font-serif text-2xl" x-text="selectedClientReservation.professional_name"></h4>
-
-                                <p class="mt-1 text-sm text-slate-400" x-text="selectedClientReservation.specialty"></p>
-                            </div>
-
-                            <template x-if="selectedClientReservation.packages.length > 0">
-                                <div>
-                                    <template x-for="package in selectedClientReservation.packages" :key="package.name">
-                                        <div class="mb-8">
-                                            <div class="flex justify-between items-start">
-                                                <h4 class="font-serif text-xl" x-text="package.name"></h4>
-
-                                                <span 
-                                                    class="text-xs text-slate-300"
-                                                    x-text="package.used + ' / ' + package.total"
-                                                ></span>
-                                            </div>
-
-                                            <div class="mt-3 flex gap-1">
-                                                <template x-for="index in package.total" :key="index">
-                                                    <span 
-                                                        class="w-2 h-2 border border-white"
-                                                        :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
-                                                    ></span>
-                                                </template>
-                                            </div>
-
-                                            <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
-                                                Sesiones utilizadas
-                                            </p>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-
-                            <template x-if="selectedClientReservation.packages.length === 0">
-                                <div class="rounded-md border border-slate-600 bg-slate-800/60 p-4">
-                                    <p class="text-sm text-slate-300">
-                                        No tienes paquetes activos con este profesional.
-                                    </p>
-                                </div>
-                            </template>
-
-                            <a href="/prototipo/busqueda"
+                            <a href="{{ route('cliente.paquetes.explorar') }}"
                             class="mt-6 block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
                                 Buscar paquetes
                             </a>
