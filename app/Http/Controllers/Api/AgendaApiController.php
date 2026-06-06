@@ -85,6 +85,37 @@ class AgendaApiController extends Controller
         }
     }
 
+
+        /**
+     * Bloquea el turno temporalmente en memoria (Caché) para dar tiempo de pago.
+     */
+    public function bloquearTurno(Request $request, ReservaService $reservaService)
+    {
+        $validated = $request->validate([
+            'profesional_id' => ['required', 'exists:profesionales,id'],
+            'fecha'          => ['required', 'date', 'after_or_equal:today'],
+            'hora_inicio'    => ['required', 'date_format:H:i'],
+        ]);
+
+        $clienteId = $request->user()->cliente->id;
+
+        try {
+            // Bloqueamos por 10 minutos en la Caché
+            $reservaService->bloquearTurnoTemporal(
+                $validated['profesional_id'],
+                $validated['fecha'],
+                $validated['hora_inicio'],
+                $clienteId
+            );
+
+            return response()->json([
+                'message' => 'Turno bloqueado temporalmente. Tienes 10 minutos para completar el pago.',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
     /**
      * Endpoint para guardar las reglas de disponibilidad desde el panel del profesional
      */
