@@ -186,15 +186,20 @@ document.addEventListener('alpine:init', () => {
                 const dataBloqueo = await responseBloqueo.json();
                 if (!responseBloqueo.ok) throw new Error(dataBloqueo.error || 'El turno acaba de ser tomado por otra persona.');
 
-                this.mensajeExito = "Turno retenido temporalmente. Si recargas como otro cliente, verás que no está disponible.";
-                this.cerrarModalReserva();
-                await this.cargarAgenda();
+                this.mensajeExito = "Turno retenido temporalmente. Si recargas como otro cliente, verás que no está disponible."; //Comentar para testing sin esperar por pago
+                this.cerrarModalReserva(); //Comentar para testing sin esperar por pago
+                await this.cargarAgenda(); //Comentar para testing sin esperar por pago
+                
                 //this.cerrarModalReserva();
                 // Habria que redireccionar a la pasarela de pagos aca.
                 //this.mensajeExito = dataBloqueo.message + " Simulando pago...";
                 
                 //Simulacion de pago por ahora ya que no tenemos la pasarela implementada
                 //Para que de error comentar esto.
+
+
+                // DESCOMENTAR BLOQUE PARA testing sin esperar por pago
+
                 /*
                 setTimeout(async () => {
                      const responseReserva = await fetch('/api/paciente/agenda/reservar', {
@@ -222,8 +227,9 @@ document.addEventListener('alpine:init', () => {
                      } else {
                           this.error = dataReserva.message || dataReserva.error || "Error al procesar la reserva final.";
                      }
-                }, 3000); */// Esperamos 3 segundos simulando el tiempo en la pasarela de pagos
-                
+                }, 3000); // Esperamos 3 segundos simulando el tiempo en la pasarela de pagos
+
+                */
             } catch (err) {
                 this.error = err.message;
                 this.cerrarModalReserva(); 

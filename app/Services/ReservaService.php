@@ -166,9 +166,6 @@ class ReservaService
     /**
      * Cancelar una reserva de forma limpia y con reintegro automático de paquetes
      */
-/**
-     * Cancelar una reserva de forma ultra limpia
-     */
     public function cancelar(Reserva $reserva, string $motivo)
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($reserva, $motivo) {
