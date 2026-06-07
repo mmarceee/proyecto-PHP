@@ -132,31 +132,6 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        async confirmarReserva(id) {
-            try {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                const response = await fetch(`/api/reservas/${id}/confirmar`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    credentials: 'same-origin'
-                });
-
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'No se pudo confirmar la reserva');
-
-                //REFRESCO REACTIVO: Volvemos a cargar los datos del dashboard instantáneamente
-                await this.cargarDashboard();
-
-            } catch (error) {
-                console.error(error);
-                alert(error.message || 'Ocurrió un error al confirmar la reserva.');
-            }
-        },
-
         async avanzarEstadoReserva(id) {
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
