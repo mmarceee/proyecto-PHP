@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Notificacion;
 use App\Models\Reserva;
 use App\Models\User;
+use App\Events\NotificacionCreada;
 
 class NotificacionService
 {
@@ -53,7 +54,7 @@ class NotificacionService
     {
         $reserva->loadMissing(['profesional.user', 'cliente.user', 'servicio']); //Se le dice a Laravel que si todavía no cargo profesional, cliente o servicio, cargalos ahora.
 
-        return Notificacion::create([
+        return $this->crearYEmitir([
             'user_id' => $reserva->profesional->user_id,
             'reserva_id' => $reserva->id,
             'titulo' => 'Nueva reserva',
@@ -70,7 +71,7 @@ class NotificacionService
     {
         $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
 
-        return Notificacion::create([
+        return $this->crearYEmitir([
             'user_id' => $reserva->cliente->user_id,
             'reserva_id' => $reserva->id,
             'titulo' => 'Reserva confirmada',
@@ -91,7 +92,7 @@ class NotificacionService
             $reserva->cliente->user_id,
             $reserva->profesional->user_id,
         ] as $userId) {
-            Notificacion::create([
+            $this->crearYEmitir([
                 'user_id' => $userId,
                 'reserva_id' => $reserva->id,
                 'titulo' => 'Reserva cancelada',
@@ -109,7 +110,7 @@ class NotificacionService
     {
         $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
 
-        return Notificacion::create([
+        return $this->crearYEmitir([
             'user_id' => $reserva->cliente->user_id,
             'reserva_id' => $reserva->id,
             'titulo' => 'Reserva en curso',
@@ -126,7 +127,7 @@ class NotificacionService
     {
         $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
 
-        return Notificacion::create([
+        return $this->crearYEmitir([
             'user_id' => $reserva->cliente->user_id,
             'reserva_id' => $reserva->id,
             'titulo' => 'Sesión finalizada',
@@ -137,5 +138,14 @@ class NotificacionService
             'leida' => false,
             'fechaCreacion' => now()->toDateString(),
         ]);
+    }
+
+    private function crearYEmitir(array $datos): Notificacion
+    {
+        $notificacion = Notificacion::create($datos);
+
+        broadcast(new NotificacionCreada($notificacion));
+
+        return $notificacion;
     }
 }

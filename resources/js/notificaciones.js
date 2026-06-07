@@ -8,6 +8,7 @@ document.addEventListener('alpine:init', () => {
         async init() {
             await this.cargarNotificaciones();
             await this.cargarCount();
+            this.iniciarEscuchaRealtime();
         },
 
         async cargarNotificaciones() {
@@ -161,5 +162,33 @@ document.addEventListener('alpine:init', () => {
                 console.error('Error marcando todas las notificaciones como leídas:', error);
             }
         },
+
+        iniciarEscuchaRealtime() {
+            if (!window.Echo) {
+                return;
+            }
+
+            const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+
+            if (!userId) {
+                return;
+            }
+
+            window.Echo.private(`usuario.${userId}`)
+                .listen('.notificacion.creada', (evento) => {
+                        console.log('[WS NOTIFICACION] Llegó una notificación:', evento);
+                    const notificacion = evento.notificacion;
+
+                    this.notificaciones = [
+                        notificacion,
+                        ...this.notificaciones, //operador spread, significa “expandí los elementos de este array acá”, sino crea un array dentro del array
+                    ].slice(0, 20);
+
+                    if (!notificacion.leida) {
+                        this.count++;
+                    }
+                });
+        },
+
     }));
 });
