@@ -17,7 +17,7 @@ document.addEventListener('alpine:init', () => {
         async init() {
             await this.cargarDashboard();
             
-            // 🛠️ 1. Iniciar la escucha de WebSockets apenas arranca el dashboard
+            //  1. Iniciar la escucha de WebSockets apenas arranca el dashboard
             this.iniciarEscuchaRealtime();
         },
 
@@ -238,7 +238,7 @@ document.addEventListener('alpine:init', () => {
                     console.log(`[WS CLIENTE] Sintonizando radio: 'usuario.${userId}'`);
                     window.Echo.private(`usuario.${userId}`)
                         .listen('.reserva.estado.cambiado', async (evento) => {
-                            console.log("🚀 [WS CLIENTE] ¡El profesional cambió el estado!", evento);
+                            console.log(" [WS CLIENTE] ¡El profesional cambió el estado!", evento);
                             await this.cargarDashboard(); 
                         });
                 }
@@ -251,7 +251,7 @@ document.addEventListener('alpine:init', () => {
                     console.log(`[WS PROFESIONAL] Sintonizando radio de agenda: 'profesional.${profesionalId}'`);
                     window.Echo.private(`profesional.${profesionalId}`)
                         .listen('.agenda.modificada', async (evento) => {
-                            console.log("🚀 [WS PROFESIONAL] ¡Te cayó una nueva reserva!", evento);
+                            console.log(" [WS PROFESIONAL] ¡Te cayó una nueva reserva!", evento);
                             await this.cargarDashboard(); 
                         });
                 }
