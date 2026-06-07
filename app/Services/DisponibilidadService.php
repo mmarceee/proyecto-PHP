@@ -90,8 +90,12 @@ class DisponibilidadService
                 // 5. Evitar mostrar turnos del pasado si el cliente está buscando turnos para "Hoy"
                 $esPasado = $fecha->isToday() && $slotActual->isPast();
 
+                // 6. Verificar si el turno está bloqueado temporalmente en Caché (Hold Pattern)
+                $llaveCache = "lock_turno_{$profesional->id}_{$fecha->toDateString()}_{$slotActual->format('H:i:s')}";
+                $bloqueadoTemporalmente = \Illuminate\Support\Facades\Cache::has($llaveCache);
+
                 // Si está totalmente libre, lo agregamos a la lista final
-                if (!$ocupado && !$esPasado) {
+                if (!$ocupado && !$esPasado && !$bloqueadoTemporalmente) {
                     $slots[] = $slotActual->format('H:i');
                 }
 

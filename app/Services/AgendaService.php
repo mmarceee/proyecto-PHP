@@ -119,6 +119,14 @@ class AgendaService
                         }
                     }
 
+                    // Validar si existe un bloqueo temporal en caché (Hold Pattern)
+                    if (!$estaOcupado) {
+                        $llaveCache = "lock_turno_{$profesional->id}_{$fechaString}_{$horaBloqueClean}:00";
+                        if (\Illuminate\Support\Facades\Cache::has($llaveCache)) {
+                            $estaOcupado = true;
+                        }
+                    }
+
                     // Re-mapeamos el bloque con su estructura final para Alpine
                     $bloque = [
                         'hora' => $horaBloqueClean,

@@ -1,16 +1,6 @@
 <x-app-layout>
-
-    @push('meta-dinamica')
-        <!-- Este lo usa el Cliente -->
-        <meta name="user-id" content="{{ auth()->id() }}">
-        
-        <!-- Este lo usa el Profesional (el ? evita errores si el usuario no es profesional) -->
-        <meta name="profesional-id" content="{{ auth()->user()->profesional?->id ?? '' }}">
-    @endpush
-
     <div
         x-data="dashboardData()"
-        x-init="cargarDashboard()"
         class="min-h-screen flex bg-slate-950 text-white overflow-x-hidden">
 
         <!-- Sidebar -->

@@ -13,3 +13,4 @@ import './echo';
 import './paquetes-profesional'
 import './explorar-paquetes';
 import './notificaciones';
+import './mis-paquetes';

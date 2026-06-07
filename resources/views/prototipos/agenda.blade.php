@@ -1,9 +1,4 @@
 <x-app-layout>
-
-    @push('meta-dinamica')
-        <meta name="user-id" content="{{ auth()->user()->profesional->id }}">
-    @endpush
-
     <div class="flex min-h-screen">
         {{-- Sidebar --}}
         <x-app-sidebar/>

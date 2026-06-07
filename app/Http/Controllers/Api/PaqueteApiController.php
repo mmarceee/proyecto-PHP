@@ -102,7 +102,14 @@ class PaqueteApiController extends Controller
         $cliente = $request->user()->cliente;
         if (!$cliente) return response()->json(['error' => 'No autorizado'], 403);
 
-        $compras = $cliente->compraPaquetes()->with('paqueteServicio.servicio')->get();
+        $compras = \App\Models\CompraPaquete::with([
+                'paqueteServicio.servicio', 
+                'paqueteServicio.profesional.user'
+            ])
+            ->where('cliente_id', $cliente->id)
+            ->orderBy('estado_paquete', 'asc') // Los 'activos' primero
+            ->orderBy('created_at', 'desc')    // Los más recientes primero
+            ->get();
 
         return response()->json($compras);
     }
@@ -141,5 +148,69 @@ class PaqueteApiController extends Controller
             ->get();
 
         return response()->json($paquetes);
+    }
+
+    /**
+     * Verifica si el cliente tiene un paquete con saldo para un servicio específico
+     */
+    public function verificarDisponibilidad(Request $request)
+    {
+        $cliente = $request->user()->cliente;
+        $servicioId = $request->query('servicio_id');
+
+        if (!$cliente || !$servicioId) {
+            return response()->json(['tiene_paquete' => false]);
+        }
+
+        // Buscamos una compra ACTIVA, que tenga saldo, y que coincida con el servicio
+        $compraActiva = \App\Models\CompraPaquete::where('cliente_id', $cliente->id)
+            ->where('estado_paquete', 'activo')
+            ->where('sesiones_disponibles', '>', 0)
+            ->whereHas('paqueteServicio', function($q) use ($servicioId) {
+                $q->where('servicio_id', $servicioId);
+            })
+            ->with('paqueteServicio')
+            ->first();
+
+        if ($compraActiva) {
+            return response()->json([
+                'tiene_paquete' => true,
+                'paquete' => [
+                    'id' => $compraActiva->id,
+                    'nombre' => $compraActiva->paqueteServicio->nombre,
+                    'disponibles' => $compraActiva->sesiones_disponibles
+                ]
+            ]);
+        }
+
+        return response()->json(['tiene_paquete' => false]);
+    }
+
+    /**
+     * Devuelve el historial detallado de sesiones consumidas de un paquete
+     */
+    public function historialConsumo(Request $request, $id)
+    {
+        $cliente = $request->user()->cliente;
+
+        // Buscamos la compra asegurándonos de que sea de este cliente
+        $compra = \App\Models\CompraPaquete::where('id', $id)
+            ->where('cliente_id', $cliente->id)
+            ->with(['uso_sesion_paquete.reserva.profesional.user']) 
+            ->firstOrFail();
+
+        // Formateamos los datos para que el JS los dibuje fácil
+        $historial = $compra->uso_sesion_paquete->map(function ($uso) {
+            return [
+                'id' => $uso->id,
+                'fecha_consumo' => $uso->fechaUso ? $uso->fechaUso->format('d/m/Y') : 'N/A',
+                'reserva_fecha' => $uso->reserva ? \Carbon\Carbon::parse($uso->reserva->fecha)->format('d/m/Y') : 'N/A',
+                'reserva_hora' => $uso->reserva ? \Carbon\Carbon::parse($uso->reserva->hora_inicio)->format('H:i') : 'N/A',
+                'profesional' => $uso->reserva ? ($uso->reserva->profesional->user->name . ' ' . ($uso->reserva->profesional->user->last_name ?? '')) : 'N/A',
+                'estado_reserva' => $uso->reserva->estado_reserva ?? 'N/A'
+            ];
+        })->sortByDesc('id')->values(); // Los usos más recientes arriba
+
+        return response()->json($historial);
     }
 }

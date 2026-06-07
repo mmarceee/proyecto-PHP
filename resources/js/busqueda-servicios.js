@@ -23,6 +23,10 @@ document.addEventListener('alpine:init', () => {
         fechaSeleccionada: '',
         horaSeleccionada: '',
 
+        //Paquetes
+        paqueteDisponible: null,
+        usarPaquete: false,
+
         async init() {
             await this.cargarCategorias();
             
@@ -32,6 +36,12 @@ document.addEventListener('alpine:init', () => {
             
             // Carga inicial al abrir la pantalla
             await this.ejecutarBusqueda();
+
+            setInterval(() => {
+                if (this.profesionalSeleccionado && !this.cargandoAgenda) {
+                    this.cargarAgenda();
+                }
+            }, 30000);
         },
         
         async ejecutarBusqueda() {
@@ -109,18 +119,34 @@ document.addEventListener('alpine:init', () => {
             await this.cargarAgenda();
         },
 
-        //Función que reemplaza a el antiguo @click en la grilla
-        prepararReserva(fecha, hora, ocupado) {
-            // CLÁUSULA DE GUARDIA: Si el bloque está ocupado, morimos acá
+        async prepararReserva(fecha, hora, ocupado) {
             if (ocupado) return; 
 
-            // Limpiamos mensajes anteriores y guardamos los datos
             this.error = '';
             this.mensajeExito = '';
             this.fechaSeleccionada = fecha;
             this.horaSeleccionada = hora;
+            this.paqueteDisponible = null; // Reiniciamos
+            this.usarPaquete = false;      // Reiniciamos
+
+            // Verificamos si el usuario tiene un paquete activo para ESTE servicio
+            try {
+                const response = await fetch(`/api/cliente/paquetes/verificar?servicio_id=${this.servicioSeleccionado.id}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.tiene_paquete) {
+                        this.paqueteDisponible = data.paquete; // Guardamos el paquete para mostrarlo en el modal
+                    }
+                }
+            } catch (err) {
+                console.error('Error verificando paquetes:', err);
+                // No detenemos el flujo si falla, simplemente sigue la reserva normal
+            }
             
-            // Abrimos el modal elegante
             this.showConfirmModal = true;
         },
 
@@ -134,8 +160,15 @@ document.addEventListener('alpine:init', () => {
         // 4. Tu lógica de fetch intacta (Se llama desde el botón ACEPTAR del modal)
         async ejecutarReserva() {
             try {
+                const profesionalId = this.profesionalSeleccionado.id;
+                const servicioId = this.servicioSeleccionado.id;
+                const fecha = this.fechaSeleccionada;
+                const horaInicio = this.horaSeleccionada;
+                const compraPaqueteId = this.usarPaquete ? this.paqueteDisponible.id : null;
+
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                const response = await fetch('/api/paciente/agenda/reservar', {
+                
+                const responseBloqueo = await fetch('/api/agenda/bloquear-turno', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -143,28 +176,63 @@ document.addEventListener('alpine:init', () => {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    credentials: 'same-origin',
                     body: JSON.stringify({
-                        profesional_id: this.profesionalSeleccionado.id,
-                        servicio_id: this.servicioSeleccionado.id,
-                        // Usamos las variables que guardamos en prepararReserva()
-                        fecha: this.fechaSeleccionada, 
-                        hora_inicio: this.horaSeleccionada
+                        profesional_id: profesionalId,
+                        fecha: fecha,
+                        hora_inicio: horaInicio
                     })
                 });
                 
-                const data = await response.json();
-                
-                if (!response.ok) throw new Error(data.error || 'No se pudo agendar.');
+                const dataBloqueo = await responseBloqueo.json();
+                if (!responseBloqueo.ok) throw new Error(dataBloqueo.error || 'El turno acaba de ser tomado por otra persona.');
 
-                // Si todo sale bien:
-                this.mensajeExito = data.message;
-                this.cerrarModalReserva(); // Cerramos el modal
-                await this.cargarAgenda(); // Refrescamos grilla de inmediato
+                this.mensajeExito = "Turno retenido temporalmente. Si recargas como otro cliente, verás que no está disponible."; //Comentar para testing sin esperar por pago
+                this.cerrarModalReserva(); //Comentar para testing sin esperar por pago
+                await this.cargarAgenda(); //Comentar para testing sin esperar por pago
                 
+                //this.cerrarModalReserva();
+                // Habria que redireccionar a la pasarela de pagos aca.
+                //this.mensajeExito = dataBloqueo.message + " Simulando pago...";
+                
+                //Simulacion de pago por ahora ya que no tenemos la pasarela implementada
+                //Para que de error comentar esto.
+
+
+                // DESCOMENTAR BLOQUE PARA testing sin esperar por pago
+
+                /*
+                setTimeout(async () => {
+                     const responseReserva = await fetch('/api/paciente/agenda/reservar', {
+                         method: 'POST',
+                         headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
+                         },
+                         body: JSON.stringify({
+                            profesional_id: profesionalId,
+                            servicio_id: servicioId,
+                            fecha: fecha, 
+                            hora_inicio: horaInicio,
+                            compra_paquete_id: compraPaqueteId
+                         })
+                     });
+                     
+                     const dataReserva = await responseReserva.json();
+                     if (responseReserva.ok) {
+                         this.mensajeExito = "Pago completado. " + dataReserva.message;
+                         this.cerrarModalReserva();
+                         await this.cargarAgenda();
+                     } else {
+                          this.error = dataReserva.message || dataReserva.error || "Error al procesar la reserva final.";
+                     }
+                }, 3000); // Esperamos 3 segundos simulando el tiempo en la pasarela de pagos
+
+                */
             } catch (err) {
                 this.error = err.message;
-                this.cerrarModalReserva(); // Cerramos el modal para que el usuario pueda ver el mensaje de error en pantalla
+                this.cerrarModalReserva(); 
             }
         },
         async cargarCategorias() {

@@ -9,11 +9,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-
-#[Fillable(['paquete_serivcio_id','cliente_id','sesiones_disponibles', 'sesiones_consumidas', 'estado_paquete', 'fecha_compra'])]
 class CompraPaquete extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'paquete_servicio_id', 
+        'cliente_id', 
+        'sesiones_disponibles', 
+        'sesiones_consumidas', 
+        'estado_paquete', 
+        'fecha_compra'
+    ];
 
     public function cliente(){
         return $this->belongsTo(Cliente::class);
@@ -27,6 +34,10 @@ class CompraPaquete extends Model
         return $this->hasMany(UsoSesionPaquete::class);
     }
 
+    public function paqueteServicio()
+    {
+        return $this->belongsTo(PaqueteServicio::class, 'paquete_servicio_id');
+    }
 
     protected function esValido(): Attribute
     {
