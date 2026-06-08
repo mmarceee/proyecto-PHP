@@ -99,6 +99,17 @@ class ReservaService
         
         $this->notificacionService->notificarNuevaReserva($reserva);
 
+        // REGISTRO DE AUDITORÍA NOSQL
+        app(\App\Services\EventLogService::class)->log('reserva_creada', [
+            'reserva_id'     => $reserva->id,
+            'cliente_id'     => $reserva->cliente_id,
+            'profesional_id' => $reserva->profesional_id,
+            'servicio_id'    => $reserva->servicio_id,
+            'fecha'          => $reserva->fecha->format('Y-m-d'),
+            'hora_inicio'    => $reserva->hora_inicio,
+            'hora_fin'       => $reserva->hora_fin,
+        ], $reserva->cliente?->user_id);
+
         return $reserva;
         
     }
@@ -207,6 +218,17 @@ class ReservaService
             
             return $reserva;
         });
+         // 2. Registramos el evento de auditoría NoSQL fuera de la transacción relacional
+        try {
+            app(\App\Services\EventLogService::class)->log('reserva_cancelada', [
+                'reserva_id' => $reserva->id,
+                'cliente_id' => $reserva->cliente_id,
+                'motivo'     => $motivo,
+            ], $reserva->cliente?->user_id);
+        } catch (\Exception $e) {
+            \Log::error("Fallo al registrar auditoría NoSQL para reserva cancelada: " . $e->getMessage());
+        }
+        return $reserva;
     }
 
     /**

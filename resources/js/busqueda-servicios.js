@@ -186,9 +186,9 @@ document.addEventListener('alpine:init', () => {
                 const dataBloqueo = await responseBloqueo.json();
                 if (!responseBloqueo.ok) throw new Error(dataBloqueo.error || 'El turno acaba de ser tomado por otra persona.');
 
-                this.mensajeExito = "Turno retenido temporalmente. Si recargas como otro cliente, verás que no está disponible."; //Comentar para testing sin esperar por pago
-                this.cerrarModalReserva(); //Comentar para testing sin esperar por pago
-                await this.cargarAgenda(); //Comentar para testing sin esperar por pago
+                //this.mensajeExito = "Turno retenido temporalmente. Si recargas como otro cliente, verás que no está disponible."; //Comentar para testing sin esperar por pago
+                //this.cerrarModalReserva(); //Comentar para testing sin esperar por pago
+                //await this.cargarAgenda(); //Comentar para testing sin esperar por pago
                 
                 //this.cerrarModalReserva();
                 // Habria que redireccionar a la pasarela de pagos aca.
@@ -200,7 +200,7 @@ document.addEventListener('alpine:init', () => {
 
                 // DESCOMENTAR BLOQUE PARA testing sin esperar por pago
 
-                /*
+                
                 setTimeout(async () => {
                      const responseReserva = await fetch('/api/paciente/agenda/reservar', {
                          method: 'POST',
@@ -229,7 +229,7 @@ document.addEventListener('alpine:init', () => {
                      }
                 }, 3000); // Esperamos 3 segundos simulando el tiempo en la pasarela de pagos
 
-                */
+                
             } catch (err) {
                 this.error = err.message;
                 this.cerrarModalReserva(); 

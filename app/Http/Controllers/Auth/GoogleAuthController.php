@@ -55,6 +55,14 @@ class GoogleAuthController extends Controller
                 'estado_usuario' => User::ESTADO_ACTIVO,
             ]);
 
+            // REGISTRO DE AUDITORÍA NOSQL (Solo se dispara en creación)
+            app(\App\Services\EventLogService::class)->log('usuario_registrado', [
+                'user_id' => $user->id,
+                'name'    => $user->name,
+                'email'   => $user->email,
+                'metodo'  => 'google'
+            ], $user->id);
+
             $debeCompletarPerfil = true;
         } else {
             if ($user->google_id === null) {
