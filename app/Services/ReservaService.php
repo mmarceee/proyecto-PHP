@@ -114,10 +114,10 @@ class ReservaService
         
     }
 
-    /**
+        /**
      * Bloquea temporalmente un turno en caché para dar tiempo de pago al cliente.
      */
-    public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 1)
+    public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 10)
     {
         $horaInicioFormateada = Carbon::parse($horaInicio)->format('H:i:s');
         $llaveCache = "lock_turno_{$profesionalId}_{$fecha}_{$horaInicioFormateada}";
@@ -131,6 +131,9 @@ class ReservaService
                  throw new \Exception('El turno acaba de ser tomado por otro cliente.');
             }
         }
+
+        // Emitimos el broadcast directamente desde el dominio tras un bloqueo exitoso
+        broadcast(new AgendaActualizada($profesionalId, []));
 
         return true;
     }

@@ -5,7 +5,7 @@ namespace App\Events;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-// 🛠️ LA LÍNEA CLAVE: Le dice a PHP exactamente de dónde importar la interfaz
+//LA LÍNEA CLAVE: Le dice a PHP exactamente de dónde importar la interfaz
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow; 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -27,12 +27,12 @@ class AgendaActualizada implements ShouldBroadcastNow
     }
 
     /**
-     * Canal privado seguro
+     * Canal seguro
      */
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('profesional.' . $this->profesionalId),
+            new Channel('agenda.profesional.' . $this->profesionalId),
         ];
     }
 

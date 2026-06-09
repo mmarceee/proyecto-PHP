@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\ReservaService; //Inyectamos tu servicio de control
 use App\Models\Servicio;
+use App\Events\AgendaActualizada;
 use Carbon\Carbon;
 
 class AgendaApiController extends Controller
@@ -42,54 +43,46 @@ class AgendaApiController extends Controller
     /**
      * Procesa la reserva del paciente impidiendo superposiciones
      */
-    public function agendarTurno(Request $request, ReservaService $reservaService)
+        public function agendarTurno(Request $request, ReservaService $reservaService)
     {
         $validated = $request->validate([
-            'profesional_id' => ['required', 'exists:profesionales,id'],
-            'servicio_id'    => ['required', 'exists:servicios,id'],
-            'fecha'          => ['required', 'date', 'after_or_equal:today'],
-            'hora_inicio'    => ['required', 'date_format:H:i'],
+            'profesional_id'    => ['required', 'exists:profesionales,id'],
+            'servicio_id'       => ['required', 'exists:servicios,id'],
+            'fecha'             => ['required', 'date', 'after_or_equal:today'],
+            'hora_inicio'       => ['required', 'date_format:H:i'],
+            'compra_paquete_id' => ['nullable', 'exists:compra_paquetes,id'],
         ]);
 
-        // 1. Obtener el servicio para saber cuántos minutos dura
         $servicio = Servicio::findOrFail($validated['servicio_id']);
         
-        // 2. Calcular la hora_fin sumando la duración
         $horaInicio = Carbon::parse($validated['hora_inicio']);
         $horaFin = $horaInicio->copy()->addMinutes($servicio->duracion)->format('H:i');
 
-        // 3. Obtener el ID de cliente del usuario logueado
         $clienteId = $request->user()->cliente->id;
 
         try {
-            // 4. Delegamos la creación al ReservaService, el cual correrá 
-            // la validación estricta de "verificarChoqueHorario" antes de insertar
             $reserva = $reservaService->crear([
-                'cliente_id'     => $clienteId,
-                'profesional_id' => $validated['profesional_id'],
-                'servicio_id'    => $validated['servicio_id'],
-                'fecha'          => $validated['fecha'],
-                'hora_inicio'    => $validated['hora_inicio'],
-                'hora_fin'       => $horaFin,
-                'estado_reserva' => 'pendiente', // Nace en tu enum inicial
+                'cliente_id'        => $clienteId,
+                'profesional_id'    => $validated['profesional_id'],
+                'servicio_id'       => $validated['servicio_id'],
+                'fecha'             => $validated['fecha'],
+                'hora_inicio'       => $validated['hora_inicio'],
+                'hora_fin'          => $horaFin,
+                'estado_reserva'    => 'pendiente',
+                'compra_paquete_id' => $validated['compra_paquete_id'] ?? null,
             ]);
 
             return response()->json([
-                'message' => '¡Tu turno ha sido reservado con éxito!',
+                'message' => 'Tu turno ha sido reservado con éxito',
                 'reserva' => $reserva
             ], 201);
 
         } catch (\Exception $e) {
-            // Si el profesional se ocupó justo antes, frena el insert y devuelve un 422
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
 
-
-        /**
-     * Bloquea el turno temporalmente en memoria (Caché) para dar tiempo de pago.
-     */
-    public function bloquearTurno(Request $request, ReservaService $reservaService)
+        public function bloquearTurno(Request $request, ReservaService $reservaService)
     {
         $validated = $request->validate([
             'profesional_id' => ['required', 'exists:profesionales,id'],
@@ -100,7 +93,7 @@ class AgendaApiController extends Controller
         $clienteId = $request->user()->cliente->id;
 
         try {
-            // Bloqueamos por 10 minutos en la Caché
+            // Delegación absoluta al servicio. Él se encarga de la caché y de notificar (broadcast).
             $reservaService->bloquearTurnoTemporal(
                 $validated['profesional_id'],
                 $validated['fecha'],
@@ -116,6 +109,7 @@ class AgendaApiController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
     /**
      * Endpoint para guardar las reglas de disponibilidad desde el panel del profesional
      */
