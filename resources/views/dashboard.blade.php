@@ -61,6 +61,7 @@
                                         <article class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-start lg:items-center gap-6 px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-700">
                                             <div>
                                                 <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="professional.name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="professional.email"></p>
 
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     <span x-text="professional.especialidad"></span>
@@ -142,6 +143,7 @@
 
                                                 <div>
                                                     <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="reserva.client_name"></h4>
+                                                    <p class="text-sm text-slate-400 mt-1 break-all" x-text="professional.email"></p>
                                                     <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                         ▫ <span x-text="reserva.service_name"></span>
                                                     </p>
@@ -200,6 +202,7 @@
 
                                             <div>
                                                 <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="session.client_name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="session.client_email"></p>
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     ▫ <span x-text="session.reason"></span>
                                                 </p>
@@ -274,6 +277,7 @@
 
                                             <div>
                                                 <h4 class="font-serif text-3xl" x-text="reservation.professional_name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="reservation.professional_email"></p>
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     ▫ <span x-text="reservation.specialty"></span>
                                                 </p>
