@@ -37,7 +37,7 @@ class BusquedaService
         return $query->get()->map(function ($p) {
             return [
                 'id' => $p->id,
-                'nombre' => $p->user->name,
+                'nombre' => trim(($p->user?->name ?? '') . ' ' . ($p->user?->apellido ?? '')) ?: 'Profesional',
                 'nombre_comercial' => $p->nombre_comercial,
                 'servicios' => $p->servicios->map(function ($s) {
                     return [
