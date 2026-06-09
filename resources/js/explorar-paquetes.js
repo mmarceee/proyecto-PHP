@@ -5,6 +5,10 @@ document.addEventListener('alpine:init', () => {
         comprandoId: null, // Para el spinner del botón
         mensajeExito: '',
         error: '',
+        
+        // --- VARIABLES PARA EL MODAL ---
+        showModalConfirmacion: false,
+        paqueteAComprar: null,
 
         async init() {
             await this.cargarDisponibles();
@@ -27,10 +31,23 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-                async comprar(paqueteId) {
-            // Confirmación básica antes de comprar
-            if (!confirm('¿Estás seguro de que deseas adquirir este paquete de sesiones mediante PayPal?')) return;
+        // --- FUNCIONES PARA CONTROLAR EL MODAL ---
+        abrirModalConfirmacion(paqueteId) {
+            this.paqueteAComprar = paqueteId;
+            this.showModalConfirmacion = true;
+        },
 
+        cerrarModalConfirmacion() {
+            this.showModalConfirmacion = false;
+            this.paqueteAComprar = null;
+        },
+
+        // --- FUNCIÓN COMPRAR ---
+        async comprar() {
+            const paqueteId = this.paqueteAComprar;
+            if (!paqueteId) return;
+
+            this.cerrarModalConfirmacion(); // Cerramos el modal antes de redirigir
             this.comprandoId = paqueteId;
             this.error = '';
             this.mensajeExito = '';
