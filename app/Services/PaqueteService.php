@@ -67,7 +67,7 @@ class PaqueteService
             throw new \Exception("Este paquete no tiene sesiones disponibles o está inactivo.");
         }
 
-        DB::transaction(function () use ($compra, $reservaId) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($compra, $reservaId) {
             // Descontamos 1 disponible y sumamos 1 consumida
             $compra->decrement('sesiones_disponibles');
             $compra->increment('sesiones_consumidas');
@@ -77,13 +77,11 @@ class PaqueteService
                 $compra->update(['estado_paquete' => 'completado']);
             }
 
-            // Registramos el uso en el historial (UsoSesionPaquete)
-            $compra->usos_sesiones()->create([
+            $compra->uso_sesion_paquete()->create([
                 'reserva_id' => $reservaId,
-                'fecha_uso'  => Carbon::now(),
+                'fechaUso'  => \Carbon\Carbon::now(),
             ]);
         });
-
         return $compra;
     }
 }

@@ -158,7 +158,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // 4. Tu lógica de fetch intacta (Se llama desde el botón ACEPTAR del modal)
-        async ejecutarReserva() {
+                async ejecutarReserva() {
             try {
                 const profesionalId = this.profesionalSeleccionado.id;
                 const servicioId = this.servicioSeleccionado.id;
@@ -168,68 +168,63 @@ document.addEventListener('alpine:init', () => {
 
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 
-                const responseBloqueo = await fetch('/api/agenda/bloquear-turno', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({
-                        profesional_id: profesionalId,
-                        fecha: fecha,
-                        hora_inicio: horaInicio
-                    })
-                });
-                
-                const dataBloqueo = await responseBloqueo.json();
-                if (!responseBloqueo.ok) throw new Error(dataBloqueo.error || 'El turno acaba de ser tomado por otra persona.');
-
-                this.mensajeExito = "Turno retenido temporalmente. Si recargas como otro cliente, verás que no está disponible."; //Comentar para testing sin esperar por pago
-                this.cerrarModalReserva(); //Comentar para testing sin esperar por pago
-                await this.cargarAgenda(); //Comentar para testing sin esperar por pago
-                
-                //this.cerrarModalReserva();
-                // Habria que redireccionar a la pasarela de pagos aca.
-                //this.mensajeExito = dataBloqueo.message + " Simulando pago...";
-                
-                //Simulacion de pago por ahora ya que no tenemos la pasarela implementada
-                //Para que de error comentar esto.
-
-
-                // DESCOMENTAR BLOQUE PARA testing sin esperar por pago
-
-                /*
-                setTimeout(async () => {
-                     const responseReserva = await fetch('/api/paciente/agenda/reservar', {
-                         method: 'POST',
-                         headers: {
+                // CASO 1: Si agendamos gastando una sesión de un PAQUETE ya comprado
+                if (compraPaqueteId) {
+                    const responseReserva = await fetch('/api/paciente/agenda/reservar', {
+                        method: 'POST',
+                        headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRF-TOKEN': csrfToken
-                         },
-                         body: JSON.stringify({
+                        },
+                        body: JSON.stringify({
                             profesional_id: profesionalId,
                             servicio_id: servicioId,
                             fecha: fecha, 
                             hora_inicio: horaInicio,
                             compra_paquete_id: compraPaqueteId
-                         })
-                     });
-                     
-                     const dataReserva = await responseReserva.json();
-                     if (responseReserva.ok) {
-                         this.mensajeExito = "Pago completado. " + dataReserva.message;
-                         this.cerrarModalReserva();
-                         await this.cargarAgenda();
-                     } else {
-                          this.error = dataReserva.message || dataReserva.error || "Error al procesar la reserva final.";
-                     }
-                }, 3000); // Esperamos 3 segundos simulando el tiempo en la pasarela de pagos
+                        })
+                    });
+                         
+                    const dataReserva = await responseReserva.json();
+                    
+                    if (responseReserva.ok) {
+                        this.mensajeExito = "Reserva generada con éxito usando tu paquete.";
+                        setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
+                    } else {
+                        throw new Error(dataReserva.message || dataReserva.error || "Error al procesar la reserva.");
+                    }
 
-                */
+                } else {
+                    // CASO 2: Si es una reserva normal y debe pagarse con PAYPAL
+                    this.mensajeExito = "Iniciando transacción segura. Redirigiendo a PayPal...";
+                    
+                    const responsePago = await fetch('/api/paypal/create-payment-reserva', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            profesional_id: profesionalId,
+                            servicio_id: servicioId,
+                            fecha: fecha,
+                            hora_inicio: horaInicio
+                        })
+                    });
+
+                    const dataPago = await responsePago.json();
+
+                    if (!responsePago.ok) throw new Error(dataPago.error || 'Error conectando con PayPal');
+
+                    // Redirección directa hacia la pasarela
+                    window.location.href = dataPago.approval_url;
+                }
+
             } catch (err) {
                 this.error = err.message;
                 this.cerrarModalReserva(); 

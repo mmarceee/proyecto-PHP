@@ -68,6 +68,15 @@ new #[Layout('layouts.guest')] class extends Component
             }
         });
 
+        // REGISTRO DE AUDITORÍA NOSQL
+        app(\App\Services\EventLogService::class)->log('usuario_registrado', [
+            'user_id'       => $user->id,
+            'name'          => $user->name,
+            'email'         => $user->email,
+            'tipo_registro' => $validated['tipo_registro'],
+            'metodo'        => 'formulario'
+        ], $user->id);
+
         event(new Registered($user));
 
         Auth::login($user);
