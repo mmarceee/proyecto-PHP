@@ -30,7 +30,11 @@ class AppServiceProvider extends ServiceProvider
             $to = array_map(fn($address) => $address->getAddress(), $event->message->getTo() ?? []);
             $from = array_map(fn($address) => $address->getAddress(), $event->message->getFrom() ?? []);
             
+            // Leemos la cabecera personalizada para clasificar la acción
+            $actionHeader = $event->message->getHeaders()->get('X-Email-Action');
+            $action = $actionHeader ? $actionHeader->getBodyAsString() : 'desconocido';
             app(\App\Services\EventLogService::class)->log('email_enviado', [
+                'accion'  => $action,
                 'subject' => $event->message->getSubject(),
                 'to'      => $to,
                 'from'    => $from,
