@@ -102,6 +102,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::prefix('profesional/paquetes')->group(function () {
         Route::get('/', [PaqueteApiController::class, 'index']);
+        Route::get('/vendidos', [PaqueteApiController::class, 'vendidos']);
         Route::post('/', [PaqueteApiController::class, 'store']);
         Route::patch('/{id}/toggle', [PaqueteApiController::class, 'toggleActivo']);
     });
