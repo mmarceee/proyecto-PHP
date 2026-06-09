@@ -32,7 +32,7 @@ class AgendaActualizada implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('agenda.profesional.' . $this->profesionalId),
+            new PrivateChannel('profesional.' . $this->profesionalId),
         ];
     }
 

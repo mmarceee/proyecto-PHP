@@ -27,34 +27,39 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        async comprar(paqueteId) {
+                async comprar(paqueteId) {
             // Confirmación básica antes de comprar
-            if (!confirm('¿Estás seguro de que deseas adquirir este paquete de sesiones?')) return;
+            if (!confirm('¿Estás seguro de que deseas adquirir este paquete de sesiones mediante PayPal?')) return;
 
             this.comprandoId = paqueteId;
             this.error = '';
             this.mensajeExito = '';
 
             try {
+                this.mensajeExito = 'Iniciando transacción segura. Redirigiendo a PayPal...';
+                
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                const response = await fetch(`/api/cliente/paquetes/${paqueteId}/comprar`, {
+                
+                const responsePago = await fetch('/api/paypal/create-payment-paquete', {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    credentials: 'same-origin'
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        paquete_id: paqueteId
+                    })
                 });
 
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Error al procesar la compra.');
+                const dataPago = await responsePago.json();
 
-                this.mensajeExito = '¡Compra exitosa! El paquete ya está en tu cuenta.';
-                
-                // Opcional: Redirigir al dashboard después de 2 segundos
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 2000);
+                if (!responsePago.ok) throw new Error(dataPago.error || 'Error conectando con PayPal');
+
+                // Nos vamos a PayPal para autorizar la compra
+                window.location.href = dataPago.approval_url;
 
             } catch (err) {
                 this.error = err.message;
