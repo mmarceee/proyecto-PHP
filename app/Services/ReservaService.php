@@ -97,6 +97,9 @@ class ReservaService
             $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
             
             $this->notificacionService->notificarNuevaReserva($reserva);
+
+            EnviarNotificacionReserva::dispatch($reserva, 'Creada');
+
             // REGISTRO DE AUDITORÍA NOSQL
             try {
                 app(\App\Services\EventLogService::class)->log('reserva_creada', [
@@ -166,7 +169,10 @@ class ReservaService
         // Guardamos la fecha vieja antes de actualizar por si se cambia de día la reserva
         $fechaOriginal = $reserva->fecha;
 
-        $reserva->update($datos);
+        $reserva->refresh();
+
+        $this->notificacionService->notificarReservaReprogramada($reserva);
+        EnviarNotificacionReserva::dispatch($reserva, 'Reprogramada');
 
         // Notificar el cambio al día asignado
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);

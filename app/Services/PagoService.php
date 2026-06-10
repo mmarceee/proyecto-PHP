@@ -104,6 +104,8 @@ class PagoService
                         'referencia_externa' => $captureId // Guardamos el Capture ID correcto
                     ]);
 
+                    \App\Jobs\NotificarPagoConfirmadoJob::dispatch($reserva);
+
                     return $compra;
                 }
             });
