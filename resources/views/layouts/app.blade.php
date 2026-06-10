@@ -20,9 +20,18 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="theme-color" content="#0f172a">
+
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
+        <div
+            id="offline-banner"
+            class="hidden fixed top-0 left-0 right-0 z-50 bg-red-600 text-white text-sm font-semibold text-center px-4 py-3 shadow-lg"
+        >
+            Sin conexion. Puedes ver informacion ya cargada, pero no realizar reservas ni cambios.
+        </div>
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
             <livewire:layout.navigation />
 
