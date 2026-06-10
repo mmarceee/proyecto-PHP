@@ -21,10 +21,10 @@
                             <p class="text-sm text-gray-600 dark:text-gray-400">Define tus horarios, pausas y días no laborales.</p>
                         </div>
                         <div class="flex gap-3">
-                            <button @click="bloquearDia(new Date().toISOString().split('T')[0])" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 transition">
+                            <button @click="bloquearDia(new Date().toISOString().split('T')[0])" data-requires-online class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 transition">
                                 Bloquear Día (Excepción)
                             </button>
-                            <button @click="mostrarModalReglas = true" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
+                            <button @click="mostrarModalReglas = true" data-requires-online class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                                 Configurar Reglas Base
                             </button>
                         </div>
@@ -66,13 +66,13 @@
                                         <span class="text-xs text-gray-500 dark:text-gray-400" x-text="dia.fecha_formateada"></span>
                                         
                                         <template x-if="!dia.tiene_excepcion">
-                                            <button @click="bloquearDia(dia.fecha)" title="Bloquear este día específico" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-950/40 hover:bg-red-900 p-1 rounded text-red-400 text-xs">
+                                            <button @click="bloquearDia(dia.fecha)" data-requires-online title="Bloquear este día específico" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-950/40 hover:bg-red-900 p-1 rounded text-red-400 text-xs">
                                                 Bloquear
                                             </button>
                                         </template>
 
                                         <template x-if="dia.tiene_excepcion">
-                                            <button @click="confirmarDesbloqueo(dia.fecha)" title="Quitar excepción de este día" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 p-1 rounded text-white text-[10px] font-bold shadow-sm transition">
+                                            <button @click="confirmarDesbloqueo(dia.fecha)" data-requires-online title="Quitar excepción de este día" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 p-1 rounded text-white text-[10px] font-bold shadow-sm transition">
                                                 Desbloquear
                                             </button>
                                         </template>
@@ -83,7 +83,7 @@
                                             <span class="text-xs text-red-400 dark:text-red-300 font-serif italic font-bold" x-text="dia.motivo_cierre ? 'Cerrado: ' + dia.motivo_cierre : 'X - No laboral'"></span>
                                             
                                             <template x-if="dia.tiene_excepcion">
-                                                <button @click="confirmarDesbloqueo(dia.fecha)" class="inline-flex items-center px-3 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-red-600 dark:text-red-400 border border-gray-200 dark:border-gray-600 rounded-xl text-[10px] font-extrabold tracking-wide uppercase shadow-sm transition-all duration-150">
+                                                <button @click="confirmarDesbloqueo(dia.fecha)" data-requires-online class="inline-flex items-center px-3 py-1.5 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-red-600 dark:text-red-400 border border-gray-200 dark:border-gray-600 rounded-xl text-[10px] font-extrabold tracking-wide uppercase shadow-sm transition-all duration-150">
                                                     Desbloquear día
                                                 </button>
                                             </template>
@@ -152,7 +152,7 @@
                             </div>
                             <div class="flex justify-end gap-3 mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <button type="button" @click="mostrarModalReglas = false" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Cancelar</button>
-                                <button type="button" @click="guardarReglasBase()" :disabled="guardandoReglas" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-lg transition">
+                                <button type="button" @click="guardarReglasBase()" :disabled="guardandoReglas" data-requires-online class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-lg transition">
                                     <span x-text="guardandoReglas ? 'Guardando...' : 'Guardar Cambios'"></span>
                                 </button>
                             </div>
@@ -185,7 +185,7 @@
                             </div>
                             <div class="flex justify-end gap-3 mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <button @click="mostrarModalExcepcion = false" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Cancelar</button>
-                                <button @click="guardarBloqueoDia()" :disabled="guardandoExcepcion" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:bg-red-400 rounded-lg transition">
+                                <button @click="guardarBloqueoDia()" :disabled="guardandoExcepcion" data-requires-online class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:bg-red-400 rounded-lg transition">
                                     <span x-text="guardandoExcepcion ? 'Bloqueando...' : 'Confirmar Bloqueo'"></span>
                                 </button>
                             </div>
@@ -201,7 +201,7 @@
                             </div>
                             <div class="flex justify-end gap-3 mt-6 border-t border-gray-100 dark:border-gray-700 pt-4">
                                 <button @click="mostrarModalDesbloquear = false" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition">Cancelar</button>
-                                <button @click="desbloquearDia()" class="px-4 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-sm transition">Sí, desbloquear</button>
+                                <button @click="desbloquearDia()" data-requires-online class="px-4 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-sm transition">Sí, desbloquear</button>
                             </div>
                         </div>
                     </div>

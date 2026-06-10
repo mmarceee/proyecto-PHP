@@ -38,6 +38,16 @@ class ProfesionalService
     {
         $profesional = Profesional::findOrFail($id);
         $profesional->update(['estado' => 'aprobado']);
+
+        // REGISTRO DE AUDITORÍA NOSQL
+        app(\App\Services\EventLogService::class)->log('profesional_aprobado', [
+            'profesional_id' => $profesional->id,
+            'user_id'        => $profesional->user_id,
+            'name'           => trim(($profesional->user?->name ?? '') . ' ' . ($profesional->user?->apellido ?? '')),
+            'especialidad'   => $profesional->especialidad,
+        ], auth()->id());
+
+
         return $profesional;
     }
 
@@ -48,6 +58,15 @@ class ProfesionalService
     {
         $profesional = Profesional::findOrFail($id);
         $profesional->update(['estado' => 'rechazado']);
+
+        // REGISTRO DE AUDITORÍA NOSQL
+        app(\App\Services\EventLogService::class)->log('profesional_rechazado', [
+            'profesional_id' => $profesional->id,
+            'user_id'        => $profesional->user_id,
+            'name'           => trim(($profesional->user?->name ?? '') . ' ' . ($profesional->user?->apellido ?? '')),
+            'especialidad'   => $profesional->especialidad,
+        ], auth()->id());
+
         return $profesional;
         
     }

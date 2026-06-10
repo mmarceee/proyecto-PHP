@@ -1,7 +1,6 @@
 <x-app-layout>
     <div
         x-data="dashboardData()"
-        x-init="cargarDashboard()"
         class="min-h-screen flex bg-slate-950 text-white overflow-x-hidden">
 
         <!-- Sidebar -->
@@ -62,6 +61,7 @@
                                         <article class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-start lg:items-center gap-6 px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-700">
                                             <div>
                                                 <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="professional.name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="professional.email"></p>
 
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     <span x-text="professional.especialidad"></span>
@@ -77,15 +77,17 @@
                                             </div>
 
                                             <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
-                                                <button 
-                                                    @click="aprobarProfesional(professional.id)"
-                                                    class="w-full sm:w-auto px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
+                                        <button 
+                                            @click="aprobarProfesional(professional.id)"
+                                            data-requires-online
+                                            class="w-full sm:w-auto px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
                                                     Aceptar
                                                 </button>
 
-                                                <button 
-                                                    @click="rechazarProfesional(professional.id)"
-                                                    class="w-full sm:w-auto px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
+                                        <button 
+                                            @click="rechazarProfesional(professional.id)"
+                                            data-requires-online
+                                            class="w-full sm:w-auto px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
                                                     Rechazar
                                                 </button>
                                             </div>
@@ -120,9 +122,69 @@
 
                         <template x-if="tipo === 'profesional'">
                             <div>
+                                <div class="mb-10 lg:mb-12">
+                                    <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
+                                        <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
+                                            Reservas pendientes
+                                        </h3>
+
+                                        <span class="font-serif italic text-slate-400 text-xl">
+                                            <span x-text="reservasPendientes.length"></span> por aprobar
+                                        </span>
+                                    </div>
+
+                                    <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                                        <template x-for="reserva in reservasPendientes" :key="reserva.id">
+                                            <article 
+                                                class="grid grid-cols-1 sm:grid-cols-[120px_minmax(0,1fr)] lg:grid-cols-[150px_minmax(0,1fr)_auto] items-start lg:items-center gap-4 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 border-b border-slate-700 transition hover:bg-slate-800">
+
+                                                <div>
+                                                    <span class="font-serif text-2xl tracking-widest" x-text="reserva.date_label"></span>
+                                                    <p class="text-xs font-bold mt-1" x-text="reserva.time"></p>
+                                                </div>
+
+                                                <div>
+                                                    <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="reserva.client_name"></h4>
+                                                    <p class="text-sm text-slate-400 mt-1 break-all" x-text="professional.email"></p>
+                                                    <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
+                                                        ▫ <span x-text="reserva.service_name"></span>
+                                                    </p>
+                                                </div>
+
+                                                <div class="flex flex-col items-center gap-2 sm:col-span-2 lg:col-span-1">
+                                                    <span class="px-3 py-0.5 rounded-md border border-slate-500 text-[10px] font-bold uppercase tracking-widest text-slate-300"
+                                                        x-text="reserva.status">
+                                                    </span>
+
+                                                    <div class="flex items-center gap-3">
+                                                <button 
+                                                    @click.stop="abrirModalCancelacion(reserva.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
+                                                            Cancelar
+                                                        </button>
+
+                                                <button 
+                                                    @click.stop="avanzarEstadoReserva(reserva.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
+                                                            Confirmar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        </template>
+
+                                        <template x-if="reservasPendientes.length === 0">
+                                            <div class="px-8 py-8 text-sm text-slate-400">
+                                                No tienes reservas pendientes de aprobación.
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                                 <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
                                     <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
-                                        Consultas de hoy
+                                        Consultas de hoy (Como profesional)
                                     </h3>
 
                                     <span class="font-serif italic text-slate-400 text-xl">
@@ -144,22 +206,46 @@
 
                                             <div>
                                                 <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="session.client_name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="session.client_email"></p>
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     ▫ <span x-text="session.reason"></span>
                                                 </p>
                                             </div>
 
-                                            <div class="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-1">
-                                                <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider"
+                                            <div class="flex flex-col items-center gap-2 sm:col-span-2 lg:col-span-1">
+                                                
+                                                <span class="px-3 py-0.5 rounded-md border border-slate-500 text-[10px] font-bold uppercase tracking-widest text-slate-300"
                                                     x-text="session.status">
                                                 </span>
 
-                                                <template x-if="session.action_label">
-                                                    <button 
-                                                        @click.stop="avanzarEstadoReserva(session.id)" class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
-                                                        x-text="session.action_label">
-                                                    </button>
-                                                </template>
+                                                <div class="flex items-center gap-3">
+                                                    
+                                                    <template x-if="session.status.toLowerCase() !== 'cancelada' && session.status.toLowerCase() !== 'finalizada'">
+                                                <button 
+                                                    @click.stop="abrirModalCancelacion(session.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
+                                                            Cancelar
+                                                        </button>
+                                                    </template>
+
+                                                    <template x-if="session.action_label">
+                                                <button 
+                                                    @click.stop="avanzarEstadoReserva(session.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
+                                                            x-text="session.action_label">
+                                                        </button>
+                                                    </template>
+                                                    <template x-if="esHoraDeSala(session.date_raw, session.time)">
+                                                        <a :href="'/reserva/' + session.id + '/sala'" 
+                                                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                            Sala Virtual
+                                                        </a>
+                                                    </template>
+                                                </div>
+
                                             </div>
                                         </article>
                                     </template>
@@ -176,10 +262,10 @@
                         <template x-if="tipo === 'cliente' || tipo === 'profesional'">
                             <div class="mt-10 lg:mt-12">
                                 <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
-                                    <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
-                                        Tus próximas sesiones
+                                    <h3 
+                                        class="uppercase tracking-[0.25em] text-sm font-bold"
+                                        x-text="tipo === 'profesional' ? 'Tus próximas sesiones (como cliente)' : 'Tus próximas sesiones'">
                                     </h3>
-
                                     <span class="font-serif italic text-slate-400 text-xl">
                                         Reservas activas
                                     </span>
@@ -199,14 +285,28 @@
 
                                             <div>
                                                 <h4 class="font-serif text-3xl" x-text="reservation.professional_name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="reservation.professional_email"></p>
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     ▫ <span x-text="reservation.specialty"></span>
                                                 </p>
                                             </div>
 
-                                            <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider"
-                                                x-text="reservation.status">
-                                            </span>
+                                            <div class="flex flex-col items-center gap-2 sm:col-span-2 lg:col-span-1">
+                                                <span class="px-4 py-1 rounded-md border border-slate-500 text-xs font-bold uppercase tracking-wider" x-text="reservation.status"></span>
+                                                <div class="flex items-center gap-2">
+                                                    <template x-if="reservation.status.toLowerCase() !== 'cancelada' && reservation.status.toLowerCase() !== 'finalizada'">
+                                                        <div class="flex gap-2">
+                                                            <button @click.stop="abrirModalReprogramar(reservation)" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-[10px] font-bold uppercase tracking-wider transition">Reprogramar</button>
+                                                            <button @click.stop="abrirModalCancelacion(reservation.id)" class="px-3 py-1.5 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-[10px] font-bold uppercase tracking-wider">Cancelar</button>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="esHoraDeSala(reservation.date_raw, reservation.time)">
+                                                        <a :href="'/reserva/' + reservation.id + '/sala'" class="inline-flex items-center px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md transition">
+                                                            Sala Virtual
+                                                        </a>
+                                                    </template>
+                                                </div>
+                                            </div>
                                         </article>
                                     </template>
 
@@ -284,48 +384,20 @@
                     <template x-if="tipo === 'profesional'">
                         <div class="border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
-                                Paquetes disponibles
+                                Paquetes vendidos
                             </h3>
 
                             <div class="border-b border-slate-400 mb-6"></div>
 
                             <div class="mb-6">
-                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
-                                    Cliente seleccionado
+                                <p class="text-sm text-slate-400">
+                                    Consultá todos los paquetes que vendiste, a qué cliente pertenecen y cuántas sesiones le quedan disponibles.
                                 </p>
-
-                                <h4 class="font-serif text-2xl" x-text="selectedProfessionalSession.client_name"></h4>
                             </div>
 
-                            <template x-for="package in selectedProfessionalSession.packages" :key="package.name">
-                                <div class="mb-8">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="font-serif text-xl" x-text="package.name"></h4>
-
-                                        <span 
-                                            class="text-xs text-slate-300"
-                                            x-text="package.used + ' / ' + package.total"
-                                        ></span>
-                                    </div>
-
-                                    <div class="mt-3 flex gap-1">
-                                        <template x-for="index in package.total" :key="index">
-                                            <span 
-                                                class="w-2 h-2 border border-white"
-                                                :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
-                                            ></span>
-                                        </template>
-                                    </div>
-
-                                    <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
-                                        Sesiones utilizadas
-                                    </p>
-                                </div>
-                            </template>
-
-                            <a href="#"
+                            <a href="{{ route('profesional.paquetes.vendidos') }}"
                             class="block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
-                                Ver todos los registros
+                                Ver paquetes vendidos
                             </a>
                         </div>
                     </template>
@@ -333,60 +405,12 @@
                     <template x-if="tipo === 'cliente' || tipo === 'profesional'">
                         <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
-                                Paquetes con este profesional
+                                Paquetes para comprar con nuestros profesionales
                             </h3>
 
                             <div class="border-b border-slate-400 mb-6"></div>
 
-                            <div class="mb-6">
-                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
-                                    Profesional seleccionado
-                                </p>
-
-                                <h4 class="font-serif text-2xl" x-text="selectedClientReservation.professional_name"></h4>
-
-                                <p class="mt-1 text-sm text-slate-400" x-text="selectedClientReservation.specialty"></p>
-                            </div>
-
-                            <template x-if="selectedClientReservation.packages.length > 0">
-                                <div>
-                                    <template x-for="package in selectedClientReservation.packages" :key="package.name">
-                                        <div class="mb-8">
-                                            <div class="flex justify-between items-start">
-                                                <h4 class="font-serif text-xl" x-text="package.name"></h4>
-
-                                                <span 
-                                                    class="text-xs text-slate-300"
-                                                    x-text="package.used + ' / ' + package.total"
-                                                ></span>
-                                            </div>
-
-                                            <div class="mt-3 flex gap-1">
-                                                <template x-for="index in package.total" :key="index">
-                                                    <span 
-                                                        class="w-2 h-2 border border-white"
-                                                        :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
-                                                    ></span>
-                                                </template>
-                                            </div>
-
-                                            <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
-                                                Sesiones utilizadas
-                                            </p>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-
-                            <template x-if="selectedClientReservation.packages.length === 0">
-                                <div class="rounded-md border border-slate-600 bg-slate-800/60 p-4">
-                                    <p class="text-sm text-slate-300">
-                                        No tienes paquetes activos con este profesional.
-                                    </p>
-                                </div>
-                            </template>
-
-                            <a href="/prototipo/busqueda"
+                            <a href="{{ route('cliente.paquetes.explorar') }}"
                             class="mt-6 block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
                                 Buscar paquetes
                             </a>
@@ -395,5 +419,130 @@
                 </aside>
             </div>
         </main>
+        <div x-show="showCancelModal" style="display: none;" x-cloak
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            
+            <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" 
+                @click.away="cerrarModalCancelacion()">
+                
+                <h3 class="text-xl font-serif text-white mb-2">Cancelar Consulta</h3>
+                <p class="text-sm text-slate-400 mb-5">
+                    Por favor, indica el motivo de la cancelación. Este mensaje será enviado al cliente para notificarle.
+                </p>
+                
+                <textarea 
+                    x-model="motivoCancelacion" 
+                    class="w-full bg-slate-800 border border-slate-600 rounded-md p-3 text-white text-sm focus:ring-red-500 focus:border-red-500 placeholder-slate-500 mb-5" 
+                    rows="3" 
+                    placeholder="Ej: Inconveniente personal de fuerza mayor..."></textarea>
+                
+                <div class="flex justify-end gap-3">
+                    <button 
+                        @click="cerrarModalCancelacion()" 
+                        class="px-4 py-2 rounded-md text-sm font-bold text-slate-300 hover:bg-slate-800 transition tracking-wide">
+                        VOLVER
+                    </button>
+                    <button 
+                        @click="confirmarCancelacion()" 
+                        data-requires-online
+                        class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition tracking-wide shadow-lg">
+                        CONFIRMAR CANCELACIÓN
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    <!-- Modal de Error de Cancelación -->
+    <div x-show="showErrorCancelacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-red-700/50 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+            <h3 class="text-xl font-serif text-white mb-2">Error al Cancelar</h3>
+            <p class="text-sm text-slate-400 mb-6" x-text="errorCancelacionMensaje"></p>
+            <button @click="showErrorCancelacionModal = false" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg w-full">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Reprogramación -->
+    <div x-show="showReprogramarModal" style="display: none;" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-3xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh]" @click.away="cerrarModalReprogramar()">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+                <h3 class="text-2xl font-serif text-white">Reprogramar Consulta</h3>
+                <button @click="cerrarModalReprogramar()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+
+            <div x-show="cargandoAgenda" class="text-center py-8 text-slate-400">Cargando disponibilidad del profesional...</div>
+
+            <div x-show="!cargandoAgenda" class="space-y-6">
+                <!-- Controles de semana: izquierda y derecha -->
+                <div class="flex items-center justify-between mb-4">
+                    <button @click="retrocederSemanaReprogramacion()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-sm font-bold uppercase tracking-wider transition shadow-sm">&larr; Semana Anterior</button>
+                    <button @click="avanzarSemanaReprogramacion()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-sm font-bold uppercase tracking-wider transition shadow-sm">Siguiente Semana &rarr;</button>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-7 gap-3">
+                    <template x-for="dia in semanaReprogramacion" :key="dia.fecha">
+                        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-3 text-center flex flex-col h-full">
+                            <div class="pb-2 mb-2 border-b border-slate-700/50">
+                                <p class="text-xs text-indigo-400 font-bold uppercase tracking-widest" x-text="dia.nombre_dia.substring(0,3)"></p>
+                                <p class="text-lg text-white font-serif mt-1" x-text="dia.fecha.split('-')[2]"></p>
+                            </div>
+                            <div class="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1 flex-1">
+                                <template x-for="bloque in dia.bloques">
+                                    <button 
+                                        @click="confirmarReprogramacion(dia.fecha, bloque.hora)"
+                                        :disabled="bloque.ocupado"
+                                        :class="bloque.ocupado ? 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50 border border-slate-700/50' : 'bg-indigo-600 hover:bg-indigo-500 text-white font-bold cursor-pointer shadow-sm hover:-translate-y-0.5'"
+                                        class="w-full text-sm py-2 rounded-lg transition-all duration-200">
+                                        <span x-text="bloque.hora"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Reprogramación -->
+    <div x-show="showConfirmarReprogramacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200" @click.away="showConfirmarReprogramacionModal = false">
+            <h3 class="text-2xl font-serif text-white mb-2">Confirmar</h3>
+            <p class="text-sm text-slate-400 mb-6">
+                ¿Seguro que quieres reprogramar para el día <strong class="text-indigo-400 text-lg" x-text="formatDate(fechaSeleccionadaConfirmacion)"></strong> a la(s) <strong class="text-indigo-400 text-lg" x-text="horaSeleccionadaConfirmacion"></strong>?
+            </p>
+            <div class="flex justify-center gap-3">
+                <button @click="showConfirmarReprogramacionModal = false" class="px-5 py-2.5 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 text-xs font-bold uppercase tracking-wider transition">NO</button>
+                <button @click="ejecutarReprogramacion()" class="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg">SÍ, REPROGRAMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Éxito de Reprogramación -->
+    <div x-show="showExitoReprogramacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-emerald-700/50 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-2xl font-serif text-white mb-2">¡Completado!</h3>
+            <p class="text-sm text-slate-400 mb-6">La reserva se ha reprogramado exitosamente.</p>
+            <button @click="showExitoReprogramacionModal = false" class="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg w-full">Entendido</button>
+        </div>
+    </div>
+
+    <!-- Modal de Error de Reprogramación -->
+    <div x-show="showErrorReprogramacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-red-700/50 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+            <h3 class="text-xl font-serif text-white mb-2">No se pudo reprogramar</h3>
+            <p class="text-sm text-slate-400 mb-6" x-text="errorReprogramacionMensaje"></p>
+            <button @click="showErrorReprogramacionModal = false" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg w-full">Cerrar</button>
+        </div>
+    </div>
+
     </div>
 </x-app-layout>

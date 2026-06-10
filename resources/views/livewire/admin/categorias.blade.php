@@ -72,6 +72,7 @@
 
                                 <button type="submit"
                                         id="btnGuardarCategoria"
+                                        data-requires-online
                                         class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700">
                                     Guardar categoría
                                 </button>

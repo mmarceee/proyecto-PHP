@@ -20,7 +20,7 @@ document.addEventListener('alpine:init', () => {
             duracion: '60',
             modalidad: 'Virtual',
             bufferEntreTurnos: '0',
-            categoria_servicio_id: '', 
+            categoria_id: '', 
             // Nuevos campos para LugarAtencion
             lugar_nombre: '',
             lugar_direccion: '',
@@ -32,6 +32,12 @@ document.addEventListener('alpine:init', () => {
         
         mensajeExito: '',
         error: '',
+        modalPoliticaOpen: false,
+        formPolitica: { 
+            tiempo_minimo_cancelacion: 24,
+            permite_reprogramacion: true, 
+            descripcion: '' 
+        },
 
         async init() {
             await this.cargarServicios();
@@ -110,7 +116,7 @@ document.addEventListener('alpine:init', () => {
             // Reseteamos el formulario completo
             this.form = { 
                 nombre: '', descripcion: '', precio: '', duracion: '60', 
-                modalidad: 'Virtual', bufferEntreTurnos: '0', categoria_servicio_id: '',
+                modalidad: 'Virtual', bufferEntreTurnos: '0', categoria_id: '',
                 lugar_nombre: '', lugar_direccion: '', lugar_ciudad: '', lugar_departamento: '',
                 latitud: -34.9011, longitud: -56.1645
             };
@@ -130,7 +136,7 @@ document.addEventListener('alpine:init', () => {
                 duracion: servicio.duracion.toString(),
                 modalidad: servicio.modalidad,
                 bufferEntreTurnos: (servicio.bufferEntreTurnos ?? 0).toString(),
-                categoria_servicio_id: servicio.categoria_servicio_id.toString(),
+                categoria_id: servicio.categoria_id.toString(),
                 
                 // Si el servicio ya tiene un lugar de atención asociado, lo cargamos.
                 // Ajusta 'servicio.lugar_atencion' según cómo venga el JSON desde tu API.
@@ -204,6 +210,43 @@ document.addEventListener('alpine:init', () => {
             } catch (err) {
                 this.error = err.message;
             }
-        }
+        },
+        async abrirModalPolitica() {
+            try {
+                const res = await fetch('/api/profesional/politica-cancelacion', {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    this.formPolitica = data;
+                }
+            } catch (e) { console.error(e); }
+            this.modalPoliticaOpen = true;
+        },
+        async guardarPolitica() {
+            try {
+                const res = await fetch('/api/profesional/politica-cancelacion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(this.formPolitica)
+                });
+                if (res.ok) {
+                    this.modalPoliticaOpen = false;
+                    this.mensajeExito = "Política guardada correctamente";
+                    setTimeout(() => this.mensajeExito = '', 3000);
+                } else {
+                    const error = await res.json();
+                    this.error = error.message || 'Error al guardar';
+                }
+            } catch (e) {
+                this.error = "Error de conexión";
+            }
+        },
     }));
 });

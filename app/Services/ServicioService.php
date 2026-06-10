@@ -28,7 +28,7 @@ class ServicioService
                 'duracion'              => $datos['duracion'],
                 'modalidad'             => $datos['modalidad'],
                 'bufferEntreTurnos'     => $datos['bufferEntreTurnos'] ?? 0,
-                'categoria_servicio_id' => $datos['categoria_servicio_id'], 
+                'categoria_id' => $datos['categoria_id'], 
             ]);
 
             // 2. Regla de Negocio: Solo si es Presencial guardamos el Lugar de Atención
@@ -71,7 +71,7 @@ class ServicioService
                 'duracion'              => $datos['duracion'],
                 'modalidad'             => $datos['modalidad'],
                 'bufferEntreTurnos'     => $datos['bufferEntreTurnos'] ?? 0,
-                'categoria_servicio_id' => $datos['categoria_servicio_id'],
+                'categoria_id'          => $datos['categoria_id'],
             ]);
 
             // 2. Actualizamos o Creamos el lugar si la modalidad (nueva o actual) es Presencial

@@ -47,12 +47,14 @@ class DashboardApiController extends Controller
 
         $consultasHoy = [];
         $proximasSesiones = [];
+        $reservasPendientes = [];
 
         if ($esProfesional && $profesional) {
             $consultasHoy = $DashboardService->obtenerConsultasHoy($profesional->id);
+            $reservasPendientes = $DashboardService->obtenerReservasPendientesProfesional($profesional->id);
         }
 
-        if ($esCliente) {
+        if (!$esAdmin) {
             $proximasSesiones = $DashboardService->obtenerProximasSesiones($user->id);
         }
 
@@ -74,7 +76,22 @@ class DashboardApiController extends Controller
                 'profesionalesPendientes' => $profesionalesPendientes,
                 'consultasHoy' => $consultasHoy,
                 'proximasSesiones' => $proximasSesiones,
+                'reservasPendientes' => $reservasPendientes,
             ],
+        ]);
+    }
+
+        public function obtenerCalendarioConsultas(Request $request, DashboardService $dashboardService)
+    {
+        $user = $request->user();
+        if (!$user->esProfesionalAprobado()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $proximasSesiones = $dashboardService->obtenerProximasSesionesProfesional($user->profesional->id);
+        
+        return response()->json([
+            'proximasSesiones' => $proximasSesiones
         ]);
     }
 }

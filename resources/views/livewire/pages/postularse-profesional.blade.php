@@ -38,7 +38,7 @@
             </div>
 
             <div class="flex items-center justify-end mt-4">
-                <x-primary-button x-bind:disabled="cargando">
+                <x-primary-button x-bind:disabled="cargando" data-requires-online>
                     <span x-text="cargando ? 'Enviando...' : 'Enviar Solicitud'"></span>
                 </x-primary-button>
             </div>

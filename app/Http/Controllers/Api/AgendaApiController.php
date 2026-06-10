@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\ReservaService; //Inyectamos tu servicio de control
 use App\Models\Servicio;
+use App\Events\AgendaActualizada;
 use Carbon\Carbon;
 
 class AgendaApiController extends Controller
@@ -15,21 +16,22 @@ class AgendaApiController extends Controller
      */
     public function obtenerAgenda(Request $request, \App\Services\AgendaService $agendaService)
     {
-        // 1. Obtenemos el usuario logueado y verificamos que sea profesional
+        //Obtenemos el usuario logueado y verificamos que sea profesional
         $user = $request->user();
         if (!$user || !$user->profesional) {
             return response()->json(['error' => 'Acceso denegado. No eres un profesional.'], 403);
         }
 
-        // 2. Leemos la fecha de la URL (si viene)
+        // Leemos la fecha de la URL (si viene)
         $fechaInicio = $request->query('fecha');
 
         try {
-            // 3. Llamamos al servicio que armamos con el cruce de datos inteligente
+            //Llamamos al servicio que armamos con el cruce de datos inteligente
             $semana = $agendaService->obtenerAgendaSemana($user->profesional, $fechaInicio);
 
             return response()->json([
-                'semana' => $semana
+                'semana' => $semana,
+                'reglas_actuales' => $user->profesional->reglasDisponibilidad
             ]);
             
         } catch (\Exception $e) {
@@ -41,45 +43,69 @@ class AgendaApiController extends Controller
     /**
      * Procesa la reserva del paciente impidiendo superposiciones
      */
-    public function agendarTurno(Request $request, ReservaService $reservaService)
+        public function agendarTurno(Request $request, ReservaService $reservaService)
     {
         $validated = $request->validate([
-            'profesional_id' => ['required', 'exists:profesionales,id'],
-            'servicio_id'    => ['required', 'exists:servicios,id'],
-            'fecha'          => ['required', 'date', 'after_or_equal:today'],
-            'hora_inicio'    => ['required', 'date_format:H:i'],
+            'profesional_id'    => ['required', 'exists:profesionales,id'],
+            'servicio_id'       => ['required', 'exists:servicios,id'],
+            'fecha'             => ['required', 'date', 'after_or_equal:today'],
+            'hora_inicio'       => ['required', 'date_format:H:i'],
+            'compra_paquete_id' => ['nullable', 'exists:compra_paquetes,id'],
         ]);
 
-        // 1. Obtener el servicio para saber cuántos minutos dura
         $servicio = Servicio::findOrFail($validated['servicio_id']);
         
-        // 2. Calcular la hora_fin sumando la duración
         $horaInicio = Carbon::parse($validated['hora_inicio']);
         $horaFin = $horaInicio->copy()->addMinutes($servicio->duracion)->format('H:i');
 
-        // 3. Obtener el ID de cliente del usuario logueado
         $clienteId = $request->user()->cliente->id;
 
         try {
-            // 4. Delegamos la creación al ReservaService, el cual correrá 
-            // la validación estricta de "verificarChoqueHorario" antes de insertar
             $reserva = $reservaService->crear([
-                'cliente_id'     => $clienteId,
-                'profesional_id' => $validated['profesional_id'],
-                'servicio_id'    => $validated['servicio_id'],
-                'fecha'          => $validated['fecha'],
-                'hora_inicio'    => $validated['hora_inicio'],
-                'hora_fin'       => $horaFin,
-                'estado_reserva' => 'pendiente', // Nace en tu enum inicial
+                'cliente_id'        => $clienteId,
+                'profesional_id'    => $validated['profesional_id'],
+                'servicio_id'       => $validated['servicio_id'],
+                'fecha'             => $validated['fecha'],
+                'hora_inicio'       => $validated['hora_inicio'],
+                'hora_fin'          => $horaFin,
+                'estado_reserva'    => 'pendiente',
+                'compra_paquete_id' => $validated['compra_paquete_id'] ?? null,
             ]);
 
             return response()->json([
-                'message' => '¡Tu turno ha sido reservado con éxito!',
+                'message' => 'Tu turno ha sido reservado con éxito',
                 'reserva' => $reserva
             ], 201);
 
         } catch (\Exception $e) {
-            // Si el profesional se ocupó justo antes, frena el insert y devuelve un 422
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+        public function bloquearTurno(Request $request, ReservaService $reservaService)
+    {
+        $validated = $request->validate([
+            'profesional_id' => ['required', 'exists:profesionales,id'],
+            'fecha'          => ['required', 'date', 'after_or_equal:today'],
+            'hora_inicio'    => ['required', 'date_format:H:i'],
+        ]);
+
+        $clienteId = $request->user()->cliente->id;
+
+        try {
+            // Delegación absoluta al servicio. Él se encarga de la caché y de notificar (broadcast).
+            $reservaService->bloquearTurnoTemporal(
+                $validated['profesional_id'],
+                $validated['fecha'],
+                $validated['hora_inicio'],
+                $clienteId
+            );
+
+            return response()->json([
+                'message' => 'Turno bloqueado temporalmente. Tienes 10 minutos para completar el pago.',
+            ], 200);
+
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }

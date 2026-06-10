@@ -52,23 +52,6 @@
             <!-- Botones de navegación -->
             <nav class="flex flex-col items-center gap-8">
 
-                <a href="#"
-                class="relative group w-10 h-10 rounded-lg border border-slate-400 flex items-center justify-center text-white hover:bg-slate-800">
-                    <!-- Calendario -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
-                    </svg>
-                    <span 
-                        class="absolute left-14 top-1/2 -translate-y-1/2 
-                            bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
-                            opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-                            transition whitespace-nowrap z-50"
-                    >
-                        Calendario de consultas
-                    </span>
-                </a>
-
                 <a href="/prototipo/busqueda"
                 class="relative group w-10 h-10 rounded-lg border border-slate-400 flex items-center justify-center text-white hover:bg-slate-800">
                     <!-- Búsqueda -->
@@ -86,7 +69,7 @@
                     </span>
                 </a>
 
-                <a href="{{ route('reservas.historial') }}"
+                    <a href="{{ route('reservas.historial') }}"
                         class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800 border border-slate-400 hover:border-slate-300">
                         <svg xmlns="http://www.w3.org/2000/svg" 
                             class="w-5 h-5" 
@@ -109,8 +92,46 @@
                         </span>
                     </a>
 
+                    <a href="{{ route('cliente.paquetes.mios') }}"
+                        class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800 border border-slate-400 hover:border-slate-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            class="w-5 h-5" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor">
+                            <path stroke-linecap="round" 
+                                stroke-linejoin="round" 
+                                stroke-width="2" 
+                                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        
+                        <span 
+                            class="absolute left-14 top-1/2 -translate-y-1/2 
+                                bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                                transition whitespace-nowrap z-50"
+                        >
+                            Paquetes comprados
+                        </span>
+                    </a>
+
                 <!-- Agenda: profesional aprobado o admin -->
                 @if($user && $user->esProfesionalAprobado())
+                    <a href="{{ route('profesional.calendario') }}"
+                    class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
+                        </svg>
+                        <span 
+                            class="absolute left-14 top-1/2 -translate-y-1/2 
+                                bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                                transition whitespace-nowrap z-50"
+                        >
+                            Calendario de consultas
+                        </span>
+                    </a>
                     <a href="/prototipo/agenda"
                     class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -156,30 +177,158 @@
                         </span>
                     </a>
 
+                    <a href="/profesional/paquetes"
+                    class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
+                    
+                    {{-- Icono de Paquete (Caja/Cubo) --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                        class="w-5 h-5" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor">
+                        <path stroke-linecap="round" 
+                            stroke-linejoin="round" 
+                            stroke-width="2" 
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+
+                    {{-- Tooltip emergente --}}
+                    <span 
+                        class="absolute left-14 top-1/2 -translate-y-1/2 
+                            bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                            opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                            transition whitespace-nowrap z-50"
+                    >
+                        Mis paquetes
+                    </span>
+                </a>
                 @endif
 
             </nav>
         </div>
+        <!-- Parte inferior de la sidebar -->
+        <div class="flex flex-col items-center gap-5 overflow-visible">
 
-        <!-- Perfil abajo -->
-        <div class="relative group/perfil overflow-visible">
-            <a href="{{ route('profile') }}"
-            class="block w-10 h-10 rounded-lg border border-slate-500 hover:ring-2 hover:ring-blue-500 overflow-hidden">
-                <img
-                    src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=1e293b&color=fff"
-                    alt="Perfil"
-                    class="w-full h-full object-cover"
+            <!-- Notificaciones -->
+            <div x-data="notificacionesDropdown()" class="relative group/notificaciones overflow-visible">
+                <button
+                    type="button"
+                    @click="alternarPanel()"
+                    class="relative w-10 h-10 rounded-lg border border-slate-500 flex items-center justify-center text-white hover:bg-slate-800 hover:border-slate-300"
+                    aria-label="Notificaciones"
                 >
-            </a>
+                    {{-- Campana --}}
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 01-6 0m6 0H9" />
+                    </svg>
 
-            <span 
-                class="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2 
-                    bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
-                    opacity-0 invisible group-hover/perfil:opacity-100 group-hover/perfil:visible 
-                    transition whitespace-nowrap z-[9999]"
-            >
-                Mi perfil
-            </span>
+                    <span
+                        x-show="count > 0"
+                        x-cloak
+                        x-text="count"
+                        class="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-xs font-semibold flex items-center justify-center" 
+                    ></span>
+                </button>
+
+                <!-- Tooltip de notificaciones -->
+                <span
+                    x-show="!abierto"
+                    x-cloak
+                    class="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
+                        bg-gray-800 text-white text-xs px-2 py-1 rounded-md
+                        opacity-0 invisible group-hover/notificaciones:opacity-100 group-hover/notificaciones:visible
+                        transition whitespace-nowrap z-[9999]"
+                >
+                    Notificaciones
+                </span>
+
+                <!-- Panel de notificaciones -->
+                <div
+                    x-show="abierto"
+                    x-cloak
+                    @click.outside="abierto = false"
+                    class="absolute left-full bottom-0 ml-3 w-80 max-h-96 overflow-hidden rounded-lg border border-slate-700 bg-white shadow-xl z-[9999]"
+                >
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+                        <h3 class="text-sm font-semibold text-slate-900">Notificaciones</h3>
+
+                        <button
+                            type="button"
+                            x-show="count > 0"
+                            x-cloak
+                            @click="marcarTodasComoLeidas()"
+                            class="text-xs font-medium text-blue-600 hover:text-blue-800"
+                        >
+                            Marcar todas
+                        </button>
+                    </div>
+
+                    <div class="max-h-80 overflow-y-auto">
+                        <template x-if="cargando">
+                            <div class="px-4 py-4 text-sm text-slate-500">
+                                Cargando...
+                            </div>
+                        </template>
+
+                        <template x-if="!cargando && notificaciones.length === 0">
+                            <div class="px-4 py-4 text-sm text-slate-500">
+                                No hay notificaciones.
+                            </div>
+                        </template>
+
+                        <template x-for="notificacion in notificaciones" :key="notificacion.id">
+                            <button
+                                type="button"
+                                @click="marcarComoLeida(notificacion.id)"
+                                class="w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50"
+                                :class="notificacion.leida ? 'bg-white' : 'bg-blue-50'"
+                            >
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-900" x-text="notificacion.titulo"></p>
+                                        <p class="mt-1 text-xs text-slate-600" x-text="notificacion.mensaje"></p>
+                                        <p class="mt-1 text-[11px] text-slate-400" x-text="formatearFecha(notificacion.created_at)"></p>
+                                    </div>
+
+                                    <span
+                                        x-show="!notificacion.leida"
+                                        class="mt-1 w-2 h-2 rounded-full bg-blue-600 shrink-0"
+                                    ></span>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Perfil -->
+            <div class="relative group/perfil overflow-visible">
+                <a href="{{ route('profile') }}"
+                    class="block w-10 h-10 rounded-lg border border-slate-500 hover:ring-2 hover:ring-blue-500 overflow-hidden">
+                    <img
+                        src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=1e293b&color=fff"
+                        alt="Perfil"
+                        class="w-full h-full object-cover"
+                    >
+                </a>
+
+                <span
+                    class="pointer-events-none absolute left-full ml-3 top-1/2 -translate-y-1/2
+                        bg-gray-800 text-white text-xs px-2 py-1 rounded-md
+                        opacity-0 invisible group-hover/perfil:opacity-100 group-hover/perfil:visible
+                        transition whitespace-nowrap z-[9999]"
+                >
+                    Mi perfil
+                </span>
+            </div>
+
         </div>
     </aside>
 </div>

@@ -41,17 +41,26 @@ document.addEventListener('alpine:init', () => {
                 this.conectado = true;
                 this.cargando = false;
 
-                // 6. Prendemos nuestra propia cámara y micrófono
-                const localVideoTrack = await createLocalVideoTrack();
-                const localAudioTrack = await createLocalAudioTrack();
+                // 6. Intentamos prender la cámara (si tiene)
+                try {
+                    const localVideoTrack = await createLocalVideoTrack();
+                    await this.room.localParticipant.publishTrack(localVideoTrack);
+                    
+                    const localElement = localVideoTrack.attach();
+                    localElement.classList.add('w-full', 'h-full', 'object-cover');
+                    document.getElementById('video-local').appendChild(localElement);
+                } catch (error) {
+                    console.warn('El usuario no tiene cámara web conectada. Entrando sin video.');
+                    // Opcional: Podrías poner una imagen de perfil por defecto en 'video-local' aquí
+                }
 
-                await this.room.localParticipant.publishTrack(localVideoTrack);
-                await this.room.localParticipant.publishTrack(localAudioTrack);
-
-                // 7. Enganchamos nuestra carita a la ventanita chica
-                const localElement = localVideoTrack.attach();
-                localElement.classList.add('w-full', 'h-full', 'object-cover');
-                document.getElementById('video-local').appendChild(localElement);
+                // 7. Intentamos prender el micrófono (si tiene)
+                try {
+                    const localAudioTrack = await createLocalAudioTrack();
+                    await this.room.localParticipant.publishTrack(localAudioTrack);
+                } catch (error) {
+                    console.warn('El usuario no tiene micrófono conectado.');
+                }
 
             } catch (error) {
                 console.error('Error en videollamada:', error);

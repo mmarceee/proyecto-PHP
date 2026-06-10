@@ -114,6 +114,18 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'host' => env('MONGODB_HOST', 'mongodb'),
+            'port' => env('MONGODB_PORT', 27017),
+            'database' => env('MONGODB_DATABASE', 'gendarapp_logs'),
+            'username' => env('MONGODB_USERNAME', 'sail'),
+            'password' => env('MONGODB_PASSWORD', 'secret'),
+            'options' => [
+                'database' => env('MONGODB_AUTHENTICATION_DATABASE', 'admin'),
+            ],
+        ],
+
     ],
 
     /*

@@ -41,6 +41,7 @@
             <button 
                 @click="guardarPassword" 
                 x-bind:disabled="cargando"
+                data-requires-online
                 class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 disabled:opacity-50 transition"
             >
                 <span x-text="cargando ? 'Guardando...' : 'Guardar Cambios'"></span>
