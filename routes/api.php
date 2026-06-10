@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Admin\CategoriaApiController;
 use App\Http\Controllers\Api\PaqueteApiController;
 use App\Http\Controllers\Api\NotificacionApiController;
 use App\Http\Controllers\Api\PayPalApiController;
+use App\Http\Controllers\Api\PoliticaCancelacionApiController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -122,6 +123,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/verificar', [PaqueteApiController::class, 'verificarDisponibilidad']);
     });
 
+    // API de Políticas y Calendario
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/profesional/politica-cancelacion', [PoliticaCancelacionApiController::class, 'show']);
+        Route::post('/profesional/politica-cancelacion', [PoliticaCancelacionApiController::class, 'store']);
+        Route::get('/profesional/calendario-consultas', [DashboardApiController::class, 'obtenerCalendarioConsultas']);
+    });
 
     
     

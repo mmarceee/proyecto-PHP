@@ -20,3 +20,4 @@ class ReservaObserver
     public function restored(Reserva $reserva): void {}
     public function forceDeleted(Reserva $reserva): void {}
 }
+

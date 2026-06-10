@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Headers;
 
 class PagoConfirmadoMail extends Mailable
 {
@@ -31,6 +32,16 @@ class PagoConfirmadoMail extends Mailable
     {
         return new Content(
             view: 'emails.pago-confirmado',
+        );
+    }
+
+    // Cabecera para identificar el tipo de acción según el estado
+    public function headers(): Headers
+    {
+        return new Headers(
+            text: [
+                'X-Email-Action' => 'pago_confirmado',
+            ],
         );
     }
 }

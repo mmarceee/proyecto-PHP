@@ -220,7 +220,7 @@ document.addEventListener('alpine:init', () => {
                 // Ahora se va a suscribir a 'profesional.5' en lugar de 'profesional.13'
                 window.Echo.private(`profesional.${profesionalId}`)
                     .listen('.agenda.modificada', async (evento) => {
-                        console.log("[WS DIAGNÓSTICO] 🚀 ¡LLEGÓ EL SOPLIDO! Re-sincronizando grilla...", evento);
+                        console.log("[WS DIAGNÓSTICO]  ¡LLEGÓ EL SOPLIDO! Re-sincronizando grilla...", evento);
                         await this.cargarAgenda();
                     });
             }

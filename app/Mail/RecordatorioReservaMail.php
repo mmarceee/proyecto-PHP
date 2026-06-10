@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Headers;
 
 class RecordatorioReservaMail extends Mailable
 {
@@ -33,4 +34,15 @@ class RecordatorioReservaMail extends Mailable
             view: 'emails.recordatorio',
         );
     }
+
+    // Cabecera para identificar el tipo de acción según el estado
+    public function headers(): Headers
+    {
+        return new Headers(
+            text: [
+                'X-Email-Action' => 'recordatorio_reserva',
+            ],
+        );
+    }    
+
 }

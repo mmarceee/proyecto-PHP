@@ -79,8 +79,15 @@ Route::get('/cliente/paquetes/explorar', function () {
         return view('explorarPaquetes'); 
     })->name('cliente.paquetes.explorar');
 
+Route::get('/profesional/calendario-consultas', function () {
+        return view('profesional.calendario');})
+        ->middleware(['auth', 'perfil.completo'])
+        ->name('profesional.calendario');
+
 Volt::route('completar-perfil', 'pages.completar-perfil')
     ->middleware(['auth'])
     ->name('perfil.completar');
+
+
 
 require __DIR__.'/auth.php';
