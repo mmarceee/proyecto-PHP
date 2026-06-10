@@ -15,3 +15,4 @@ import './explorar-paquetes';
 import './notificaciones';
 import './mis-paquetes';
 import './paquetes-vendidos-profesional';
+import './calendario-profesional';

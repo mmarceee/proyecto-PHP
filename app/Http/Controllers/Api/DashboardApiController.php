@@ -80,4 +80,18 @@ class DashboardApiController extends Controller
             ],
         ]);
     }
+
+        public function obtenerCalendarioConsultas(Request $request, DashboardService $dashboardService)
+    {
+        $user = $request->user();
+        if (!$user->esProfesionalAprobado()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $proximasSesiones = $dashboardService->obtenerProximasSesionesProfesional($user->profesional->id);
+        
+        return response()->json([
+            'proximasSesiones' => $proximasSesiones
+        ]);
+    }
 }
