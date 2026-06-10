@@ -52,23 +52,6 @@
             <!-- Botones de navegación -->
             <nav class="flex flex-col items-center gap-8">
 
-                <a href="#"
-                class="relative group w-10 h-10 rounded-lg border border-slate-400 flex items-center justify-center text-white hover:bg-slate-800">
-                    <!-- Calendario -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
-                    </svg>
-                    <span 
-                        class="absolute left-14 top-1/2 -translate-y-1/2 
-                            bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
-                            opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-                            transition whitespace-nowrap z-50"
-                    >
-                        Calendario de consultas
-                    </span>
-                </a>
-
                 <a href="/prototipo/busqueda"
                 class="relative group w-10 h-10 rounded-lg border border-slate-400 flex items-center justify-center text-white hover:bg-slate-800">
                     <!-- Búsqueda -->
@@ -134,6 +117,21 @@
 
                 <!-- Agenda: profesional aprobado o admin -->
                 @if($user && $user->esProfesionalAprobado())
+                    <a href="{{ route('profesional.calendario') }}"
+                    class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
+                        </svg>
+                        <span 
+                            class="absolute left-14 top-1/2 -translate-y-1/2 
+                                bg-gray-800 text-white text-xs px-2 py-1 rounded-md 
+                                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                                transition whitespace-nowrap z-50"
+                        >
+                            Calendario de consultas
+                        </span>
+                    </a>
                     <a href="/prototipo/agenda"
                     class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
                         <svg xmlns="http://www.w3.org/2000/svg"

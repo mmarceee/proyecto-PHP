@@ -61,6 +61,10 @@ Route::get('/profesional/paquetes', function () {
         return view('profesional.paquetes');
     })->name('profesional.paquetes');
 
+Route::get('/profesional/paquetes-vendidos', function () {
+        return view('profesional.paquetes-vendidos');
+    })->name('profesional.paquetes.vendidos');    
+
 Route::get('/cliente/mis-paquetes', function () {
         return view('misPaquetes'); 
     })->name('cliente.paquetes.mios');
@@ -69,8 +73,15 @@ Route::get('/cliente/paquetes/explorar', function () {
         return view('explorarPaquetes'); 
     })->name('cliente.paquetes.explorar');
 
+Route::get('/profesional/calendario-consultas', function () {
+        return view('profesional.calendario');})
+        ->middleware(['auth', 'perfil.completo'])
+        ->name('profesional.calendario');
+
 Volt::route('completar-perfil', 'pages.completar-perfil')
     ->middleware(['auth'])
     ->name('perfil.completar');
+
+
 
 require __DIR__.'/auth.php';

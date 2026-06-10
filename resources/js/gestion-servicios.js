@@ -32,6 +32,12 @@ document.addEventListener('alpine:init', () => {
         
         mensajeExito: '',
         error: '',
+        modalPoliticaOpen: false,
+        formPolitica: { 
+            tiempo_minimo_cancelacion: 24,
+            permite_reprogramacion: true, 
+            descripcion: '' 
+        },
 
         async init() {
             await this.cargarServicios();
@@ -204,6 +210,43 @@ document.addEventListener('alpine:init', () => {
             } catch (err) {
                 this.error = err.message;
             }
-        }
+        },
+        async abrirModalPolitica() {
+            try {
+                const res = await fetch('/api/profesional/politica-cancelacion', {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    this.formPolitica = data;
+                }
+            } catch (e) { console.error(e); }
+            this.modalPoliticaOpen = true;
+        },
+        async guardarPolitica() {
+            try {
+                const res = await fetch('/api/profesional/politica-cancelacion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(this.formPolitica)
+                });
+                if (res.ok) {
+                    this.modalPoliticaOpen = false;
+                    this.mensajeExito = "Política guardada correctamente";
+                    setTimeout(() => this.mensajeExito = '', 3000);
+                } else {
+                    const error = await res.json();
+                    this.error = error.message || 'Error al guardar';
+                }
+            } catch (e) {
+                this.error = "Error de conexión";
+            }
+        },
     }));
 });

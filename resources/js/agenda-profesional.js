@@ -29,6 +29,8 @@ document.addEventListener('alpine:init', () => {
 
         async init() {
             await this.cargarAgenda();
+            // AGREGADO: Inicializamos la escucha en tiempo real de forma segura
+            this.iniciarEscuchaRealtime();
         },
 
         async cargarAgenda() {
@@ -189,6 +191,40 @@ document.addEventListener('alpine:init', () => {
                 this.error = err.message;
                 this.cargando = false;
             }
+        },
+    /**
+     * 
+     * 
+     * 
+     */
+       
+        /**
+         * AGREGADO CON SENSORES: Escucha en tiempo real mediante WebSockets
+         */
+        /**
+         * AGREGADO: Escucha en tiempo real sintonizando el ID de Profesional correcto
+         */
+        iniciarEscuchaRealtime() {
+            // 1. Intentamos buscar primero el ID de profesional real, si no, caemos al de usuario
+            const profesionalId = document.querySelector('meta[name="profesional-id"]')?.getAttribute('content') 
+                               || document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+            
+            console.log("[WS DIAGNÓSTICO] Sintonizando WebSocket en el ID de Entidad:", profesionalId);
+
+            if (!profesionalId) {
+                console.warn("[WS DIAGNÓSTICO] No se encontró ningún ID para enlazar el WebSocket.");
+                return;
+            }
+
+            if (window.Echo) {
+                // Ahora se va a suscribir a 'profesional.5' en lugar de 'profesional.13'
+                window.Echo.private(`profesional.${profesionalId}`)
+                    .listen('.agenda.modificada', async (evento) => {
+                        console.log("[WS DIAGNÓSTICO]  ¡LLEGÓ EL SOPLIDO! Re-sincronizando grilla...", evento);
+                        await this.cargarAgenda();
+                    });
+            }
         }
+
     }));
 });

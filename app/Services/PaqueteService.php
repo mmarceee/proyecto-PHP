@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\DB;
 
 class PaqueteService
 {
+
+    public function __construct(
+        private NotificacionService $notificacionService
+    ) {}
+
     /**
      * 1. Profesional: Crea un nuevo paquete en su catálogo
      */
@@ -36,11 +41,9 @@ class PaqueteService
             throw new \Exception("Este paquete ya no está disponible para la compra.");
         }
 
-        // Usamos una transacción por si en el futuro conectamos la pasarela de pagos acá
-        return DB::transaction(function () use ($cliente, $paquete) {
-            
-            // Creamos la compra con las sesiones intactas
-            $compra = CompraPaquete::create([
+        // La compra se crea dentro de una transacción para dejar listo el flujo cuando se conecte la pasarela de pagos
+        $compra = DB::transaction(function () use ($cliente, $paquete) {
+            return CompraPaquete::create([
                 'paquete_servicio_id'  => $paquete->id,
                 'cliente_id'           => $cliente->id,
                 'sesiones_disponibles' => $paquete->cantidad_sesiones,
@@ -48,9 +51,11 @@ class PaqueteService
                 'estado_paquete'       => 'activo',
                 'fecha_compra'         => Carbon::now(),
             ]);
-
-            return $compra;
         });
+
+        $this->notificacionService->notificarCompraPaquete($compra);
+
+        return $compra;
     }
 
     /**
@@ -62,7 +67,7 @@ class PaqueteService
             throw new \Exception("Este paquete no tiene sesiones disponibles o está inactivo.");
         }
 
-        DB::transaction(function () use ($compra, $reservaId) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($compra, $reservaId) {
             // Descontamos 1 disponible y sumamos 1 consumida
             $compra->decrement('sesiones_disponibles');
             $compra->increment('sesiones_consumidas');
@@ -72,13 +77,11 @@ class PaqueteService
                 $compra->update(['estado_paquete' => 'completado']);
             }
 
-            // Registramos el uso en el historial (UsoSesionPaquete)
-            $compra->usos_sesiones()->create([
+            $compra->uso_sesion_paquete()->create([
                 'reserva_id' => $reservaId,
-                'fecha_uso'  => Carbon::now(),
+                'fechaUso'  => \Carbon\Carbon::now(),
             ]);
         });
-
         return $compra;
     }
 }

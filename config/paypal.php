@@ -28,4 +28,5 @@ return [
     'timeout' => env('PAYPAL_TIMEOUT', 30), // Total request timeout in seconds.
     'connect_timeout' => env('PAYPAL_CONNECT_TIMEOUT', 10), // Connection timeout in seconds.
     'max_retries' => env('PAYPAL_MAX_RETRIES', 2), // Retries on 5xx / connection errors (0 to disable). Uses exponential backoff.
+    'uyu_to_usd_rate' => env('PAYPAL_UYU_TO_USD_RATE', 40),
 ];
