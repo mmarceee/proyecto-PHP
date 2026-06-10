@@ -19,7 +19,7 @@ class ReservaService
 
     /**
      * Valida que no existan superposiciones horarias para el mismo profesional
-     */
+    */
     public function verificarChoqueHorario($profesionalId, $fecha, $horaInicio, $horaFin, $excluirReservaId = null, $clienteId = null)
     {
         $query = Reserva::where('profesional_id', $profesionalId)
@@ -48,7 +48,7 @@ class ReservaService
 
     /**
      * Crear una nueva reserva desde el backend verificando choques
-     */
+    */
     public function crear(array $datos)
     {
         $compraPaqueteId = $datos['compra_paquete_id'] ?? null;
@@ -116,9 +116,9 @@ class ReservaService
         
     }
 
-        /**
+    /**
      * Bloquea temporalmente un turno en caché para dar tiempo de pago al cliente.
-     */
+    */
     public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 10)
     {
         $horaInicioFormateada = Carbon::parse($horaInicio)->format('H:i:s');
@@ -145,7 +145,27 @@ class ReservaService
      */
     public function actualizar(Reserva $reserva, array $datos)
     {
-        // 1. Validar choque de horarios (excluyendo la reserva actual)
+        $esCliente = false;
+        // Validación de Política para Reprogramación
+        $userAutenticado = auth()->user();
+        if ($userAutenticado && $userAutenticado->id === $reserva->cliente->user_id) {
+            $esCliente = true;
+            $politica = \App\Models\PoliticaCancelacion::where('profesional_id', $reserva->profesional_id)->first();
+            if ($politica) {
+                if (!$politica->permite_reprogramacion) {
+                    throw new \Exception("El profesional no permite reprogramar turnos bajo su política de cancelación.");
+                }
+                
+                $fechaStr = Carbon::parse($reserva->fecha)->format('Y-m-d');
+                $inicioSesion = Carbon::parse($fechaStr . ' ' . $reserva->hora_inicio);
+                $horasFaltantes = now()->diffInHours($inicioSesion, false);
+                if ($horasFaltantes < $politica->tiempo_minimo_cancelacion) {
+                    throw new \Exception("No es posible reprogramar. La política exige un mínimo de {$politica->tiempo_minimo_cancelacion} horas de anticipación.");
+                }
+            }
+        }
+
+        // Validar choque de horarios (excluyendo la reserva actual)
         $this->verificarChoqueHorario(
             $reserva->profesional_id, 
             $datos['fecha'], 
@@ -154,13 +174,18 @@ class ReservaService
             $reserva->id
         );
 
-        // 2. Validar consistencia de servicios si pertenece a un paquete contratado
+        // Validar consistencia de servicios si pertenece a un paquete contratado
         $usoSesion = $reserva->uso_sesion_paquete;
         if ($usoSesion) {
             $paquete = $usoSesion->compraPaquete;
             if ($datos['servicio_id'] != $paquete->paquete_servicio_id) {
                 throw new \Exception('El nuevo servicio seleccionado no coincide con el paquete contratado para esta reserva.');
             }
+        }
+
+        // Si el cliente reprograma, pasa a pendiente de nuevo
+        if ($esCliente) {
+            $datos['estado_reserva'] = 'pendiente';
         }
 
         // Guardamos la fecha vieja antes de actualizar por si se cambia de día la reserva
@@ -176,17 +201,37 @@ class ReservaService
             $this->despacharCambioAgenda($reserva->profesional_id, $fechaOriginal);
         }
 
+        // Notificar al Dashboard del profesional en tiempo real
+        if ($esCliente) {
+            try {
+                broadcast(new \App\Events\DashboardProfesionalActualizado($reserva->profesional_id));
+            } catch (\Exception $e) {
+                // Silencioso
+            }
+        }
+
         return $reserva;
     }
 
     /**
-     * Cancelar una reserva de forma limpia y con reintegro automático de paquetes
-     */
-        /**
      * Cancelar una reserva de forma limpia, con reintegro de paquetes y reembolso en PayPal
-     */
+    */
     public function cancelar(Reserva $reserva, string $motivo)
     {
+        // 1. Validación de Política de Cancelación (Solo aplica si cancela el Cliente activo)
+        $userAutenticado = auth()->user();
+        if ($userAutenticado && $userAutenticado->id === $reserva->cliente->user_id) {
+            $politica = \App\Models\PoliticaCancelacion::where('profesional_id', $reserva->profesional_id)->first();
+            if ($politica) {
+                $fechaStr = Carbon::parse($reserva->fecha)->format('Y-m-d');
+                $inicioSesion = Carbon::parse($fechaStr . ' ' . $reserva->hora_inicio);
+                $horasFaltantes = now()->diffInHours($inicioSesion, false); // false para que dé negativo si ya pasó
+                if ($horasFaltantes < $politica->tiempo_minimo_cancelacion) {
+                    throw new \Exception("No es posible cancelar. La política del profesional exige un mínimo de {$politica->tiempo_minimo_cancelacion} horas de anticipación.");
+                }
+            }
+        }
+        
         return \Illuminate\Support\Facades\DB::transaction(function () use ($reserva, $motivo) {
             
             // --- REEMBOLSO AUTOMÁTICO EN PAYPAL ---
@@ -263,6 +308,15 @@ class ReservaService
             'en_curso'              => 'finalizada',
             default                 => $reserva->estado_reserva,
         };
+
+        // Bloqueo estricto backend: No permitir iniciar hasta 5 minutos antes
+        if ($nuevoEstado === 'en_curso') {
+            $fechaStr = Carbon::parse($reserva->fecha)->format('Y-m-d');
+            $inicioPermitido = Carbon::parse($fechaStr . ' ' . $reserva->hora_inicio)->subMinutes(5);
+            if (now()->isBefore($inicioPermitido)) {
+                throw new \Exception('No puedes iniciar la sesión antes de su horario programado (se permite hasta 5 minutos antes).');
+            }
+        }
 
         $reserva->update([
             'estado_reserva' => $nuevoEstado

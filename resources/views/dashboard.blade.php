@@ -231,11 +231,13 @@
                                                             x-text="session.action_label">
                                                         </button>
                                                     </template>
-                                                    <a :href="'/reserva/' + session.id + '/sala'" 
-                                                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
-                                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                                        Sala Virtual
-                                                </a>
+                                                    <template x-if="esHoraDeSala(session.date_raw, session.time)">
+                                                        <a :href="'/reserva/' + session.id + '/sala'" 
+                                                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
+                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                            Sala Virtual
+                                                        </a>
+                                                    </template>
                                                 </div>
 
                                             </div>
@@ -283,16 +285,21 @@
                                                 </p>
                                             </div>
 
-                                            <div class="flex items-center gap-3">
-                                                <span class="px-4 py-1 rounded-md border border-white text-xs font-bold uppercase tracking-wider"
-                                                    x-text="reservation.status">
-                                                </span>
-
-                                                <a :href="'/reserva/' + reservation.id + '/sala'" 
-                                                class="inline-flex items-center px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                                    Sala Virtual
-                                                </a>
+                                            <div class="flex flex-col items-center gap-2 sm:col-span-2 lg:col-span-1">
+                                                <span class="px-4 py-1 rounded-md border border-slate-500 text-xs font-bold uppercase tracking-wider" x-text="reservation.status"></span>
+                                                <div class="flex items-center gap-2">
+                                                    <template x-if="reservation.status.toLowerCase() !== 'cancelada' && reservation.status.toLowerCase() !== 'finalizada'">
+                                                        <div class="flex gap-2">
+                                                            <button @click.stop="abrirModalReprogramar(reservation)" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-[10px] font-bold uppercase tracking-wider transition">Reprogramar</button>
+                                                            <button @click.stop="abrirModalCancelacion(reservation.id)" class="px-3 py-1.5 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-[10px] font-bold uppercase tracking-wider">Cancelar</button>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="esHoraDeSala(reservation.date_raw, reservation.time)">
+                                                        <a :href="'/reserva/' + reservation.id + '/sala'" class="inline-flex items-center px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md transition">
+                                                            Sala Virtual
+                                                        </a>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </article>
                                     </template>
@@ -437,5 +444,86 @@
                 </div>
             </div>
         </div>
+
+    <!-- Modal de Reprogramación -->
+    <div x-show="showReprogramarModal" style="display: none;" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-3xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh]" @click.away="cerrarModalReprogramar()">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+                <h3 class="text-2xl font-serif text-white">Reprogramar Consulta</h3>
+                <button @click="cerrarModalReprogramar()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+
+            <div x-show="cargandoAgenda" class="text-center py-8 text-slate-400">Cargando disponibilidad del profesional...</div>
+
+            <div x-show="!cargandoAgenda" class="space-y-6">
+                <!-- Controles de semana: izquierda y derecha -->
+                <div class="flex items-center justify-between mb-4">
+                    <button @click="retrocederSemanaReprogramacion()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-sm font-bold uppercase tracking-wider transition shadow-sm">&larr; Semana Anterior</button>
+                    <button @click="avanzarSemanaReprogramacion()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-sm font-bold uppercase tracking-wider transition shadow-sm">Siguiente Semana &rarr;</button>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-7 gap-3">
+                    <template x-for="dia in semanaReprogramacion" :key="dia.fecha">
+                        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-3 text-center flex flex-col h-full">
+                            <div class="pb-2 mb-2 border-b border-slate-700/50">
+                                <p class="text-xs text-indigo-400 font-bold uppercase tracking-widest" x-text="dia.nombre_dia.substring(0,3)"></p>
+                                <p class="text-lg text-white font-serif mt-1" x-text="dia.fecha.split('-')[2]"></p>
+                            </div>
+                            <div class="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1 flex-1">
+                                <template x-for="bloque in dia.bloques">
+                                    <button 
+                                        @click="confirmarReprogramacion(dia.fecha, bloque.hora)"
+                                        :disabled="bloque.ocupado"
+                                        :class="bloque.ocupado ? 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50 border border-slate-700/50' : 'bg-indigo-600 hover:bg-indigo-500 text-white font-bold cursor-pointer shadow-sm hover:-translate-y-0.5'"
+                                        class="w-full text-sm py-2 rounded-lg transition-all duration-200">
+                                        <span x-text="bloque.hora"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Reprogramación -->
+    <div x-show="showConfirmarReprogramacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200" @click.away="showConfirmarReprogramacionModal = false">
+            <h3 class="text-2xl font-serif text-white mb-2">Confirmar</h3>
+            <p class="text-sm text-slate-400 mb-6">
+                ¿Seguro que quieres reprogramar para el día <strong class="text-indigo-400 text-lg" x-text="formatDate(fechaSeleccionadaConfirmacion)"></strong> a la(s) <strong class="text-indigo-400 text-lg" x-text="horaSeleccionadaConfirmacion"></strong>?
+            </p>
+            <div class="flex justify-center gap-3">
+                <button @click="showConfirmarReprogramacionModal = false" class="px-5 py-2.5 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 text-xs font-bold uppercase tracking-wider transition">NO</button>
+                <button @click="ejecutarReprogramacion()" class="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg">SÍ, REPROGRAMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Éxito de Reprogramación -->
+    <div x-show="showExitoReprogramacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-emerald-700/50 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-2xl font-serif text-white mb-2">¡Completado!</h3>
+            <p class="text-sm text-slate-400 mb-6">La reserva se ha reprogramado exitosamente.</p>
+            <button @click="showExitoReprogramacionModal = false" class="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg w-full">Entendido</button>
+        </div>
+    </div>
+
+    <!-- Modal de Error de Reprogramación -->
+    <div x-show="showErrorReprogramacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-red-700/50 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+            <h3 class="text-xl font-serif text-white mb-2">No se pudo reprogramar</h3>
+            <p class="text-sm text-slate-400 mb-6" x-text="errorReprogramacionMensaje"></p>
+            <button @click="showErrorReprogramacionModal = false" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg w-full">Cerrar</button>
+        </div>
+    </div>
+
     </div>
 </x-app-layout>
