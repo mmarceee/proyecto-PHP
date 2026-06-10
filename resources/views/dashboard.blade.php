@@ -452,6 +452,18 @@
             </div>
         </div>
 
+    <!-- Modal de Error de Cancelación -->
+    <div x-show="showErrorCancelacionModal" style="display: none;" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-red-700/50 rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+            <h3 class="text-xl font-serif text-white mb-2">Error al Cancelar</h3>
+            <p class="text-sm text-slate-400 mb-6" x-text="errorCancelacionMensaje"></p>
+            <button @click="showErrorCancelacionModal = false" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg w-full">Cerrar</button>
+        </div>
+    </div>
+
     <!-- Modal de Reprogramación -->
     <div x-show="showReprogramarModal" style="display: none;" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-3xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh]" @click.away="cerrarModalReprogramar()">

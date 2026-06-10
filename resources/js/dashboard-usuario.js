@@ -13,6 +13,8 @@ document.addEventListener('alpine:init', () => {
         showCancelModal: false,
         reservaACancelar: null,
         motivoCancelacion: '',
+        showErrorCancelacionModal: false,
+        errorCancelacionMensaje: '',
         showReprogramarModal: false,
         reservaAReprogramar: null,
         fechaReprogramacion: new Date().toISOString().split('T')[0],
@@ -116,7 +118,8 @@ document.addEventListener('alpine:init', () => {
         async confirmarCancelacion() {
             // Validamos que el profesional haya escrito un motivo
             if (this.motivoCancelacion.trim() === '') {
-                alert('El motivo de cancelación es obligatorio.');
+                this.errorCancelacionMensaje = 'El motivo de cancelación es obligatorio.';
+                this.showErrorCancelacionModal = true;
                 return; 
             }
 
@@ -141,11 +144,13 @@ document.addEventListener('alpine:init', () => {
                     await this.cargarDashboard();
                 } else {
                     const error = await response.json();
-                    alert('Error al cancelar: ' + (error.message || 'Intenta nuevamente'));
+                    this.errorCancelacionMensaje = 'Error al cancelar: ' + (error.message || 'Intenta nuevamente');
+                    this.showErrorCancelacionModal = true;
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Hubo un problema al conectar con el servidor.');
+                this.errorCancelacionMensaje = 'Hubo un problema al conectar con el servidor.';
+                this.showErrorCancelacionModal = true;
             }
         },
 
