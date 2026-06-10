@@ -167,7 +167,10 @@ class ReservaService
                 }
             }
         }
-
+        // 1. CAPTURA DE ESTADO ANTERIOR PARA AUDITORÍA NOSQL
+        $fechaOriginalStr = $reserva->fecha instanceof \Carbon\Carbon ? $reserva->fecha->format('Y-m-d') : $reserva->fecha;
+        $horaInicioOriginal = $reserva->hora_inicio;
+        $horaFinOriginal = $reserva->hora_fin;
         // Validar choque de horarios (excluyendo la reserva actual)
         $this->verificarChoqueHorario(
             $reserva->profesional_id, 
@@ -176,7 +179,6 @@ class ReservaService
             $datos['hora_fin'], 
             $reserva->id
         );
-
         // Validar consistencia de servicios si pertenece a un paquete contratado
         $usoSesion = $reserva->uso_sesion_paquete;
         if ($usoSesion) {
@@ -185,22 +187,16 @@ class ReservaService
                 throw new \Exception('El nuevo servicio seleccionado no coincide con el paquete contratado para esta reserva.');
             }
         }
-
         // Si el cliente reprograma, pasa a pendiente de nuevo
         if ($esCliente) {
             $datos['estado_reserva'] = 'pendiente';
         }
-
         // Guardamos la fecha vieja antes de actualizar por si se cambia de día la reserva
         $fechaOriginal = $reserva->fecha;
-
         $reserva->update($datos);
-
         $reserva->refresh();
-
         $this->notificacionService->notificarReservaReprogramada($reserva);
         EnviarNotificacionReserva::dispatch($reserva, 'Reprogramada');
-
         // Notificar el cambio al día asignado
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
         
@@ -208,7 +204,6 @@ class ReservaService
         if ($fechaOriginal !== $reserva->fecha) {
             $this->despacharCambioAgenda($reserva->profesional_id, $fechaOriginal);
         }
-
         // Notificar al Dashboard del profesional en tiempo real
         if ($esCliente) {
             try {
@@ -217,7 +212,23 @@ class ReservaService
                 // Silencioso
             }
         }
-
+        // 2. REGISTRO DE AUDITORÍA NOSQL
+        try {
+            app(\App\Services\EventLogService::class)->log('reserva_reprogramada', [
+                'reserva_id'           => $reserva->id,
+                'cliente_id'           => $reserva->cliente_id,
+                'profesional_id'       => $reserva->profesional_id,
+                'servicio_id'          => $reserva->servicio_id,
+                'fecha_anterior'       => $fechaOriginalStr,
+                'hora_inicio_anterior' => $horaInicioOriginal,
+                'hora_fin_anterior'    => $horaFinOriginal,
+                'fecha_nueva'          => $reserva->fecha instanceof \Carbon\Carbon ? $reserva->fecha->format('Y-m-d') : $reserva->fecha,
+                'hora_inicio_nueva'    => $reserva->hora_inicio,
+                'hora_fin_nueva'       => $reserva->hora_fin,
+            ], $reserva->cliente?->user_id);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Fallo al registrar auditoría NoSQL para reserva reprogramada: " . $e->getMessage());
+        }
         return $reserva;
     }
 
