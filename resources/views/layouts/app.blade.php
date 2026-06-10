@@ -28,7 +28,7 @@
     <body class="font-sans antialiased">
         <div
             id="offline-banner"
-            class="hidden fixed top-0 left-0 right-0 z-50 bg-red-600 text-white text-sm font-semibold text-center px-4 py-3 shadow-lg"
+            class="hidden fixed top-0 left-0 right-0 z-[9999] bg-red-600 text-white text-sm font-semibold text-center px-4 py-3 shadow-lg"
         >
             Sin conexion. Puedes ver informacion ya cargada, pero no realizar reservas ni cambios.
         </div>

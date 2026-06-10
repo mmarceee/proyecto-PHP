@@ -77,15 +77,17 @@
                                             </div>
 
                                             <div class="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto">
-                                                <button 
-                                                    @click="aprobarProfesional(professional.id)"
-                                                    class="w-full sm:w-auto px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
+                                        <button 
+                                            @click="aprobarProfesional(professional.id)"
+                                            data-requires-online
+                                            class="w-full sm:w-auto px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
                                                     Aceptar
                                                 </button>
 
-                                                <button 
-                                                    @click="rechazarProfesional(professional.id)"
-                                                    class="w-full sm:w-auto px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
+                                        <button 
+                                            @click="rechazarProfesional(professional.id)"
+                                            data-requires-online
+                                            class="w-full sm:w-auto px-4 py-2 rounded-md border border-red-400 text-red-300 hover:bg-red-950/40 text-xs font-bold uppercase tracking-wider">
                                                     Rechazar
                                                 </button>
                                             </div>
@@ -155,15 +157,17 @@
                                                     </span>
 
                                                     <div class="flex items-center gap-3">
-                                                        <button 
-                                                            @click.stop="abrirModalCancelacion(reserva.id)" 
-                                                            class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
+                                                <button 
+                                                    @click.stop="abrirModalCancelacion(reserva.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
                                                             Cancelar
                                                         </button>
 
-                                                        <button 
-                                                            @click.stop="avanzarEstadoReserva(reserva.id)" 
-                                                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
+                                                <button 
+                                                    @click.stop="avanzarEstadoReserva(reserva.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider">
                                                             Confirmar
                                                         </button>
                                                     </div>
@@ -217,17 +221,19 @@
                                                 <div class="flex items-center gap-3">
                                                     
                                                     <template x-if="session.status.toLowerCase() !== 'cancelada' && session.status.toLowerCase() !== 'finalizada'">
-                                                        <button 
-                                                            @click.stop="abrirModalCancelacion(session.id)" 
-                                                            class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
+                                                <button 
+                                                    @click.stop="abrirModalCancelacion(session.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-xs font-bold uppercase tracking-wider">
                                                             Cancelar
                                                         </button>
                                                     </template>
 
                                                     <template x-if="session.action_label">
-                                                        <button 
-                                                            @click.stop="avanzarEstadoReserva(session.id)" 
-                                                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
+                                                <button 
+                                                    @click.stop="avanzarEstadoReserva(session.id)" 
+                                                    data-requires-online
+                                                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider"
                                                             x-text="session.action_label">
                                                         </button>
                                                     </template>
@@ -431,6 +437,7 @@
                     </button>
                     <button 
                         @click="confirmarCancelacion()" 
+                        data-requires-online
                         class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition tracking-wide shadow-lg">
                         CONFIRMAR CANCELACIÓN
                     </button>

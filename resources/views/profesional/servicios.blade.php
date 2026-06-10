@@ -16,7 +16,7 @@
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">Configuración del Catálogo</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Agrega o edita los servicios que los clientes podrán buscar y reservar en tu agenda.</p>
                 </div>
-                <button @click="abrirModalCrear()" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition shadow-sm">
+                <button @click="abrirModalCrear()" data-requires-online class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition shadow-sm">
                      Nuevo Servicio
                 </button>
             </div>
@@ -44,10 +44,10 @@
                         <div class="mt-6 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-3">
                             <span class="text-xl font-serif font-extrabold text-gray-900 dark:text-white" x-text="'$' + servicio.precio"></span>
                             <div class="flex gap-2">
-                                <button @click="abrirModalEditar(servicio)" class="px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-xl transition">
+                                <button @click="abrirModalEditar(servicio)" data-requires-online class="px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 rounded-xl transition">
                                     Editar
                                 </button>
-                                <button @click="eliminarServicio(servicio.id)" class="px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100 rounded-xl transition">
+                                <button @click="eliminarServicio(servicio.id)" data-requires-online class="px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100 rounded-xl transition">
                                     Borrar
                                 </button>
                             </div>
@@ -157,7 +157,7 @@
                         </template>
                         <div class="flex justify-end gap-3 mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                             <button type="button" @click="mostrarModal = false" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition">Cancelar</button>
-                            <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition">
+                            <button type="submit" data-requires-online class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition">
                                 <span x-text="modoEdicion ? 'Guardar Cambios' : 'Crear Servicio'"></span>
                             </button>
                         </div>

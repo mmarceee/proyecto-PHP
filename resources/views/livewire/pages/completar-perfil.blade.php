@@ -100,12 +100,11 @@ new #[Layout('layouts.app')] class extends Component
         @endif
 
         <div class="flex items-center justify-end mt-6">
-            <x-primary-button>
+            <x-primary-button data-requires-online>
                 {{ __('Completar perfil') }}
             </x-primary-button>
         </div>
     </form>
 </div>
-
 
 

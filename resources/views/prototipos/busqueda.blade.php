@@ -370,6 +370,7 @@
                             </button>
                             <button 
                                 @click="ejecutarReserva()" 
+                                data-requires-online
                                 class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition tracking-wide shadow-lg">
                                 ACEPTAR
                             </button>

@@ -159,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const btnEditar = document.createElement('button');
             btnEditar.type = 'button';
+            btnEditar.dataset.requiresOnline = '';
             btnEditar.textContent = 'Editar';
             btnEditar.className = 'px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 font-semibold transition';
             btnEditar.addEventListener('click', () => editarCategoria(categoria.id));
@@ -168,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (categoria.activa) {
                 const btnDesactivar = document.createElement('button');
                 btnDesactivar.type = 'button';
+                btnDesactivar.dataset.requiresOnline = '';
                 btnDesactivar.textContent = 'Desactivar';
                 btnDesactivar.className = 'px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 font-semibold transition';
                 btnDesactivar.addEventListener('click', () => desactivarCategoria(categoria.id));
@@ -176,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const btnActivar = document.createElement('button');
                 btnActivar.type = 'button';
+                btnActivar.dataset.requiresOnline = '';
                 btnActivar.textContent = 'Activar';
                 btnActivar.className = 'px-3 py-1 rounded-md bg-green-600 text-white hover:bg-green-700 font-semibold transition';
                 btnActivar.addEventListener('click', () => activarCategoria(categoria.id));
@@ -196,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mostrarEstadoCarga('');
         contenedorTabla.classList.remove('hidden');
+        window.dispatchEvent(new Event('offline-status:refresh'));
     }
 
     function crearCeldaTexto(texto, clasesExtra = '') {

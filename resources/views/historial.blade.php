@@ -32,7 +32,7 @@
 
                         <div class="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
                             <template x-if="reserva.estado === 'Finalizada' && !reserva.ya_calificado">
-                                <button @click="abrirModalCalificacion(reserva)" class="w-full bg-blue-600/10 text-blue-600 dark:text-blue-400 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition text-sm font-semibold tracking-wide">
+                                <button @click="abrirModalCalificacion(reserva)" data-requires-online class="w-full bg-blue-600/10 text-blue-600 dark:text-blue-400 py-2 rounded-lg hover:bg-blue-600 hover:text-white transition text-sm font-semibold tracking-wide">
                                     <span x-text="reserva.rol_contextual === 'cliente' ? '⭐ Calificar Atención' : '⭐ Calificar Cliente'"></span>
                                 </button>
                             </template>
@@ -84,7 +84,7 @@
 
                     <div class="flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 pt-4">
                         <button type="button" @click="mostrarModal = false" class="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition">Cancelar</button>
-                        <button @click="enviarCalificacion()" class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition">
+                        <button @click="enviarCalificacion()" data-requires-online class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition">
                             Enviar
                         </button>
                     </div>

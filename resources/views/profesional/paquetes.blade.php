@@ -13,6 +13,7 @@
                     
                     <button 
                         @click="abrirModalCrear()"
+                        data-requires-online
                         class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-sm transition tracking-wide shadow-lg flex items-center gap-2"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -82,6 +83,7 @@
                                     <button 
                                         type="button"
                                         @click="toggleActivo(paquete)"
+                                        data-requires-online
                                         class="text-xs font-bold px-3 py-1.5 rounded-lg border transition-all"
                                         :class="paquete.activo 
                                             ? 'border-amber-700 text-amber-400 hover:bg-amber-950/30' 
@@ -204,6 +206,7 @@
                                 <button 
                                     type="submit" 
                                     :disabled="guardando"
+                                    data-requires-online
                                     class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition tracking-wide shadow-lg flex items-center gap-2"
                                 >
                                     <span x-show="guardando" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>

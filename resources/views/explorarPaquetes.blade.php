@@ -59,6 +59,7 @@
                                 <button 
                                     @click="abrirModalConfirmacion(paquete.id)"
                                     :disabled="comprandoId !== null"
+                                    data-requires-online
                                     class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-bold py-2 px-4 rounded-xl text-sm transition tracking-wide shadow-lg flex items-center gap-2"
                                 >
                                     <span x-show="comprandoId === paquete.id" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
@@ -108,7 +109,7 @@
                             </div>
                         </div>
                         <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                            <button @click="comprar()" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white transition-colors border border-transparent rounded-lg shadow-sm bg-blue-600 hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button @click="comprar()" type="button" data-requires-online class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white transition-colors border border-transparent rounded-lg shadow-sm bg-blue-600 hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
                                 Proceder al Pago
                             </button>
                             <button @click="cerrarModalConfirmacion()" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-300 transition-colors bg-gray-700 border border-gray-600 rounded-lg shadow-sm hover:bg-gray-600 sm:mt-0 sm:w-auto sm:text-sm">

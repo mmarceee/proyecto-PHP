@@ -4,6 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Reserva;
 use Livewire\Volt\Volt;
 
+Route::get('/health', function () {
+    return response()->json([
+        'ok' => true,
+    ]);
+})->name('health');
+
 Route::view('/', 'welcome');
 
 Route::view('dashboard', 'dashboard')

@@ -1,7 +1,6 @@
-const CACHE_NAME = 'gendarapp-v1';
+const CACHE_NAME = 'gendarapp-v2';
 
-const APP_SHELL = [
-  '/',
+const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
@@ -9,7 +8,7 @@ const APP_SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
 
   self.skipWaiting();
@@ -29,23 +28,67 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+function isCacheableStaticAsset(request) {
+  const url = new URL(request.url);
+
+  if (request.method !== 'GET') {
+    return false;
+  }
+
+  if (url.origin !== self.location.origin) {
+    return false;
+  }
+
+  if (url.pathname.startsWith('/api/')) {
+    return false;
+  }
+
+  return (
+    url.pathname === '/manifest.webmanifest' ||
+    url.pathname.startsWith('/icons/') ||
+    url.pathname.startsWith('/build/')
+  );
+}
+
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') { //Esto es importante porque acciones como reservar, cancelar usan POST, PUT, PATCH. No queremos cachear ni simular esas acciones offline.
+  const request = event.request;
+
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() =>
+        new Response(
+          '<h1>Sin conexion</h1><p>No se pudo cargar esta pagina. Vuelve a intentarlo cuando recuperes internet.</p>',
+          {
+            status: 503,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          }
+        )
+      )
+    );
+
+    return;
+  }
+
+  if (!isCacheableStaticAsset(request)) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request).then((networkResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(request, networkResponse.clone());
+          return networkResponse;
+        });
+      });
+    })
   );
 });
-
-/*
-
-install: se ejecuta cuando el navegador instala el service worker. Guarda en cache algunos archivos básicos.
-
-activate: limpia caches viejas. Por ejemplo, cuando cambiemos versiones (de gendarapp-v1 a gendarapp-v2).
-
-fetch: intercepta pedidos GET. Primero intenta traerlos de internet; si falla, busca una copia en cache.
-
-
-*/
