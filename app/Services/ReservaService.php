@@ -88,36 +88,38 @@ class ReservaService
             return $reserva;
         });
 
-        // Liberar el bloqueo temporal ya que la reserva real fue creada
-        $horaInicioFormateada = Carbon::parse($datos['hora_inicio'])->format('H:i:s');
-        $llaveCache = "lock_turno_{$datos['profesional_id']}_{$datos['fecha']}_{$horaInicioFormateada}";
-        Cache::forget($llaveCache);
-
-        // Disparar actualización por WebSocket en tiempo real
-        $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
-
-        
-        $this->notificacionService->notificarNuevaReserva($reserva);
-
-        // REGISTRO DE AUDITORÍA NOSQL
-        app(\App\Services\EventLogService::class)->log('reserva_creada', [
-            'reserva_id'     => $reserva->id,
-            'cliente_id'     => $reserva->cliente_id,
-            'profesional_id' => $reserva->profesional_id,
-            'servicio_id'    => $reserva->servicio_id,
-            'fecha'          => $reserva->fecha->format('Y-m-d'),
-            'hora_inicio'    => $reserva->hora_inicio,
-            'hora_fin'       => $reserva->hora_fin,
-        ], $reserva->cliente?->user_id);
-
+        \Illuminate\Support\Facades\DB::afterCommit(function () use ($reserva, $datos) {
+            // Liberar el bloqueo temporal
+            $horaInicioFormateada = \Carbon\Carbon::parse($datos['hora_inicio'])->format('H:i:s');
+            $llaveCache = "lock_turno_{$datos['profesional_id']}_{$datos['fecha']}_{$horaInicioFormateada}";
+            \Illuminate\Support\Facades\Cache::forget($llaveCache);
+            // Disparar actualización por WebSocket en tiempo real
+            $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
+            
+            $this->notificacionService->notificarNuevaReserva($reserva);
+            // REGISTRO DE AUDITORÍA NOSQL
+            try {
+                app(\App\Services\EventLogService::class)->log('reserva_creada', [
+                    'reserva_id'     => $reserva->id,
+                    'cliente_id'     => $reserva->cliente_id,
+                    'profesional_id' => $reserva->profesional_id,
+                    'servicio_id'    => $reserva->servicio_id,
+                    'fecha'          => $reserva->fecha->format('Y-m-d'),
+                    'hora_inicio'    => $reserva->hora_inicio,
+                    'hora_fin'       => $reserva->hora_fin,
+                ], $reserva->cliente?->user_id);
+            } catch (\Exception $e) {
+                // Silencioso
+            }
+        });
         return $reserva;
         
     }
 
-    /**
+        /**
      * Bloquea temporalmente un turno en caché para dar tiempo de pago al cliente.
      */
-    public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 1)
+    public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 10)
     {
         $horaInicioFormateada = Carbon::parse($horaInicio)->format('H:i:s');
         $llaveCache = "lock_turno_{$profesionalId}_{$fecha}_{$horaInicioFormateada}";
@@ -131,6 +133,9 @@ class ReservaService
                  throw new \Exception('El turno acaba de ser tomado por otro cliente.');
             }
         }
+
+        // Emitimos el broadcast directamente desde el dominio tras un bloqueo exitoso
+        broadcast(new AgendaActualizada($profesionalId, []));
 
         return true;
     }
@@ -177,48 +182,61 @@ class ReservaService
     /**
      * Cancelar una reserva de forma limpia y con reintegro automático de paquetes
      */
+        /**
+     * Cancelar una reserva de forma limpia, con reintegro de paquetes y reembolso en PayPal
+     */
     public function cancelar(Reserva $reserva, string $motivo)
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($reserva, $motivo) {
+            
+            // --- REEMBOLSO AUTOMÁTICO EN PAYPAL ---
+            $pago = \App\Models\Pago::where('reserva_id', $reserva->id)->where('estado_pago', 'aprobado')->first();
+            if ($pago && $pago->metodo_pago === 'paypal') {
+                try {
+                    $pagoService = app(\App\Services\PagoService::class);
+                    $pagoService->reembolsarPago($pago, $motivo);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Fallo en el reembolso automático: ' . $e->getMessage());
+                }
+            }
+            // -------------------------------------------------------
+
             // 1. Cancelamos la reserva normalmente
             $reserva->update([
                 'estado_reserva'     => 'cancelada',
                 'motivo_cancelacion' => $motivo,
             ]);
 
-            // 2. LÓGICA DE REINTEGRO: Verificamos si esta reserva usó una sesión de un paquete
+            // 2. LÓGICA DE REINTEGRO DE PAQUETES
             $usoSesion = $reserva->uso_sesion_paquete;
 
             if ($usoSesion) {
                 $compra = $usoSesion->compraPaquete;
                 
-                // Devolvemos la sesión al contador
                 $compra->increment('sesiones_disponibles');
                 $compra->decrement('sesiones_consumidas');
 
-                // Si el paquete se había quedado sin saldo ("completado"), lo "revivimos"
                 if ($compra->estado_paquete === 'completado' && $compra->sesiones_disponibles > 0) {
                     $compra->update(['estado_paquete' => 'activo']);
                 }
-                // Eliminamos el registro del consumo para que no aparezca en el historial
-                // como una sesión "gastada"
+                
                 $usoSesion->delete();
             }
 
-            // Disparar WebSocket para liberar el horario en las pantallas de los demás
+            // 3. WEBSOCKETS: Liberar horario y notificar al cliente
             $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
 
-            // Disparamos usando el user_id real del cliente para que coincida con el frontend
-            \Log::info("[WS BACKEND] Disparando cancelación al cliente (User ID): " . $reserva->cliente->user_id);
+            \Illuminate\Support\Facades\Log::info("[WS BACKEND] Disparando cancelación al cliente (User ID): " . $reserva->cliente->user_id);
             broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'cancelada'));
             
-            // 3. Despachamos las notificaciones
+            // 4. NOTIFICACIONES
             $this->notificacionService->notificarReservaCancelada($reserva);
-            EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
+            \App\Jobs\EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
             
             return $reserva;
         });
-         // 2. Registramos el evento de auditoría NoSQL fuera de la transacción relacional
+
+        // 5. REGISTRO DE AUDITORÍA NOSQL
         try {
             app(\App\Services\EventLogService::class)->log('reserva_cancelada', [
                 'reserva_id' => $reserva->id,
@@ -226,8 +244,9 @@ class ReservaService
                 'motivo'     => $motivo,
             ], $reserva->cliente?->user_id);
         } catch (\Exception $e) {
-            \Log::error("Fallo al registrar auditoría NoSQL para reserva cancelada: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("Fallo al registrar auditoría NoSQL para reserva cancelada: " . $e->getMessage());
         }
+        
         return $reserva;
     }
 

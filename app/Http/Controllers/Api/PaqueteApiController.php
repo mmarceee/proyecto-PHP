@@ -38,6 +38,30 @@ class PaqueteApiController extends Controller
     }
 
     /**
+     * Lista los paquetes vendidos por el profesional logueado
+     */
+    public function vendidos(Request $request)
+    {
+        $profesional = $request->user()->profesional;
+
+        if (!$profesional) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $compras = \App\Models\CompraPaquete::with([
+                'cliente.user',
+                'paqueteServicio.servicio',
+            ])
+            ->whereHas('paqueteServicio', function ($query) use ($profesional) {
+                $query->where('profesional_id', $profesional->id);
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json($compras);
+    }
+
+    /**
      * Crea un nuevo paquete en el catálogo
      */
     public function store(Request $request)

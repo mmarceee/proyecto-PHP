@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\MapaApiController;
 use App\Http\Controllers\Api\Admin\CategoriaApiController;
 use App\Http\Controllers\Api\PaqueteApiController;
 use App\Http\Controllers\Api\NotificacionApiController;
+use App\Http\Controllers\Api\PayPalApiController;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
@@ -100,8 +101,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/notificaciones/{notificacion}/leer', [NotificacionApiController::class, 'markAsRead'])
         ->name('api.notificaciones.mark-as-read');
 
+    Route::post('/paypal/create-payment-reserva', [PayPalApiController::class, 'createPaymentReserva']);
+
+    Route::post('/paypal/create-payment-paquete', [PayPalApiController::class, 'createPaymentPaquete']);
+
     Route::prefix('profesional/paquetes')->group(function () {
         Route::get('/', [PaqueteApiController::class, 'index']);
+        Route::get('/vendidos', [PaqueteApiController::class, 'vendidos']);
         Route::post('/', [PaqueteApiController::class, 'store']);
         Route::patch('/{id}/toggle', [PaqueteApiController::class, 'toggleActivo']);
     });
@@ -157,3 +163,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
 });
+
+Route::get('/paypal/success', [PayPalApiController::class, 'successPayment'])
+    ->name('paypal.success');
+Route::get('/paypal/cancel', [PayPalApiController::class, 'cancelPayment'])
+    ->name('paypal.cancel');

@@ -25,12 +25,15 @@ class DashboardService
 
         return $reservas->map(function ($reserva) {
             $horaCarbon = Carbon::parse($reserva->hora_inicio);
+            $userCliente = $reserva->cliente?->user;
+            $nombreCliente = trim(($userCliente?->name ?? '') . ' ' . ($userCliente?->apellido ?? ''));
 
             return [
                 'id' => $reserva->id,
                 'time' => $horaCarbon->format('H:i'), // Formato "14:30"
                 'period' => $horaCarbon->format('A'), // "AM" o "PM"
-                'client_name' => $reserva->cliente?->user?->name ?? 'Paciente Anónimo',
+                'client_name' => $nombreCliente ?: 'Paciente Anónimo',
+                'client_email' => $userCliente?->email ?? '',
                 'reason' => 'Consulta de control general', // Puedes cambiarlo si agregás columna motivo
                 'status'       => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)), // Ej: "Pendiente", "Confirmada", "En curso"
                 'status_raw'   => $reserva->estado_reserva, // Nos sirve para evaluar en el JS de Alpine sin formatear
@@ -84,6 +87,7 @@ class DashboardService
                 'date' => $fechaReserva->format('d/m/Y'),
                 'time' => $horaInicio->format('H:i'),
                 'client_name' => $nombreCliente ?: 'Paciente Anónimo',
+                'client_email' => $userCliente?->email ?? '',
                 'service_name' => $reserva->servicio?->nombre ?? 'Servicio',
                 'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'status_raw' => $reserva->estado_reserva,
@@ -131,7 +135,13 @@ class DashboardService
                 'id' => $reserva->id,
                 'date_label' => $dateLabel,
                 'time' => $horaCarbon->format('H:i'),
-                'professional_name' => $reserva->profesional?->user?->name ?? 'Profesional',
+                'professional_name' => $reserva->profesional?->nombre_comercial
+                    ?: trim(
+                        ($reserva->profesional?->user?->name ?? '') . ' ' .
+                        ($reserva->profesional?->user?->apellido ?? '')
+                    )
+                    ?: 'Profesional',
+                'professional_email' => $reserva->profesional?->user?->email ?? '',
                 'specialty' => $reserva->servicio?->nombre ?? 'Especialidad',
                 'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'packages' => [] // Estructura reservada para mantener reactividad en Alpine

@@ -61,6 +61,10 @@ Route::get('/profesional/paquetes', function () {
         return view('profesional.paquetes');
     })->name('profesional.paquetes');
 
+Route::get('/profesional/paquetes-vendidos', function () {
+        return view('profesional.paquetes-vendidos');
+    })->name('profesional.paquetes.vendidos');    
+
 Route::get('/cliente/mis-paquetes', function () {
         return view('misPaquetes'); 
     })->name('cliente.paquetes.mios');

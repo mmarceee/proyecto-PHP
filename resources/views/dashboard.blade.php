@@ -61,6 +61,7 @@
                                         <article class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-start lg:items-center gap-6 px-4 sm:px-6 lg:px-8 py-6 border-b border-slate-700">
                                             <div>
                                                 <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="professional.name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="professional.email"></p>
 
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     <span x-text="professional.especialidad"></span>
@@ -142,6 +143,7 @@
 
                                                 <div>
                                                     <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="reserva.client_name"></h4>
+                                                    <p class="text-sm text-slate-400 mt-1 break-all" x-text="professional.email"></p>
                                                     <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                         ▫ <span x-text="reserva.service_name"></span>
                                                     </p>
@@ -200,6 +202,7 @@
 
                                             <div>
                                                 <h4 class="font-serif text-2xl sm:text-3xl break-words" x-text="session.client_name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="session.client_email"></p>
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     ▫ <span x-text="session.reason"></span>
                                                 </p>
@@ -274,6 +277,7 @@
 
                                             <div>
                                                 <h4 class="font-serif text-3xl" x-text="reservation.professional_name"></h4>
+                                                <p class="text-sm text-slate-400 mt-1 break-all" x-text="reservation.professional_email"></p>
                                                 <p class="uppercase tracking-[0.25em] text-sm text-slate-400 mt-1">
                                                     ▫ <span x-text="reservation.specialty"></span>
                                                 </p>
@@ -367,48 +371,20 @@
                     <template x-if="tipo === 'profesional'">
                         <div class="border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
-                                Paquetes disponibles
+                                Paquetes vendidos
                             </h3>
 
                             <div class="border-b border-slate-400 mb-6"></div>
 
                             <div class="mb-6">
-                                <p class="text-xs uppercase tracking-[0.25em] text-slate-400 mb-1">
-                                    Cliente seleccionado
+                                <p class="text-sm text-slate-400">
+                                    Consultá todos los paquetes que vendiste, a qué cliente pertenecen y cuántas sesiones le quedan disponibles.
                                 </p>
-
-                                <h4 class="font-serif text-2xl" x-text="selectedProfessionalSession.client_name"></h4>
                             </div>
 
-                            <template x-for="package in selectedProfessionalSession.packages" :key="package.name">
-                                <div class="mb-8">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="font-serif text-xl" x-text="package.name"></h4>
-
-                                        <span 
-                                            class="text-xs text-slate-300"
-                                            x-text="package.used + ' / ' + package.total"
-                                        ></span>
-                                    </div>
-
-                                    <div class="mt-3 flex gap-1">
-                                        <template x-for="index in package.total" :key="index">
-                                            <span 
-                                                class="w-2 h-2 border border-white"
-                                                :class="index <= package.used ? 'bg-white' : 'bg-transparent'"
-                                            ></span>
-                                        </template>
-                                    </div>
-
-                                    <p class="uppercase text-xs font-bold tracking-wider text-slate-400 mt-3">
-                                        Sesiones utilizadas
-                                    </p>
-                                </div>
-                            </template>
-
-                            <a href="#"
+                            <a href="{{ route('profesional.paquetes.vendidos') }}"
                             class="block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
-                                Ver todos los registros
+                                Ver paquetes vendidos
                             </a>
                         </div>
                     </template>
@@ -416,7 +392,7 @@
                     <template x-if="tipo === 'cliente' || tipo === 'profesional'">
                         <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
-                                Paquetes con este profesional
+                                Paquetes para comprar con nuestros profesionales
                             </h3>
 
                             <div class="border-b border-slate-400 mb-6"></div>

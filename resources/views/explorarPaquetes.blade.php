@@ -57,7 +57,7 @@
 
                                 {{-- Botón de Comprar --}}
                                 <button 
-                                    @click="comprar(paquete.id)"
+                                    @click="abrirModalConfirmacion(paquete.id)"
                                     :disabled="comprandoId !== null"
                                     class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-bold py-2 px-4 rounded-xl text-sm transition tracking-wide shadow-lg flex items-center gap-2"
                                 >
@@ -67,6 +67,55 @@
                             </div>
                         </div>
                     </template>
+                </div>
+            </div>
+                        <!-- Modal de Confirmación de Compra -->
+            <div x-show="showModalConfirmacion" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    
+                    <!-- Fondo Oscuro -->
+                    <div x-show="showModalConfirmacion" x-transition.opacity class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" aria-hidden="true"></div>
+
+                    <!-- Centrado vertical para pantallas grandes -->
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                    <!-- Panel del Modal -->
+                    <div x-show="showModalConfirmacion" 
+                         x-transition:enter="ease-out duration-300" 
+                         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                         x-transition:leave="ease-in duration-200" 
+                         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                         class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-gray-800 rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 border border-gray-700">
+                        
+                        <div class="sm:flex sm:items-start">
+                            <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-blue-900/50 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                                <!-- Icono de Tarjeta / PayPal -->
+                                <svg class="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg font-medium leading-6 text-white" id="modal-title">
+                                    Abonar Paquete de Sesiones
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-400">
+                                        ¿Estás seguro de que deseas adquirir este paquete de sesiones? Serás redirigido a la pasarela de pagos segura de PayPal para completar la transacción.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                            <button @click="comprar()" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white transition-colors border border-transparent rounded-lg shadow-sm bg-blue-600 hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Proceder al Pago
+                            </button>
+                            <button @click="cerrarModalConfirmacion()" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-300 transition-colors bg-gray-700 border border-gray-600 rounded-lg shadow-sm hover:bg-gray-600 sm:mt-0 sm:w-auto sm:text-sm">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
