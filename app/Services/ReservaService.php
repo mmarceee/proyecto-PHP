@@ -194,6 +194,8 @@ class ReservaService
         // Guardamos la fecha vieja antes de actualizar por si se cambia de día la reserva
         $fechaOriginal = $reserva->fecha;
 
+        $reserva->update($datos);
+
         $reserva->refresh();
 
         $this->notificacionService->notificarReservaReprogramada($reserva);

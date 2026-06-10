@@ -172,4 +172,26 @@ class NotificacionService
         return $notificacion;
     }
 
+    public function notificarReservaReprogramada(Reserva $reserva): void
+    {
+        $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
+
+        foreach ([
+            $reserva->cliente->user_id,
+            $reserva->profesional->user_id,
+        ] as $userId) {
+            $this->crearYEmitir([
+                'user_id' => $userId,
+                'reserva_id' => $reserva->id,
+                'titulo' => 'Reserva reprogramada',
+                'mensaje' => 'La reserva fue reprogramada pendiente de aprobación.',
+                'tipo_not' => 'mensaje_relevante',
+                'canal_not' => 'sistema',
+                'estado_not' => 'pendiente',
+                'leida' => false,
+                'fechaCreacion' => now()->toDateString(),
+            ]);
+        }
+    }
+
 }
