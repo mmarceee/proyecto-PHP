@@ -187,7 +187,8 @@ class ReservaService
      */
     public function cancelar(Reserva $reserva, string $motivo)
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($reserva, $motivo) {
+        // 1. Guardamos los cambios en la base de datos relacional y cerramos la transacción
+        $reserva = \Illuminate\Support\Facades\DB::transaction(function () use ($reserva, $motivo) {
             
             // --- REEMBOLSO AUTOMÁTICO EN PAYPAL ---
             $pago = \App\Models\Pago::where('reserva_id', $reserva->id)->where('estado_pago', 'aprobado')->first();
@@ -200,34 +201,24 @@ class ReservaService
                 }
             }
             // -------------------------------------------------------
-
             // 1. Cancelamos la reserva normalmente
             $reserva->update([
                 'estado_reserva'     => 'cancelada',
                 'motivo_cancelacion' => $motivo,
             ]);
-
             // 2. LÓGICA DE REINTEGRO DE PAQUETES
             $usoSesion = $reserva->uso_sesion_paquete;
-
             if ($usoSesion) {
                 $compra = $usoSesion->compraPaquete;
                 
                 $compra->increment('sesiones_disponibles');
                 $compra->decrement('sesiones_consumidas');
-
                 if ($compra->estado_paquete === 'completado' && $compra->sesiones_disponibles > 0) {
                     $compra->update(['estado_paquete' => 'activo']);
                 }
                 
                 $usoSesion->delete();
             }
-
-            // 3. WEBSOCKETS: Liberar horario y notificar al cliente
-            $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
-
-            \Illuminate\Support\Facades\Log::info("[WS BACKEND] Disparando cancelación al cliente (User ID): " . $reserva->cliente->user_id);
-            broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'cancelada'));
             
             // 4. NOTIFICACIONES
             $this->notificacionService->notificarReservaCancelada($reserva);
@@ -236,7 +227,13 @@ class ReservaService
             return $reserva;
         });
 
-        // 5. REGISTRO DE AUDITORÍA NOSQL
+        // 3. WEBSOCKETS (Fuera de la transacción de MySQL para evitar condiciones de carrera)
+        $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
+
+        \Illuminate\Support\Facades\Log::info("[WS BACKEND] Disparando cancelación al cliente (User ID): " . $reserva->cliente->user_id);
+        broadcast(new \App\Events\EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'cancelada'));
+        
+        // 5. REGISTRO DE AUDITORÍA NOSQL (Fuera de la transacción para evitar bloqueos)
         try {
             app(\App\Services\EventLogService::class)->log('reserva_cancelada', [
                 'reserva_id' => $reserva->id,

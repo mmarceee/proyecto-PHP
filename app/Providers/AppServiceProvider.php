@@ -3,11 +3,12 @@
 namespace App\Providers;
 
 use App\Models\Reserva;
+use App\Models\Pago;
 use App\Observers\ReservaObserver;
+use App\Observers\PagoObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
-
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Reserva::observe(ReservaObserver::class);
+        Pago::observe(PagoObserver::class);
+
         // REGISTRO DE AUDITORÍA NOSQL PARA CORREOS ENVIADOS
         Event::listen(MessageSent::class, function (MessageSent $event) {
             $to = array_map(fn($address) => $address->getAddress(), $event->message->getTo() ?? []);
