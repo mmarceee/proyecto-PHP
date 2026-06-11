@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 CIAN='\033[0;36m'
 VERDE='\033[0;32m'
 AMARILLO='\033[0;33m'
@@ -39,6 +37,8 @@ echo -e "⏳ Esperando a que MySQL se inicialice correctamente..."
 sleep 10
 
 echo -e "${VERDE}🌟 Iniciando servicios...${NC}"
+chmod +x node_modules/.bin/concurrently 2>/dev/null || true
+
 ./vendor/bin/sail npx concurrently -c "cyan,green,magenta,yellow" -n "vite,queue,reverb,sched" \
     "npm run dev" \
     "php artisan queue:work redis --tries=3" \
