@@ -35,5 +35,12 @@ code .
 echo -e "${CIAN}🚀 Arrancando Laravel Sail...${NC}"
 ./vendor/bin/sail up -d
 
-echo -e "${VERDE}🎨 Iniciando Vite...${NC}"
-./vendor/bin/sail npm run dev
+echo -e "⏳ Esperando a que MySQL se inicialice correctamente..."
+sleep 10
+
+echo -e "${VERDE}🌟 Iniciando servicios...${NC}"
+./vendor/bin/sail npx concurrently -c "cyan,green,magenta,yellow" -n "vite,queue,reverb,sched" \
+    "npm run dev" \
+    "php artisan queue:work redis --tries=3" \
+    "php artisan reverb:start --host=0.0.0.0" \
+    "php artisan schedule:work"
