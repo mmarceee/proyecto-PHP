@@ -12,6 +12,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('reservas:recordatorios')->dailyAt('08:00');
+Schedule::command('reservas:recordatorios')->dailyAt('20:00');
 
 Schedule::call(function (ReservaService $reservaService) {
     $ahora = now();

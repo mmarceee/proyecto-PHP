@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[Fillable(['cliente_id', 'profesional_id', 'servicio_id', 'fecha', 'hora_inicio', 'hora_fin', 'estado_reserva', 'motivo_cancelacion'])]
+#[Fillable(['cliente_id', 'profesional_id', 'servicio_id', 'fecha', 'hora_inicio', 'hora_fin', 'estado_reserva', 'motivo_cancelacion', 'recordatorio_enviado_at'])]
 class Reserva extends Model {
 
     
@@ -49,6 +49,7 @@ class Reserva extends Model {
     {
         return [
             'fecha' => 'date',
+            'recordatorio_enviado_at' => 'datetime',
         ];
     }
 }

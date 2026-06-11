@@ -11,18 +11,23 @@ class GenerarRecordatoriosDiarios extends Command
 {
     // El nombre que usarás en la terminal para llamarlo
     protected $signature = 'reservas:recordatorios';
-    protected $description = 'Busca las reservas de mañana y encola los correos de recordatorio en Redis';
+    protected $description = 'Busca las reservas confirmadas dentro de las próximas 24 horas y encola los correos de recordatorio en Redis';
 
     public function handle()
     {
-        // 1. Calculamos la fecha de mañana
-        $manana = Carbon::tomorrow()->toDateString(); // Ej: '2026-05-29'
+        // 1. Calculamos la fecha de hoy y 24hrs para adelante
+        $desde = now();
+        $hasta = now()->addDay();
 
-        // 2. Buscamos en la BD todos los turnos para mañana que estén confirmados
-        // (Ajusta el 'Confirmada' a como lo escribas exactamente en tu base de datos)
-        $reservas = Reserva::where('fecha', $manana)
-                           ->whereIn('estado_reserva', ['Confirmada', 'Pendiente', 'confirmada', 'pendiente'])
-                           ->get();
+        // 2. Buscamos reservas confirmadas dentro de las próximas 24 horas
+        $reservas = Reserva::whereNull('recordatorio_enviado_at')
+            ->whereIn('estado_reserva', ['confirmada'])
+            ->get()
+            ->filter(function (Reserva $reserva) use ($desde, $hasta) {
+                $inicioReserva = Carbon::parse($reserva->fecha->format('Y-m-d') . ' ' . $reserva->hora_inicio);
+
+                return $inicioReserva->between($desde, $hasta);
+            });
 
         $contador = 0;
 
@@ -32,6 +37,6 @@ class GenerarRecordatoriosDiarios extends Command
             $contador++;
         }
 
-        $this->info("¡Listo! Se encolaron {$contador} recordatorios en Redis para mañana.");
+        $this->info("¡Listo! Se encolaron {$contador} recordatorios en Redis para las próximas 24 horas.");
     }
 }
