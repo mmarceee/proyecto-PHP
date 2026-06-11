@@ -71,6 +71,7 @@ class DashboardApiController extends Controller
                 'estado' => $estadoProfesional,
                 'pendiente' => $estadoProfesional === 'pendiente',
                 'aprobado' => $estadoProfesional === 'aprobado',
+                'reputacion_promedio' => $profesional ? $profesional->reputacion_promedio : 0.00,
             ],
             'datos' => [
                 'profesionalesPendientes' => $profesionalesPendientes,

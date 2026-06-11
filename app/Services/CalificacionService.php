@@ -66,7 +66,7 @@ class CalificacionService
 
         // Guardamos la calificación utilizando transacciones de base de datos para garantizar consistencia e integridad
         return DB::transaction(function () use ($reserva, $usuarioAutenticado, $evaluadoId, $tipoCalificacion, $datos) {
-            return Calificacion::create([
+            $calificacion = Calificacion::create([
                 'reserva_id'       => $reserva->id,
                 'evaluador_id'     => $usuarioAutenticado->id,
                 'evaluado_id'      => $evaluadoId,
@@ -75,6 +75,19 @@ class CalificacionService
                 'comentario'       => $datos['comentario'] ?? null,
                 'fecha'            => now(), // Mapea con el cast 'datetime' de tu modelo
             ]);
+            // Si el cliente califica al profesional, recalculamos su reputación promedio
+            if ($tipoCalificacion === 'ClienteAProfesional') {
+                $profesional = $reserva->profesional;
+                if ($profesional) {
+                    $promedio = Calificacion::where('evaluado_id', $evaluadoId)
+                        ->where('tipoCalificacion', 'ClienteAProfesional')
+                        ->avg('puntuacion');
+                    $profesional->update([
+                        'reputacion_promedio' => round($promedio, 2)
+                    ]);
+                }
+            }
+            return $calificacion;
         });
     }
 }
