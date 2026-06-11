@@ -74,7 +74,7 @@ class PaqueteService
 
             // Si se quedó sin sesiones, lo marcamos como completado
             if ($compra->sesiones_disponibles === 0) {
-                $compra->update(['estado_paquete' => 'completado']);
+                $compra->update(['estado_paquete' => 'consumido']);
             }
 
             $compra->uso_sesion_paquete()->create([

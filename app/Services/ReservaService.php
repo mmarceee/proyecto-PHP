@@ -277,7 +277,7 @@ class ReservaService
                 
                 $compra->increment('sesiones_disponibles');
                 $compra->decrement('sesiones_consumidas');
-                if ($compra->estado_paquete === 'completado' && $compra->sesiones_disponibles > 0) {
+                if ($compra->estado_paquete === 'consumido' && $compra->sesiones_disponibles > 0) {
                     $compra->update(['estado_paquete' => 'activo']);
                 }
                 
