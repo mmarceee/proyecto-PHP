@@ -127,10 +127,14 @@ class AgendaService
                         }
                     }
 
+                    // Marcar como no disponible si el horario ya pasó
+                    $inicioBloqueReal = Carbon::parse($fechaString . ' ' . $horaBloqueClean);
+                    $esPasado = $inicioBloqueReal->lessThanOrEqualTo(now());
+
                     // Re-mapeamos el bloque con su estructura final para Alpine
                     $bloque = [
                         'hora' => $horaBloqueClean,
-                        'ocupado' => $estaOcupado
+                        'ocupado' => $estaOcupado || $esPasado
                     ];
                 }
                 unset($bloque); 

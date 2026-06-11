@@ -54,6 +54,8 @@ class ReservaService
         $compraPaqueteId = $datos['compra_paquete_id'] ?? null;
         unset($datos['compra_paquete_id']);
 
+        $this->validarInicioFuturo($datos['fecha'], $datos['hora_inicio']);
+
         $this->verificarChoqueHorario(
             $datos['profesional_id'], 
             $datos['fecha'], 
@@ -124,6 +126,8 @@ class ReservaService
     */
     public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 10)
     {
+        $this->validarInicioFuturo($fecha, $horaInicio); 
+
         $horaInicioFormateada = Carbon::parse($horaInicio)->format('H:i:s');
         $llaveCache = "lock_turno_{$profesionalId}_{$fecha}_{$horaInicioFormateada}";
 
@@ -171,6 +175,9 @@ class ReservaService
         $fechaOriginalStr = $reserva->fecha instanceof \Carbon\Carbon ? $reserva->fecha->format('Y-m-d') : $reserva->fecha;
         $horaInicioOriginal = $reserva->hora_inicio;
         $horaFinOriginal = $reserva->hora_fin;
+
+        $this->validarInicioFuturo($datos['fecha'], $datos['hora_inicio']);
+
         // Validar choque de horarios (excluyendo la reserva actual)
         $this->verificarChoqueHorario(
             $reserva->profesional_id, 
@@ -386,5 +393,14 @@ class ReservaService
 
         
         broadcast(new AgendaActualizada($profesionalId, $bloquesOcupados));
+    }
+
+    private function validarInicioFuturo(string $fecha, string $horaInicio): void
+    {
+        $inicioReserva = Carbon::parse($fecha . ' ' . $horaInicio);
+
+        if ($inicioReserva->lessThanOrEqualTo(now())) {
+            throw new \Exception('No podés reservar un turno en una fecha u hora pasada.');
+        }
     }
 }
