@@ -138,6 +138,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/usuarios', [UsuarioAdminApiController::class, 'index'])
             ->name('api.admin.usuarios.index');
 
+        Route::get('/calificaciones', [CalificacionApiController::class, 'index'])
+            ->name('api.admin.calificaciones.index');
+
+        Route::delete('/calificaciones/{calificacion}', [CalificacionApiController::class, 'destroy'])
+            ->name('api.admin.calificaciones.destroy');
+
         Route::patch('/usuarios/{user}/bloquear', [UsuarioAdminApiController::class, 'bloquear'])
             ->name('api.admin.usuarios.bloquear');
 

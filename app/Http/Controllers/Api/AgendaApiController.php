@@ -146,4 +146,61 @@ class AgendaApiController extends Controller
             ], 500);
         }
     }
+
+    public function guardarExcepcion(Request $request, \App\Services\AgendaService $agendaService)
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->profesional) {
+            return response()->json(['error' => 'Acceso denegado. No eres un profesional.'], 403);
+        }
+
+        $validated = $request->validate([
+            'fecha' => ['required', 'date', 'after_or_equal:today'],
+            'tipo' => ['required', 'in:feriado,licencia,no_disponible'],
+            'motivo' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $excepcion = $agendaService->guardarExcepcion($user->profesional, $validated);
+
+            broadcast(new AgendaActualizada($user->profesional->id, []));
+
+            return response()->json([
+                'message' => 'Día bloqueado correctamente.',
+                'excepcion' => $excepcion,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al bloquear el día: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function desbloquearDia(Request $request, \App\Services\AgendaService $agendaService)
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->profesional) {
+            return response()->json(['error' => 'Acceso denegado. No eres un profesional.'], 403);
+        }
+
+        $validated = $request->validate([
+            'fecha' => ['required', 'date'],
+        ]);
+
+        try {
+            $agendaService->eliminarExcepcion($user->profesional, $validated['fecha']);
+
+            broadcast(new AgendaActualizada($user->profesional->id, []));
+
+            return response()->json([
+                'message' => 'Día desbloqueado correctamente.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al desbloquear el día: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

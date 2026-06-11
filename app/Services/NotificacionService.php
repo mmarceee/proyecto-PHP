@@ -162,15 +162,6 @@ class NotificacionService
             'fechaCreacion' => now()->toDateString(),
         ]);
     }
-    
-    private function crearYEmitir(array $datos): Notificacion
-    {
-        $notificacion = Notificacion::create($datos);
-
-        broadcast(new NotificacionCreada($notificacion));
-
-        return $notificacion;
-    }
 
     public function notificarReservaReprogramada(Reserva $reserva): void
     {
@@ -193,5 +184,38 @@ class NotificacionService
             ]);
         }
     }
+
+    public function notificarRecordatorioTurno(Reserva $reserva): Notificacion
+    {
+        $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
+
+        $fecha = $reserva->fecha?->format('d/m/Y');
+        $hora = \Carbon\Carbon::parse($reserva->hora_inicio)->format('H:i');
+
+        return $this->crearYEmitir([
+            'user_id' => $reserva->cliente->user_id,
+            'reserva_id' => $reserva->id,
+            'titulo' => 'Recordatorio de turno',
+            'mensaje' => "Te recordamos tu turno del {$fecha} a las {$hora}.",
+            'tipo_not' => 'recordatorio_turno',
+            'canal_not' => 'sistema',
+            'estado_not' => 'enviada',
+            'leida' => false,
+            'fechaCreacion' => now()->toDateString(),
+            'fechaEnvio' => now()->toDateString(),
+            'fechaProgramada' => $reserva->fecha?->toDateString(),
+        ]);
+    }
+    
+    private function crearYEmitir(array $datos): Notificacion
+    {
+        $notificacion = Notificacion::create($datos);
+
+        broadcast(new NotificacionCreada($notificacion));
+
+        return $notificacion;
+    }
+
+    
 
 }
