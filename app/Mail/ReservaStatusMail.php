@@ -49,6 +49,7 @@ class ReservaStatusMail extends Mailable
             'pendiente' => 'reserva_creada',
             'confirmada', 'confirmado' => 'reserva_confirmada',
             'cancelada', 'cancelado' => 'reserva_cancelada',
+            'reprogramada', 'reprogramado' => 'reserva_reprogramada',
             default => 'reserva_status_cambiado',
         };
         return new Headers(

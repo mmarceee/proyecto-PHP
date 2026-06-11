@@ -17,6 +17,7 @@ import './mis-paquetes';
 import './paquetes-vendidos-profesional';
 import './offline-status';
 import './calendario-profesional';
+import './gestion-resenas';
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

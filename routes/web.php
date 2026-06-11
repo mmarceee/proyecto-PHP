@@ -58,6 +58,10 @@ Route::view('admin/usuarios', 'livewire.admin.usuarios')
 Route::view('admin/categorias', 'livewire.admin.categorias')
     ->middleware(['auth', 'admin', 'perfil.completo'])
     ->name('admin.categorias');
+
+Route::view('admin/reseñas', 'livewire.admin.reseñas')
+    ->middleware(['auth', 'admin', 'perfil.completo'])
+    ->name('admin.reseñas');
     
 Route::get('/reservas/historial', function () {
         return view('historial'); // Llama al archivo historial.blade.php
