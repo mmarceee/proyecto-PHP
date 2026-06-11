@@ -15,7 +15,6 @@ class EventLogService
      * @param string $eventType Tipo de evento (ej: usuario_registrado)
      * @param array $payload Datos específicos del evento
      * @param int|null $userId ID del usuario (opcional, si no se envía toma el autenticado)
-     * @return MongoEventLog|null
      */
     public function log(string $eventType, array $payload, ?int $userId = null): void
         {
