@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a5262a84522fa7bfb4749e3af21ecc3",
+    "content-hash": "f6a19abe9c6c25e41b10688f54ec483f",
     "packages": [
         {
             "name": "agence104/livekit-server-sdk",
