@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // 1. Confiar en el balanceador de carga de DigitalOcean
+        $middleware->trustProxies(at: '*'); 
+
         $middleware->statefulApi();
 
         $middleware->alias([
