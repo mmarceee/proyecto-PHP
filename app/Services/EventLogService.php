@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Jobs\RegistrarEventLogJob;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Log; // Añadido para el log por defecto
 
 class EventLogService
 {
@@ -14,15 +15,23 @@ class EventLogService
      * @param string $eventType Tipo de evento (ej: usuario_registrado)
      * @param array $payload Datos específicos del evento
      * @param int|null $userId ID del usuario (opcional, si no se envía toma el autenticado)
+     * @return MongoEventLog|null
      */
     public function log(string $eventType, array $payload, ?int $userId = null): void
-    {
-        RegistrarEventLogJob::dispatch(
-            $eventType,
-            $payload,
-            $userId ?? Auth::id(),
-            Request::ip(),
-            Request::userAgent()
-        );
-    }
+        {
+            try {
+                RegistrarEventLogJob::dispatch(
+                    $eventType,
+                    $payload,
+                    $userId ?? Auth::id(),
+                    Request::ip(),
+                    Request::userAgent()
+                );
+            } catch (\Throwable $e) {
+                // Resiliencia: Si MongoDB no está disponible en producción, 
+                // no rompemos la app (Error 500). Solo enviamos el error al log del sistema.
+                Log::error('Fallo al encolar auditoria MongoDB: ' . $e->getMessage());
+            }
+        }
 }
+            
