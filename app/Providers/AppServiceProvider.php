@@ -9,6 +9,7 @@ use App\Observers\PagoObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         Reserva::observe(ReservaObserver::class);
         Pago::observe(PagoObserver::class);
 
