@@ -53,7 +53,7 @@ class DashboardService
                 'status_raw'   => $reserva->estado_reserva,
                 'action_label' => $actionLabel,
                 'packages'     => [], 
-                'date_raw'     => $reserva->fecha, // Utilizado para validación en el frontend
+                'date_raw'     => $reserva->fecha->format('Y-m-d'), // Utilizado para validación en el frontend
             ];
         })->toArray();
     }
@@ -100,7 +100,7 @@ class DashboardService
                 'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'status_raw' => $reserva->estado_reserva,
                 'action_label' => 'Confirmar',
-                'date_raw'     => $reserva->fecha,
+                'date_raw'     => $reserva->fecha->format('Y-m-d'),
             ];
         })->toArray();
     }
@@ -156,7 +156,7 @@ class DashboardService
                 'specialty' => $reserva->servicio?->nombre ?? 'Especialidad',
                 'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'packages' => [], // Estructura reservada para mantener reactividad en Alpine
-                'date_raw'     => $reserva->fecha,
+                'date_raw'     => $reserva->fecha->format('Y-m-d'),
             ];
         })->toArray();
     }
@@ -198,7 +198,7 @@ class DashboardService
                 'service_name' => $reserva->servicio?->nombre ?? 'Servicio',
                 'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'status_raw' => $reserva->estado_reserva,
-                'date_raw' => $reserva->fecha,
+                'date_raw' => $reserva->fecha->format('Y-m-d'),
             ];
         })->toArray();
     }
