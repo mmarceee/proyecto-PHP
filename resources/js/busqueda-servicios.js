@@ -77,6 +77,15 @@ document.addEventListener('alpine:init', () => {
             this.mensajeExito = '';
             
             window.dispatchEvent(new CustomEvent('filtrar-mapa', { detail: profesional.id }));
+
+            this.$nextTick(() => { // Bloque para autoscrollear en pantallas chicas a la disponibilidad
+                if (window.matchMedia('(max-width: 1279px)').matches) {
+                    this.$refs.panelReserva?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         },
         
         async seleccionarServicio(servicio) {

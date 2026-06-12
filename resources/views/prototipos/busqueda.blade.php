@@ -187,7 +187,7 @@
                         </section>
                         
                         {{-- Columna derecha: reserva de turno --}}
-                        <aside class="space-y-4">
+                        <aside class="space-y-4" x-ref="panelReserva">
                             <h3 class="text-xs uppercase tracking-wider font-extrabold text-gray-400">
                                 Reserva de Turno
                             </h3>
