@@ -237,7 +237,7 @@
                                                             x-text="session.action_label">
                                                         </button>
                                                     </template>
-                                                    <template x-if="esHoraDeSala(session.date_raw, session.time)">
+                                                    <template x-if="esHoraDeSala(session.date_raw, session.time) && session.status.toLowerCase() !== 'finalizada' && session.status.toLowerCase() !== 'cancelada'">
                                                         <a :href="'/reserva/' + session.id + '/sala'" 
                                                         class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
                                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -300,7 +300,7 @@
                                                             <button @click.stop="abrirModalCancelacion(reservation.id)" class="px-3 py-1.5 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-[10px] font-bold uppercase tracking-wider">Cancelar</button>
                                                         </div>
                                                     </template>
-                                                    <template x-if="esHoraDeSala(reservation.date_raw, reservation.time)">
+                                                    <template x-if="esHoraDeSala(reservation.date_raw, reservation.time) && reservation.status.toLowerCase() !== 'finalizada' && reservation.status.toLowerCase() !== 'cancelada'">
                                                         <a :href="'/reserva/' + reservation.id + '/sala'" class="inline-flex items-center px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md transition">
                                                             Sala Virtual
                                                         </a>
