@@ -79,6 +79,16 @@ document.addEventListener('alpine:init', () => {
             this.resenas = []; // Limpiamos reseñas anteriores
             
             window.dispatchEvent(new CustomEvent('filtrar-mapa', { detail: profesional.id }));
+
+            this.$nextTick(() => { // Bloque para autoscrollear en pantallas chicas a la disponibilidad
+                if (window.matchMedia('(max-width: 1279px)').matches) {
+                    this.$refs.panelReserva?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+
             // Consultar las calificaciones del profesional seleccionado
             try {
                 const response = await fetch(`/api/profesionales/${profesional.id}/calificaciones`, {
@@ -96,6 +106,8 @@ document.addEventListener('alpine:init', () => {
             } catch (err) {
                 console.error('Error al cargar reseñas del profesional:', err);
             }
+
+            
         },
         
         async seleccionarServicio(servicio) {

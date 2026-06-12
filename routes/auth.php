@@ -18,8 +18,8 @@ Route::middleware('guest')->group(function () {
     Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])
         ->name('auth.google.callback');    
 
-    Volt::route('forgot-password', 'pages.auth.forgot-password')
-        ->name('password.request');
+    /*Volt::route('forgot-password', 'pages.auth.forgot-password')
+        ->name('password.request');*/
 
     Volt::route('reset-password/{token}', 'pages.auth.reset-password')
         ->name('password.reset');
