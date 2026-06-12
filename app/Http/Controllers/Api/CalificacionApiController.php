@@ -104,4 +104,32 @@ class CalificacionApiController extends Controller
             'message' => 'Reseña eliminada correctamente.'
         ]);
     }
+
+     /**
+     * Obtener las calificaciones de un profesional específico (Para Clientes y Profesionales).
+     */
+    public function obtenerCalificacionesProfesional($id): JsonResponse
+    {
+        // $id es el ID del profesional en la tabla 'profesionales'
+        $profesional = Profesional::findOrFail($id);
+        $userId = $profesional->user_id;
+        $calificaciones = Calificacion::where('evaluado_id', $userId)
+            ->where('tipoCalificacion', 'ClienteAProfesional')
+            ->with('evaluador')
+            ->latest()
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'id' => $c->id,
+                    'puntuacion' => $c->puntuacion,
+                    'comentario' => $c->comentario,
+                    'fecha' => $c->fecha ? $c->fecha->format('d/m/Y') : null,
+                    'cliente_nombre' => trim(($c->evaluador?->name ?? '') . ' ' . ($c->evaluador?->apellido ?? '')) ?: 'Cliente',
+                ];
+            });
+        return response()->json([
+            'calificaciones' => $calificaciones
+        ]);
+    }
+
 }

@@ -7,6 +7,7 @@ document.addEventListener('alpine:init', () => {
         categorias: ['Todas las categorías'],
         menuCategoriasAbierto: false,
         profesionales: [],
+        resenas: [],
         
         // Estados de selección modular
         profesionalSeleccionado: null,
@@ -69,14 +70,44 @@ document.addEventListener('alpine:init', () => {
             }
         },
         
-        verDisponibilidad(profesional) {
+        async verDisponibilidad(profesional) {
             this.profesionalSeleccionado = profesional;
             this.servicioSeleccionado = null; // Reseteamos el servicio para obligar a elegir uno
             this.semana = [];
             this.error = '';
             this.mensajeExito = '';
+            this.resenas = []; // Limpiamos reseñas anteriores
             
             window.dispatchEvent(new CustomEvent('filtrar-mapa', { detail: profesional.id }));
+
+            this.$nextTick(() => { // Bloque para autoscrollear en pantallas chicas a la disponibilidad
+                if (window.matchMedia('(max-width: 1279px)').matches) {
+                    this.$refs.panelReserva?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+
+            // Consultar las calificaciones del profesional seleccionado
+            try {
+                const response = await fetch(`/api/profesionales/${profesional.id}/calificaciones`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.resenas = data.calificaciones ?? [];
+                }
+            } catch (err) {
+                console.error('Error al cargar reseñas del profesional:', err);
+            }
+
+            
         },
         
         async seleccionarServicio(servicio) {

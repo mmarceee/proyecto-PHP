@@ -202,4 +202,32 @@ class DashboardService
             ];
         })->toArray();
     }
+
+     /**
+     * Obtener las últimas 10 reseñas recibidas de clientes de un profesional
+     */
+    public function obtenerResenasRecibidas($profesionalId)
+    {
+        // 1. Buscamos el profesional usando su ID de la tabla 'profesionales'
+        $profesional = \App\Models\Profesional::find($profesionalId);
+        if (!$profesional) {
+            return [];
+        }
+        // 2. Usamos el 'user_id' para buscar sus calificaciones correspondientes
+        return \App\Models\Calificacion::where('evaluado_id', $profesional->user_id)
+            ->where('tipoCalificacion', 'ClienteAProfesional')
+            ->with('evaluador')
+            ->latest()
+            ->take(10)
+            ->get()
+            ->map(function ($c) {
+                return [
+                    'puntuacion' => $c->puntuacion,
+                    'comentario' => $c->comentario,
+                    'fecha' => $c->fecha ? $c->fecha->format('d/m/Y') : null,
+                    'cliente_nombre' => trim(($c->evaluador?->name ?? '') . ' ' . ($c->evaluador?->apellido ?? '')) ?: 'Cliente',
+                ];
+            })->toArray();
+    }
+
 }
