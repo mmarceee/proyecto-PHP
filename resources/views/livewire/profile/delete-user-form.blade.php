@@ -4,7 +4,10 @@
             Eliminar Cuenta
         </h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Una vez que se elimine tu cuenta, todos sus recursos y datos se borrarán permanentemente. Antes de eliminar tu cuenta, descarga cualquier dato o información que desees conservar.
+            Una vez que se elimine tu cuenta, todos sus recursos y datos se borrarán. Antes de eliminar tu cuenta, descarga cualquier dato o información que desees conservar.
+        </p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400"> 
+            Esta dirección de correo no podrá volver a ser utilizada.
         </p>
     </header>
 
