@@ -31,6 +31,7 @@ document.addEventListener('alpine:init', () => {
                 // 4. ¿Qué hacer cuando entra la otra persona? 
                 // Enganchamos su video a nuestra pantalla grande
                 this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+                    this.otraPersonaConectada = true;
                     const element = track.attach();
                     element.classList.add('w-full', 'h-full', 'object-cover'); // Estilos de Tailwind
                     document.getElementById('video-remoto').appendChild(element);

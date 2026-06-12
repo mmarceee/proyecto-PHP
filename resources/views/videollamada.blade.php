@@ -15,7 +15,7 @@
         <div x-show="conectado" style="display: none;" class="relative w-full max-w-5xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-800">
             
             <div id="video-remoto" class="w-full h-full bg-slate-900 flex items-center justify-center">
-                <p class="text-slate-600 text-sm tracking-widest uppercase">Esperando a la otra persona...</p>
+                <p x-show="!otraPersonaConectada" class="text-slate-600 text-sm tracking-widest uppercase">Esperando a la otra persona...</p>
             </div>
 
             <div id="video-local" class="absolute bottom-6 right-6 w-48 aspect-video bg-black rounded-lg overflow-hidden shadow-lg border border-slate-700">
