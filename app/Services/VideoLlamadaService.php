@@ -28,9 +28,9 @@ class VideoLlamadaService
             ->setCanSubscribe(true); // Puede recibir video/audio
 
         // 3. Crear el Token
-        $token = new AccessToken(
-            env('LIVEKIT_API_KEY'),
-            env('LIVEKIT_API_SECRET')
+         $token = new AccessToken(
+            config('services.livekit.api_key'),
+            config('services.livekit.api_secret')
         );
 
         // Cargamos las opciones y permisos al token

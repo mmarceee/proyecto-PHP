@@ -27,7 +27,7 @@ class VideoLlamadaApiController extends Controller
 
         return response()->json([
             'token' => $token,
-            'url' => env('LIVEKIT_URL'),
+            'url' => config('services.livekit.url'),
             'sala' => $nombreSala
         ]);
     }
