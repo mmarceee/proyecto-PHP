@@ -24,6 +24,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
         ->name('api.dashboard');
 
+    Route::get('/profesionales/{id}/calificaciones', [CalificacionApiController::class, 'obtenerCalificacionesProfesional'])
+        ->name('api.profesionales.calificaciones');
+
     Route::put('/profile/info', [ProfileApiController::class, 'updateInfo'])
         ->name('api.profile.update');
   

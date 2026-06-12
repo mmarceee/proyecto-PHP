@@ -9,6 +9,7 @@ document.addEventListener('alpine:init', () => {
         consultasHoy: [],
         reservasPendientes: [],
         proximasSesiones: [],
+        resenasRecibidas: [],
         selectedItem: null,
         showCancelModal: false,
         reservaACancelar: null,
@@ -75,6 +76,7 @@ document.addEventListener('alpine:init', () => {
                     this.consultasHoy = data.datos?.consultasHoy ?? [];
                     this.reservasPendientes = data.datos?.reservasPendientes ?? [];
                     this.proximasSesiones = data.datos?.proximasSesiones ?? [];
+                    this.resenasRecibidas = data.datos?.resenasRecibidas ?? [];
 
                     if (this.tipo === 'profesional' && this.consultasHoy.length > 0) {
                         this.selectedItem = this.consultasHoy[0].id;

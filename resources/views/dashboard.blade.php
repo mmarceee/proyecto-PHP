@@ -122,24 +122,6 @@
 
                         <template x-if="tipo === 'profesional'">
                             <div>
-                                <!-- Reputación Promedio del Profesional -->
-                                <div class="border border-slate-800 bg-slate-900/60 p-5 sm:p-6 mb-8 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                    <div>
-                                        <h3 class="font-serif text-2xl mb-1 text-white">Tu Reputación</h3>
-                                        <p class="text-sm text-slate-400">Calificación promedio basada en la opinión de tus clientes.</p>
-                                    </div>
-                                    <div class="flex items-center gap-3 bg-slate-950/40 border border-slate-800 px-4 py-2.5 rounded-lg">
-                                        <div class="flex items-center text-yellow-500 gap-0.5">
-                                            <template x-for="i in 5">
-                                                <svg class="w-5 h-5" :class="i <= Math.round(profesional.reputacion_promedio) ? 'fill-current' : 'text-slate-700'" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                </svg>
-                                            </template>
-                                        </div>
-                                        <span class="text-xl font-bold text-white" x-text="profesional.reputacion_promedio ? parseFloat(profesional.reputacion_promedio).toFixed(2) : '0.00'"></span>
-                                    </div>
-                                </div>
-                            
                                 <div class="mb-10 lg:mb-12">
                                     <div class="flex items-end justify-between border-b border-slate-400 pb-4 mb-8">
                                         <h3 class="uppercase tracking-[0.25em] text-sm font-bold">
@@ -424,7 +406,7 @@
                         </div>
                     </template>
 
-                    <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                                        <template x-if="tipo === 'cliente' || tipo === 'profesional'">
                         <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
                                 Paquetes para comprar con nuestros profesionales
@@ -436,6 +418,54 @@
                             class="mt-6 block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
                                 Buscar paquetes
                             </a>
+                        </div>
+                    </template>
+
+                    <!-- Reputación y Reseñas en el Lateral Derecho del Profesional -->
+                    <template x-if="tipo === 'profesional'">
+                        <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
+                            <!-- Cabecera de Reputación -->
+                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700">
+                                <h3 class="uppercase tracking-[0.18em] text-xs font-bold text-slate-300">
+                                    Tu Reputación
+                                </h3>
+                                <div class="flex items-center gap-1.5 text-yellow-500">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="text-sm font-bold text-white" x-text="profesional.reputacion_promedio ? parseFloat(profesional.reputacion_promedio).toFixed(2) : '0.00'"></span>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-slate-400 mb-4">
+                                Calificación promedio basada en la opinión de tus clientes.
+                            </p>
+
+                            <!-- Listado de comentarios -->
+                            <div class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                                <template x-for="resena in resenasRecibidas">
+                                    <div class="bg-slate-950/40 border border-slate-800/80 p-3 rounded-lg text-xs">
+                                        <div class="flex justify-between items-start gap-1 mb-1">
+                                            <div>
+                                                <span class="font-semibold text-white block" x-text="resena.cliente_nombre"></span>
+                                                <span class="text-[9px] text-slate-500" x-text="resena.fecha"></span>
+                                            </div>
+                                            <div class="flex items-center text-yellow-500 gap-0.5 shrink-0">
+                                                <template x-for="i in 5">
+                                                    <svg class="w-3 h-3" :class="i <= resena.puntuacion ? 'fill-current' : 'text-slate-800'" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <p class="text-slate-300 italic" x-text="resena.comentario ?? 'Sin comentario'"></p>
+                                    </div>
+                                </template>
+
+                                <template x-if="resenasRecibidas.length === 0">
+                                    <p class="text-xs text-slate-500 italic py-1">Aún no has recibido valoraciones.</p>
+                                </template>
+                            </div>
                         </div>
                     </template>
                 </aside>
