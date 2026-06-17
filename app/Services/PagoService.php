@@ -18,7 +18,14 @@ class PagoService
     {
         $this->provider = new PayPalClient;
         $this->provider->setApiCredentials(config('paypal'));
-        $this->provider->getAccessToken();
+        try {
+            $this->provider->getAccessToken();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('PayPal: fallo al obtener access token', [
+                'message' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('No se pudo conectar con PayPal. Intente nuevamente más tarde.');
+        }
     }
 
     public function crearOrden(float $montoUyu, string $intentId)
@@ -59,9 +66,30 @@ class PagoService
     public function capturarPago(string $token, array $payload)
     {
         $response = $this->provider->capturePaymentOrder($token);
-
         if (isset($response['status']) && $response['status'] === 'COMPLETED') {
-            
+            // --- VALIDACIÓN DE MONTO ---
+            $tasaCambio = config('paypal.uyu_to_usd_rate', 40);
+            $montoEsperadoUsd = round($payload['monto'] / $tasaCambio, 2);
+            $montoCobradoUsd  = (float) ($response['purchase_units'][0]['payments']['captures'][0]['amount']['value']
+                ?? $response['purchase_units'][0]['amount']['value']
+                ?? 0);
+            if (abs($montoCobradoUsd - $montoEsperadoUsd) > 0.01) {
+                Log::error('PayPal: monto cobrado no coincide', [
+                    'esperado_usd' => $montoEsperadoUsd,
+                    'cobrado_usd'  => $montoCobradoUsd,
+                ]);
+                throw new Exception('El monto cobrado por PayPal no coincide con el monto de la orden.');
+            }
+            // --- VALIDACIÓN DE reference_id ---
+            $referenceIdPayPal   = $response['purchase_units'][0]['reference_id'] ?? null;
+            $referenceIdEsperado = 'intent_' . ($payload['intentId'] ?? '');
+            if ($referenceIdPayPal !== $referenceIdEsperado) {
+                Log::error('PayPal: reference_id no coincide', [
+                    'esperado' => $referenceIdEsperado,
+                    'recibido' => $referenceIdPayPal,
+                ]);
+                throw new Exception('El reference_id de PayPal no coincide con la orden esperada.');
+            }    
             // --- Extraer el ID de Captura real en lugar del ID de Orden ---
             $captureId = $response['purchase_units'][0]['payments']['captures'][0]['id'] ?? $response['id'];
 
@@ -103,8 +131,6 @@ class PagoService
                         'metodo_pago' => 'paypal',
                         'referencia_externa' => $captureId // Guardamos el Capture ID correcto
                     ]);
-
-                    \App\Jobs\NotificarPagoConfirmadoJob::dispatch($reserva);
 
                     return $compra;
                 }
