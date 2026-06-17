@@ -41,6 +41,7 @@ class PayPalApiController extends Controller
             $payload = [
                 'tipo' => 'reserva',
                 'monto' => $servicio->precio,
+                'intentId' => $intentId,
                 'datos' => [
                     'cliente_id'     => $clienteId,
                     'profesional_id' => $validated['profesional_id'],
@@ -80,6 +81,7 @@ class PayPalApiController extends Controller
             $payload = [
                 'tipo' => 'paquete',
                 'monto' => $paquete->precio,
+                'intentId' => $intentId,
                 'datos' => [
                     'cliente_id' => $clienteId,
                     'paquete_id' => $paquete->id,
@@ -114,16 +116,24 @@ class PayPalApiController extends Controller
         if (!$payload) {
             return redirect()->away(config('app.url') . '/dashboard?pago=error&msg=timeout');
         }
+        
+        $lock = Cache::lock("paypal_lock_{$intentId}", 30);
 
         try {
+            if (!$lock->get()) {
+                return redirect()->away(config('app.url') . '/dashboard?pago=exito');
+            }
+
             $this->pagoService->capturarPago($token, $payload);
             Cache::forget("paypal_intent_{$intentId}");
 
             return redirect()->away(config('app.url') . '/dashboard?pago=exito');
-            
+
         } catch (\Exception $e) {
             Log::error('Error en callback PayPal: ' . $e->getMessage());
             return redirect()->away(config('app.url') . '/dashboard?pago=error');
+        } finally {
+            $lock->forceRelease();
         }
     }
 
