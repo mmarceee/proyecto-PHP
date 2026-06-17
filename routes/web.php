@@ -46,10 +46,15 @@ Route::get('/profesional/servicios', function () {
     })->middleware(['auth', 'perfil.completo'])->name('profesional.servicios');
 
 Route::middleware(['auth'])->group(function () {
-        Route::get('/reserva/{reserva}/sala', function (Reserva $reserva) {
-            return view('videollamada', compact('reserva'));
-        })->name('videollamada.sala');
-    });
+    Route::get('/reserva/{reserva}/sala', function (Reserva $reserva, \App\Services\VideoLlamadaService $videoService) {
+        
+        // VALIDACIÓN DE SEGURIDAD (IDOR)
+        if (!$videoService->validarAcceso(auth()->user(), $reserva)) {
+            abort(403, 'No tienes autorización para ingresar a esta sala.');
+        }
+        return view('videollamada', compact('reserva'));
+    })->name('videollamada.sala');
+});
 
 Route::view('admin/usuarios', 'livewire.admin.usuarios')
     ->middleware(['auth', 'admin', 'perfil.completo'])

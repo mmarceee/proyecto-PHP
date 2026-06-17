@@ -3,12 +3,27 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Reserva;
 use Agence104\LiveKit\AccessToken;
 use Agence104\LiveKit\AccessTokenOptions;
 use Agence104\LiveKit\VideoGrant;
 
 class VideoLlamadaService
 {
+     /**
+     * Valida si el usuario tiene permiso para acceder a la videollamada de una reserva.
+     */
+
+    public function validarAcceso(User $user, Reserva $reserva): bool
+    {
+        
+        $esCliente = $reserva->cliente && $reserva->cliente->user_id === $user->id;
+        
+        $esProfesional = $reserva->profesional && $reserva->profesional->user_id === $user->id;
+        
+        return $esCliente || $esProfesional;
+    }
+
     /**
      * Genera un Token seguro para que un usuario real pueda unirse a una sala.
      */
