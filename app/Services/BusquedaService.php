@@ -39,6 +39,7 @@ class BusquedaService
                 'id' => $p->id,
                 'nombre' => trim(($p->user?->name ?? '') . ' ' . ($p->user?->apellido ?? '')) ?: 'Profesional',
                 'nombre_comercial' => $p->nombre_comercial,
+                'reputacion_promedio' => $p->reputacion_promedio,
                 'servicios' => $p->servicios->map(function ($s) {
                     return [
                         'id' => $s->id,

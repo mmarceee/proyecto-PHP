@@ -237,7 +237,7 @@
                                                             x-text="session.action_label">
                                                         </button>
                                                     </template>
-                                                    <template x-if="esHoraDeSala(session.date_raw, session.time)">
+                                                    <template x-if="esHoraDeSala(session.date_raw, session.time) && session.status.toLowerCase() !== 'finalizada' && session.status.toLowerCase() !== 'cancelada'">
                                                         <a :href="'/reserva/' + session.id + '/sala'" 
                                                         class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-md transition-colors duration-200">
                                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -300,7 +300,7 @@
                                                             <button @click.stop="abrirModalCancelacion(reservation.id)" class="px-3 py-1.5 rounded-md border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition text-[10px] font-bold uppercase tracking-wider">Cancelar</button>
                                                         </div>
                                                     </template>
-                                                    <template x-if="esHoraDeSala(reservation.date_raw, reservation.time)">
+                                                    <template x-if="esHoraDeSala(reservation.date_raw, reservation.time) && reservation.status.toLowerCase() !== 'finalizada' && reservation.status.toLowerCase() !== 'cancelada'">
                                                         <a :href="'/reserva/' + reservation.id + '/sala'" class="inline-flex items-center px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md transition">
                                                             Sala Virtual
                                                         </a>
@@ -377,6 +377,10 @@
                                     class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
                                     Gestionar Categorias
                                 </a>
+                                <a href="{{ route('admin.reseñas') }}"
+                                class="block rounded-md border border-slate-500 px-4 py-3 text-sm font-bold uppercase tracking-wider hover:bg-slate-800">
+                                    Gestionar Reseñas
+                                </a>
                             </div>
                         </div>
                     </template>
@@ -402,7 +406,7 @@
                         </div>
                     </template>
 
-                    <template x-if="tipo === 'cliente' || tipo === 'profesional'">
+                                        <template x-if="tipo === 'cliente' || tipo === 'profesional'">
                         <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
                             <h3 class="uppercase tracking-[0.18em] text-sm font-bold mb-3">
                                 Paquetes para comprar con nuestros profesionales
@@ -414,6 +418,54 @@
                             class="mt-6 block w-full text-center border border-slate-300 rounded-md py-3 text-xs font-bold uppercase hover:bg-slate-800">
                                 Buscar paquetes
                             </a>
+                        </div>
+                    </template>
+
+                    <!-- Reputación y Reseñas en el Lateral Derecho del Profesional -->
+                    <template x-if="tipo === 'profesional'">
+                        <div class="mt-8 lg:mt-10 border border-slate-300 rounded-lg p-4 sm:p-6 bg-slate-900/60">
+                            <!-- Cabecera de Reputación -->
+                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700">
+                                <h3 class="uppercase tracking-[0.18em] text-xs font-bold text-slate-300">
+                                    Tu Reputación
+                                </h3>
+                                <div class="flex items-center gap-1.5 text-yellow-500">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="text-sm font-bold text-white" x-text="profesional.reputacion_promedio ? parseFloat(profesional.reputacion_promedio).toFixed(2) : '0.00'"></span>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-slate-400 mb-4">
+                                Calificación promedio basada en la opinión de tus clientes.
+                            </p>
+
+                            <!-- Listado de comentarios -->
+                            <div class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                                <template x-for="resena in resenasRecibidas">
+                                    <div class="bg-slate-950/40 border border-slate-800/80 p-3 rounded-lg text-xs">
+                                        <div class="flex justify-between items-start gap-1 mb-1">
+                                            <div>
+                                                <span class="font-semibold text-white block" x-text="resena.cliente_nombre"></span>
+                                                <span class="text-[9px] text-slate-500" x-text="resena.fecha"></span>
+                                            </div>
+                                            <div class="flex items-center text-yellow-500 gap-0.5 shrink-0">
+                                                <template x-for="i in 5">
+                                                    <svg class="w-3 h-3" :class="i <= resena.puntuacion ? 'fill-current' : 'text-slate-800'" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <p class="text-slate-300 italic" x-text="resena.comentario ?? 'Sin comentario'"></p>
+                                    </div>
+                                </template>
+
+                                <template x-if="resenasRecibidas.length === 0">
+                                    <p class="text-xs text-slate-500 italic py-1">Aún no has recibido valoraciones.</p>
+                                </template>
+                            </div>
                         </div>
                     </template>
                 </aside>

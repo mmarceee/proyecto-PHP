@@ -31,7 +31,7 @@
                     <template x-for="compra in compras" :key="compra.id">
                         <div 
                             class="bg-gray-800 border border-gray-700 rounded-2xl p-6 shadow-sm flex flex-col relative overflow-hidden"
-                            :class="compra.estado_paquete === 'completado' ? 'opacity-60' : ''"
+                            :class="compra.estado_paquete === 'consumido' ? 'opacity-60' : ''"
                         >
                             {{-- Etiqueta de Estado --}}
                             <div class="absolute top-4 right-4">

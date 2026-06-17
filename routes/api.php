@@ -24,6 +24,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardApiController::class, 'index'])
         ->name('api.dashboard');
 
+    Route::get('/profesionales/{id}/calificaciones', [CalificacionApiController::class, 'obtenerCalificacionesProfesional'])
+        ->name('api.profesionales.calificaciones');
+
     Route::put('/profile/info', [ProfileApiController::class, 'updateInfo'])
         ->name('api.profile.update');
   
@@ -137,6 +140,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     ->group(function () {
         Route::get('/usuarios', [UsuarioAdminApiController::class, 'index'])
             ->name('api.admin.usuarios.index');
+
+        Route::get('/calificaciones', [CalificacionApiController::class, 'index'])
+            ->name('api.admin.calificaciones.index');
+
+        Route::delete('/calificaciones/{calificacion}', [CalificacionApiController::class, 'destroy'])
+            ->name('api.admin.calificaciones.destroy');
 
         Route::patch('/usuarios/{user}/bloquear', [UsuarioAdminApiController::class, 'bloquear'])
             ->name('api.admin.usuarios.bloquear');

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Profesional;
 use App\Services\ProfesionalService;
 use App\Services\DashboardService;
+use App\Models\Calificacion;
 
 class DashboardApiController extends Controller
 {
@@ -48,10 +49,13 @@ class DashboardApiController extends Controller
         $consultasHoy = [];
         $proximasSesiones = [];
         $reservasPendientes = [];
+        $resenasRecibidas = [];
+
 
         if ($esProfesional && $profesional) {
             $consultasHoy = $DashboardService->obtenerConsultasHoy($profesional->id);
             $reservasPendientes = $DashboardService->obtenerReservasPendientesProfesional($profesional->id);
+            $resenasRecibidas = $DashboardService->obtenerResenasRecibidas($profesional->id);
         }
 
         if (!$esAdmin) {
@@ -71,12 +75,14 @@ class DashboardApiController extends Controller
                 'estado' => $estadoProfesional,
                 'pendiente' => $estadoProfesional === 'pendiente',
                 'aprobado' => $estadoProfesional === 'aprobado',
+                'reputacion_promedio' => $profesional ? $profesional->reputacion_promedio : 0.00,
             ],
             'datos' => [
                 'profesionalesPendientes' => $profesionalesPendientes,
                 'consultasHoy' => $consultasHoy,
                 'proximasSesiones' => $proximasSesiones,
                 'reservasPendientes' => $reservasPendientes,
+                'resenasRecibidas' => $resenasRecibidas,
             ],
         ]);
     }
