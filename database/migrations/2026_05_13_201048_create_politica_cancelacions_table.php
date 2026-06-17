@@ -18,7 +18,7 @@ return new class extends Migration
                   ->cascadeOnDelete();
             
             // Atributos del negocio
-            // Se asume que el tiempo mínimo se mide en horas (ej. 24 horas antes)
+            // El tiempo mínimo se mide en horas (ej. 24 horas antes)
             $table->unsignedInteger('tiempo_minimo_cancelacion')->comment('Horas de anticipación requeridas');
             $table->boolean('permite_reprogramacion')->default(false);
             $table->text('descripcion')->nullable();

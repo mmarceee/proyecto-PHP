@@ -22,9 +22,9 @@ class DisponibilidadService
         }
 
         // 2. Obtenemos el horario base del profesional para ese día de la semana
-        $diaSemana = $fecha->dayOfWeekIso; // 0 = Domingo, 6 = Sabado
+        $diaSemana = $fecha->dayOfWeek; // 0 = Domingo, 6 = Sabado
         $reglasBase = $profesional->reglasDisponibilidad()
-                                  ->where('diaSemana', $diaSemana)
+                                  ->where('dia_semana', $diaSemana)
                                   ->get();
 
         if ($reglasBase->isEmpty()) {
@@ -42,7 +42,7 @@ class DisponibilidadService
      */
     private function tieneExcepcionDiaCompleto(Profesional $profesional, Carbon $fecha): bool
     {
-        return $profesional->excepcionesDisponibilidad()
+        return $profesional->excepcionDisponibilidad()
             ->where('fecha', $fecha->toDateString())
             ->whereIn('tipo', ['feriado', 'licencia', 'no_disponible'])
             ->whereNull('horaInicio') // Si horaInicio es nulo, aplica a todo el día
@@ -68,8 +68,8 @@ class DisponibilidadService
         // 2. Iteramos sobre cada regla de horario (ej: de 08:00 a 16:00)
         // Asumimos que $reglasBase trae arrays del tipo ['inicio' => '08:00', 'fin' => '16:00']
         foreach ($reglasBase as $regla) {
-            $inicioBloque = Carbon::parse($fecha->toDateString() . ' ' . $regla['inicio']);
-            $finBloque = Carbon::parse($fecha->toDateString() . ' ' . $regla['fin']);
+            $inicioBloque = Carbon::parse($fecha->toDateString() . ' ' . $regla->hora_inicio);
+            $finBloque = Carbon::parse($fecha->toDateString() . ' ' . $regla->hora_fin);
 
             $slotActual = $inicioBloque->copy();
 
