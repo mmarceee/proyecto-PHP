@@ -29,17 +29,13 @@ Route::view('admin/profesionales', 'livewire.admin.solicitudes-profesionales')
     ->middleware(['auth', 'admin', 'perfil.completo'])
     ->name('admin.profesionales');
 
-Route::view('/prototipo/busqueda', 'prototipos.busqueda')
+Route::view('busqueda', 'busqueda')
     ->middleware(['auth', 'perfil.completo'])
-    ->name('prototipo.busqueda');
+    ->name('busqueda');
 
-Route::view('/prototipo/agenda', 'prototipos.agenda')
+Route::view('agenda', 'agenda')
     ->middleware(['auth', 'perfil.completo'])
-    ->name('prototipo.agenda');
-
-Route::view('/prototipo/perfil', 'prototipos.perfil')
-    ->middleware(['auth', 'perfil.completo'])
-    ->name('prototipo.perfil');
+    ->name('agenda');
 
 Route::get('/profesional/servicios', function () {
     return view('profesional.servicios');
