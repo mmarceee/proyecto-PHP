@@ -52,7 +52,7 @@
             <!-- Botones de navegación -->
             <nav class="flex flex-col items-center gap-8">
 
-                <a href="busqueda"
+                <a href="{{ route('busqueda') }}"
                 class="relative group w-10 h-10 rounded-lg border border-slate-400 flex items-center justify-center text-white hover:bg-slate-800">
                     <!-- Búsqueda -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,7 +132,7 @@
                             Calendario de consultas
                         </span>
                     </a>
-                    <a href="agenda"
+                    <a href="{{ route('agenda') }}"
                     class="relative group w-10 h-10 rounded-lg flex items-center justify-center text-white hover:bg-slate-800">
                         <svg xmlns="http://www.w3.org/2000/svg"
                             class="w-5 h-5"
