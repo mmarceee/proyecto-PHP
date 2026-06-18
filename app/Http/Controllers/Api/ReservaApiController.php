@@ -31,20 +31,9 @@ class ReservaApiController extends Controller
         ]);
 
         try {
-            // 2. Buscamos cuánto dura el servicio elegido
-            $servicio = Servicio::findOrFail($validated['servicio_id']);
-            
-            // 3. Calculamos la hora_fin exacta matemáticamente
-            $horaFin = Carbon::parse($validated['hora_inicio'])
-                ->addMinutes($servicio->duracion)
-                ->format('H:i');
-            
-            // 4. Inyectamos la hora_fin correcta en el array antes de pasarlo a tu Service
-            $validated['hora_fin'] = $horaFin;
-
-            // 5. Creamos la reserva
+             // Creamos la reserva delegando la lógica de la duración al Service
             $reserva = $this->reservaService->crear($validated);
-            
+
             return response()->json([
                 'message' => 'Reserva creada exitosamente.',
                 'reserva' => $reserva
@@ -67,24 +56,14 @@ class ReservaApiController extends Controller
         ]);
 
         try {
-            // 2. Buscamos el servicio (por si cambiaron de servicio o para leer su duración)
-            $servicio = Servicio::findOrFail($validated['servicio_id']);
-
-            // 3. Recalculamos la hora_fin de forma matemática en el servidor
-            $horaFin = Carbon::parse($validated['hora_inicio'])
-                ->addMinutes($servicio->duracion)
-                ->format('H:i');
-
-            // 4. Inyectamos la hora_fin correcta en el array de datos
-            $validated['hora_fin'] = $horaFin;
-
-            // 5. Enviamos los datos limpios al Service para procesar la reprogramación
+            // Delegamos la reprogramación y recálculo de duración al Service
             $reservaActualizada = $this->reservaService->actualizar($reserva, $validated);
-            
+
             return response()->json([
                 'message' => 'Reserva reprogramada exitosamente.',
                 'reserva' => $reservaActualizada
             ]);
+            
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }

@@ -24,8 +24,13 @@ class PayPalApiController extends Controller
         ]);
 
         $servicio = \App\Models\Servicio::findOrFail($validated['servicio_id']);
-        $horaFin = \Carbon\Carbon::parse($validated['hora_inicio'])->addMinutes($servicio->duracion)->format('H:i');
         
+        $horaFin = $reservaService->calcularHoraFin(
+            $validated['profesional_id'],
+            $validated['fecha'],
+            $validated['hora_inicio']
+        );
+
         $clienteId = $request->user()->cliente->id;
 
         try {

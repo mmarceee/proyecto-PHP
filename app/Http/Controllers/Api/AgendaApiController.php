@@ -53,10 +53,6 @@ class AgendaApiController extends Controller
             'compra_paquete_id' => ['nullable', 'exists:compra_paquetes,id'],
         ]);
 
-        $servicio = Servicio::findOrFail($validated['servicio_id']);
-        
-        $horaInicio = Carbon::parse($validated['hora_inicio']);
-        $horaFin = $horaInicio->copy()->addMinutes($servicio->duracion)->format('H:i');
 
         $clienteId = $request->user()->cliente->id;
 
@@ -67,7 +63,6 @@ class AgendaApiController extends Controller
                 'servicio_id'       => $validated['servicio_id'],
                 'fecha'             => $validated['fecha'],
                 'hora_inicio'       => $validated['hora_inicio'],
-                'hora_fin'          => $horaFin,
                 'estado_reserva'    => 'pendiente',
                 'compra_paquete_id' => $validated['compra_paquete_id'] ?? null,
             ]);

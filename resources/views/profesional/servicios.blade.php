@@ -121,8 +121,12 @@
                             <div>
                                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Duración (min):</label>
                                 <select x-model="form.duracion" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
+                                    <option value="15">15 min</option>
                                     <option value="30">30 min</option>
+                                    <option value="45">45 min</option>
                                     <option value="60">1 hora</option>
+                                    <option value="120">2 horas</option>
+                                    <option value="180">3 horas</option>
                                 </select>
                             </div>
                             <div>
