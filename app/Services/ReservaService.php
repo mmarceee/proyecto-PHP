@@ -54,6 +54,9 @@ class ReservaService
         $compraPaqueteId = $datos['compra_paquete_id'] ?? null;
         unset($datos['compra_paquete_id']);
 
+         // Calculamos la hora de fin dinámicamente según la agenda
+        $datos['hora_fin'] = $this->calcularHoraFin($datos['profesional_id'], $datos['fecha'], $datos['hora_inicio']);
+
         $this->validarInicioFuturo($datos['fecha'], $datos['hora_inicio']);
 
         $this->verificarChoqueHorario(
@@ -177,6 +180,9 @@ class ReservaService
         $horaFinOriginal = $reserva->hora_fin;
 
         $this->validarInicioFuturo($datos['fecha'], $datos['hora_inicio']);
+
+        // NUEVO: Recalculamos la hora de fin usando la agenda
+        $datos['hora_fin'] = $this->calcularHoraFin($reserva->profesional_id, $datos['fecha'], $datos['hora_inicio']);
 
         // Validar choque de horarios (excluyendo la reserva actual)
         $this->verificarChoqueHorario(
@@ -403,4 +409,19 @@ class ReservaService
             throw new \Exception('No podés reservar un turno en una fecha u hora pasada.');
         }
     }
+
+    /**
+     * Calcula la hora de fin de una reserva en base a la duración del turno configurada en la agenda del profesional para ese día.
+     */
+    public function calcularHoraFin($profesionalId, $fecha, $horaInicio): string
+    {
+        $diaSemana = Carbon::parse($fecha)->dayOfWeek; // 0 = Domingo, 6 = Sábado
+        $regla = \App\Models\ReglaDisponibilidad::where('profesional_id', $profesionalId)
+            ->where('dia_semana', $diaSemana)
+            ->first();
+        $duracion = $regla ? (int)$regla->duracion_turno : 60; // Por defecto 60 min
+        
+        return Carbon::parse($horaInicio)->addMinutes($duracion)->format('H:i');
+    }
+
 }
