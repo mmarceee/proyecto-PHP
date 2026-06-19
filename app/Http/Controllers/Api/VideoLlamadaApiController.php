@@ -20,6 +20,13 @@ class VideoLlamadaApiController extends Controller
     {
         $user = $request->user();
 
+        // VALIDACIÓN DE SEGURIDAD (IDOR)
+        if (!$this->videoService->validarAcceso($user, $reserva)) {
+            return response()->json([
+                'error' => 'No tienes permiso para acceder a esta videollamada.'
+            ], 403);
+        }
+
         // El nombre de la sala ahora sí será el ID real de la base de datos
         $nombreSala = 'reserva_' . $reserva->id;
 
