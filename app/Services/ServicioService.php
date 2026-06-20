@@ -79,9 +79,9 @@ class ServicioService
                 LugarAtencion::updateOrCreate(
                     [
                         'profesional_id' => $profesionalId,
-                        'nombre'         => $datos['lugar_nombre']
                     ],
                     [
+                        'nombre'         => $datos['lugar_nombre'],
                         'direccion'      => $datos['lugar_direccion'],
                         'ciudad'         => $datos['lugar_ciudad'],
                         'departamento'   => $datos['lugar_departamento'],
@@ -90,6 +90,8 @@ class ServicioService
                         'longitud'       => $datos['longitud'],
                     ]
                 );
+            } else {
+                $this->limpiarPinDeUbicacionSiCorresponde($profesionalId);
             }
 
             return $servicio;
@@ -98,8 +100,29 @@ class ServicioService
 
     public function eliminar($id, $profesionalId)
     {
-        return Servicio::where('id', $id)
-            ->where('profesional_id', $profesionalId)
-            ->delete();
+        // Envolvemos el query de eliminación masiva y la limpieza de cascada en una transacción
+        return DB::transaction(function () use ($id, $profesionalId) {
+            $eliminado = Servicio::where('id', $id)
+                ->where('profesional_id', $profesionalId)
+                ->delete();
+            if ($eliminado) {
+                // Ejecutamos la evaluación de limpieza de ubicación tras borrar el servicio
+                $this->limpiarPinDeUbicacionSiCorresponde($profesionalId);
+            }
+            return $eliminado;
+        });
+    }
+
+     /**
+     * Elimina el LugarAtencion del profesional si ya no ofrece ningún servicio presencial activo.
+     */
+    private function limpiarPinDeUbicacionSiCorresponde(int $profesionalId): void
+    {
+        $tienePresenciales = Servicio::where('profesional_id', $profesionalId)
+            ->where('modalidad', 'Presencial')
+            ->exists();
+        if (!$tienePresenciales) {
+            LugarAtencion::where('profesional_id', $profesionalId)->delete();
+        }
     }
 }

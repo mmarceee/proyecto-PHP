@@ -31,10 +31,11 @@ class ServicioApiController extends Controller
         $servicios = $this->servicioService->listarPorProfesional($profesional->id);
         
         $categorias = Categoria::orderBy('nombre', 'asc')->get();
-
+        $lugarAtencion = $profesional->lugarAtencion;
         return response()->json([
             'servicios' => $servicios,
-            'categorias' => $categorias
+            'categorias' => $categorias,
+            'lugar_atencion' => $lugarAtencion
         ]);
     }
 
