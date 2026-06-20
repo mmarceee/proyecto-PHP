@@ -188,8 +188,7 @@ document.addEventListener('alpine:init', () => {
             this.horaSeleccionada = '';
         },
 
-        // 4. Tu lógica de fetch intacta (Se llama desde el botón ACEPTAR del modal)
-                async ejecutarReserva() {
+        async ejecutarReserva() {
             try {
                 const profesionalId = this.profesionalSeleccionado.id;
                 const servicioId = this.servicioSeleccionado.id;

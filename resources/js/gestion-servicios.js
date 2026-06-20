@@ -6,7 +6,7 @@ document.addEventListener('alpine:init', () => {
         mostrarModal: false,
         modoEdicion: false,
         idServicioEdicion: null,
-        
+        lugar_atencion_preestablecido: null,
         // =====================================
         // VARIABLES DEL MAPA INTEGRADAS
         // =====================================
@@ -56,7 +56,8 @@ document.addEventListener('alpine:init', () => {
                 const data = await response.json();
                 
                 this.servicios = data.servicios;
-                this.categorias = data.categorias; 
+                this.categorias = data.categorias;
+                this.lugar_atencion_preestablecido = data.lugar_atencion; 
             } catch (err) {
                 console.error('Error cargando servicios:', err);
             } finally {
@@ -120,6 +121,14 @@ document.addEventListener('alpine:init', () => {
                 lugar_nombre: '', lugar_direccion: '', lugar_ciudad: '', lugar_departamento: '',
                 latitud: -34.9011, longitud: -56.1645
             };
+            if (this.lugar_atencion_preestablecido) {
+                this.form.lugar_nombre = this.lugar_atencion_preestablecido.nombre;
+                this.form.lugar_direccion = this.lugar_atencion_preestablecido.direccion;
+                this.form.lugar_ciudad = this.lugar_atencion_preestablecido.ciudad;
+                this.form.lugar_departamento = this.lugar_atencion_preestablecido.departamento;
+                this.form.latitud = parseFloat(this.lugar_atencion_preestablecido.latitud);
+                this.form.longitud = parseFloat(this.lugar_atencion_preestablecido.longitud);
+            }
             this.mostrarModal = true;
         },
 
@@ -139,7 +148,6 @@ document.addEventListener('alpine:init', () => {
                 categoria_id: servicio.categoria_id.toString(),
                 
                 // Si el servicio ya tiene un lugar de atención asociado, lo cargamos.
-                // Ajusta 'servicio.lugar_atencion' según cómo venga el JSON desde tu API.
                 lugar_nombre: servicio.lugar_atencion?.nombre ?? '',
                 lugar_direccion: servicio.lugar_atencion?.direccion ?? '',
                 lugar_ciudad: servicio.lugar_atencion?.ciudad ?? '',
