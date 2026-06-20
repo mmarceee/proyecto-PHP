@@ -30,7 +30,8 @@ class BusquedaService
 
         if ($categoria && $categoria !== 'Todas las categorías') {
             $query->whereHas('servicios.categoria', function ($q) use ($categoria) {
-                $q->where('nombre', $categoria);
+                $q->where('nombre', $categoria)
+                    ->where('activa', true);
             });
         }
 
@@ -55,6 +56,7 @@ class BusquedaService
     public function obtenerCategoriasServicios()
     {
         return Categoria::query()
+            ->where('activa', true)
             ->orderBy('nombre')
             ->pluck('nombre')
             ->values();
