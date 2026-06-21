@@ -1,58 +1,183 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GendarApp
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicacion web desarrollada con Laravel 13, PHP 8.5, MySQL, Redis, MongoDB,
+Laravel Reverb, Vite y Tailwind CSS. El entorno local se ejecuta con Docker
+Desktop, WSL2 y Laravel Sail.
 
-## About Laravel
+## Requisitos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Windows 10/11 con WSL2 y una distribucion Linux instalada (Ubuntu recomendado).
+- Docker Desktop con la integracion para WSL2 habilitada.
+- Git, solo si el proyecto se obtiene desde un repositorio.
+- Visual Studio Code y el comando `code` en WSL son opcionales. `inicio.sh`
+  intenta abrir el proyecto con `code .`, pero esto no afecta a los contenedores.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+No es necesario instalar PHP, Composer, MySQL, Redis, MongoDB ni Node.js en el
+equipo anfitrion.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Instalacion inicial
 
-## Learning Laravel
+Ejecutar todos los comandos desde una terminal de WSL2, dentro de la carpeta del
+proyecto.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. Instalar las dependencias de PHP
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Como Laravel Sail esta dentro de `vendor`, la primera instalacion se realiza con
+una imagen de Composer:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php85-composer:latest \
+    composer install --ignore-platform-reqs
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Explicacion del comando:
 
-## Contributing
+* docker run --rm: crea un contenedor temporal y lo elimina al terminar.
+* -u "$(id -u):$(id -g)": evita que los archivos queden propiedad de root.
+* -v "$(pwd):/var/www/html": monta el proyecto dentro del contenedor.
+* -w /var/www/html: establece esa carpeta como directorio de trabajo.
+* laravelsail/php85-composer:latest: imagen con PHP 8.5 y Composer.
+* composer install: instala exactamente las dependencias de composer.lock.
+* --ignore-platform-reqs: evita problemas de extensiones PHP ausentes en el contenedor temporal. El contenedor definitivo de Sail sí las incluye.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Este comando no seria necesario si entregaramos vendor/ pero no se entrega porque ocupa mucho espacio y se puede regenerar para una instalación limpia.
 
-## Code of Conduct
+### 2. Crear y configurar el entorno
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+Editar `.env` y, como minimo, configurar estos valores para los servicios de
+`compose.yaml`:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```dotenv
+APP_NAME=GendarApp
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost
 
-## License
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=gendarapp
+DB_USERNAME=sail
+DB_PASSWORD=password
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=null
+QUEUE_CONNECTION=redis
+CACHE_STORE=redis
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=gendarapp-local
+REVERB_APP_KEY=gendarapp-local-key
+REVERB_APP_SECRET=gendarapp-local-secret
+REVERB_HOST=localhost
+REVERB_PORT=8080
+REVERB_SCHEME=http
+
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_HOST="${REVERB_HOST}"
+VITE_REVERB_PORT="${REVERB_PORT}"
+VITE_REVERB_SCHEME="${REVERB_SCHEME}"
+
+MONGODB_HOST=mongodb
+MONGODB_PORT=27017
+MONGODB_DATABASE=gendarapp_logs
+MONGODB_USERNAME=sail
+MONGODB_PASSWORD=secret
+```
+
+Los valores de Google OAuth, PayPal y LiveKit son necesarios solamente para usar
+esas integraciones. Deben solicitarse al responsable del proyecto y agregarse al
+`.env`; nunca deben incluirse credenciales reales en el codigo entregado:
+
+```dotenv
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost/auth/google/callback
+
+PAYPAL_MODE=sandbox
+PAYPAL_SANDBOX_CLIENT_ID=
+PAYPAL_SANDBOX_CLIENT_SECRET=
+PAYPAL_CURRENCY=USD
+PAYPAL_UYU_TO_USD_RATE=40
+
+LIVEKIT_URL=
+LIVEKIT_API_KEY=
+LIVEKIT_API_SECRET=
+```
+
+Si algun puerto ya esta ocupado, se puede publicar otro puerto desde `.env`, por
+ejemplo `APP_PORT=8081`, `FORWARD_DB_PORT=3307` o
+`FORWARD_MONGODB_PORT=27018`. En ese caso tambien hay que ajustar `APP_URL`.
+
+### 3. Preparar la aplicacion
+
+```bash
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail npm install
+./vendor/bin/sail artisan migrate
+```
+
+## Arranque habitual
+
+Dar permiso de ejecucion al script la primera vez:
+
+```bash
+chmod +x inicio.sh
+```
+
+Luego iniciar el entorno con:
+
+```bash
+./inicio.sh
+```
+
+El script comprueba Docker Desktop, levanta Laravel Sail y mantiene en ejecucion:
+
+- Vite (`npm run dev`).
+- El worker de colas con Redis.
+- Laravel Reverb en el puerto `8080`.
+- El scheduler de Laravel.
+
+Mientras se desarrolla, la terminal que ejecuta `inicio.sh` debe permanecer
+abierta.
+
+## Direcciones locales
+
+- Aplicacion: <http://localhost>
+- Vite: <http://localhost:5173>
+- Reverb: `ws://localhost:8080`
+- Mailpit: <http://localhost:8025>
+
+Si se definio `APP_PORT`, utilizar ese puerto para acceder a la aplicacion.
+
+## Detener el entorno
+
+Detener los procesos de `inicio.sh` con `Ctrl+C` y luego ejecutar:
+
+```bash
+./vendor/bin/sail down
+```
+
+Para borrar tambien las bases de datos locales y comenzar desde cero:
+
+```bash
+./vendor/bin/sail down -v
+```
+
+Este ultimo comando elimina los volumenes locales de MySQL, Redis y MongoDB.
