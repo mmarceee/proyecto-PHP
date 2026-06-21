@@ -137,7 +137,7 @@ class DashboardService
             } elseif ($fechaReserva->isTomorrow()) {
                 $dateLabel = 'Mañana';
             } else {
-                $dateLabel = ucfirst($fechaReserva->isoFormat('dddd')); // Ej: "Lunes", "Viernes"
+                $dateLabel = ucfirst($fechaReserva->isoFormat('dddd DD/MM')); // Ej: "Lunes", "Viernes"
             }
 
             return [
