@@ -7,6 +7,7 @@ use App\Models\Reserva;
 use App\Models\User;
 use App\Events\NotificacionCreada;
 use App\Models\CompraPaquete;
+use Carbon\Carbon;
 
 class NotificacionService
 {
@@ -190,7 +191,7 @@ class NotificacionService
         $reserva->loadMissing(['cliente.user', 'profesional.user', 'servicio']);
 
         $fecha = $reserva->fecha?->format('d/m/Y');
-        $hora = \Carbon\Carbon::parse($reserva->hora_inicio)->format('H:i');
+        $hora = Carbon::parse($reserva->hora_inicio)->format('H:i');
 
         return $this->crearYEmitir([
             'user_id' => $reserva->cliente->user_id,
@@ -215,7 +216,4 @@ class NotificacionService
 
         return $notificacion;
     }
-
-    
-
 }

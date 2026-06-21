@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\PagoService;
 use App\Services\ReservaService;
+use App\Models\Servicio;
+use App\Models\PaqueteServicio;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +25,7 @@ class PayPalApiController extends Controller
             'hora_inicio'       => ['required', 'date_format:H:i'],
         ]);
 
-        $servicio = \App\Models\Servicio::findOrFail($validated['servicio_id']);
+        $servicio = Servicio::findOrFail($validated['servicio_id']);
         
         $horaFin = $reservaService->calcularHoraFin(
             $validated['profesional_id'],
@@ -78,7 +80,7 @@ class PayPalApiController extends Controller
             'paquete_id' => ['required', 'exists:paquetes_servicios,id'],
         ]);
 
-        $paquete = \App\Models\PaqueteServicio::findOrFail($validated['paquete_id']);
+        $paquete = PaqueteServicio::findOrFail($validated['paquete_id']);
         $clienteId = $request->user()->cliente->id;
 
         try {

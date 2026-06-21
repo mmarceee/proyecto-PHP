@@ -11,7 +11,6 @@ class ProfesionalAdminApiController extends Controller
 {
     protected $profesionalService;
 
-    // Inyectamos el servicio en el constructor del controlador
     public function __construct(ProfesionalService $profesionalService)
     {
         $this->profesionalService = $profesionalService;

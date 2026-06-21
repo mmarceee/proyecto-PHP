@@ -17,7 +17,7 @@ class ProfesionalApiController extends Controller
 
     public function postularse(Request $request)
     {
-        // 1. Validamos los datos de entrada
+        //Validamos los datos de entrada
         $validated = $request->validate([
             'especialidad'     => ['required', 'string', 'max:255'],
             'descripcion'      => ['required', 'string', 'max:1000'],
@@ -25,7 +25,7 @@ class ProfesionalApiController extends Controller
         ]);
 
         try {
-            // 2. Usamos el Service para crear el registro
+            //Usamos el Service para crear el registro
             $this->profesionalService->crearPostulacion($request->user(), $validated);
 
             return response()->json([

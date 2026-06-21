@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Models\Profesional;
+use App\Services\EventLogService;
 
 class ProfesionalService
 {
@@ -40,7 +41,7 @@ class ProfesionalService
         $profesional->update(['estado' => 'aprobado']);
 
         // REGISTRO DE AUDITORÍA NOSQL
-        app(\App\Services\EventLogService::class)->log('profesional_aprobado', [
+        app(EventLogService::class)->log('profesional_aprobado', [
             'profesional_id' => $profesional->id,
             'user_id'        => $profesional->user_id,
             'name'           => trim(($profesional->user?->name ?? '') . ' ' . ($profesional->user?->apellido ?? '')),

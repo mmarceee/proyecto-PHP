@@ -181,7 +181,7 @@ document.addEventListener('alpine:init', () => {
             this.showConfirmModal = true;
         },
 
-        // 3. Función para cancelar/cerrar
+        // Función para cancelar/cerrar
         cerrarModalReserva() {
             this.showConfirmModal = false;
             this.fechaSeleccionada = '';

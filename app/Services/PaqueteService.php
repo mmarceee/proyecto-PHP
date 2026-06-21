@@ -11,13 +11,12 @@ use Illuminate\Support\Facades\DB;
 
 class PaqueteService
 {
-
     public function __construct(
         private NotificacionService $notificacionService
     ) {}
 
     /**
-     * 1. Profesional: Crea un nuevo paquete en su catálogo
+     * Profesional: Crea un nuevo paquete en su catálogo
      */
     public function crearPaqueteCatalogo(Profesional $profesional, array $datos)
     {
@@ -33,7 +32,7 @@ class PaqueteService
     }
 
     /**
-     * 2. Cliente: Realiza la compra de un paquete
+     * Cliente: Realiza la compra de un paquete
      */
     public function comprarPaquete(Cliente $cliente, PaqueteServicio $paquete)
     {
@@ -41,7 +40,6 @@ class PaqueteService
             throw new \Exception("Este paquete ya no está disponible para la compra.");
         }
 
-        // La compra se crea dentro de una transacción para dejar listo el flujo cuando se conecte la pasarela de pagos
         $compra = DB::transaction(function () use ($cliente, $paquete) {
             return CompraPaquete::create([
                 'paquete_servicio_id'  => $paquete->id,
@@ -59,7 +57,7 @@ class PaqueteService
     }
 
     /**
-     * 3. Sistema: Descuenta una sesión cuando el cliente reserva o asiste a un turno
+     * Sistema: Descuenta una sesión cuando el cliente reserva o asiste a un turno
      */
     public function consumirSesion(CompraPaquete $compra, $reservaId)
     {

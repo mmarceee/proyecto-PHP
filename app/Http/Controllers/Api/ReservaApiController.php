@@ -21,7 +21,7 @@ class ReservaApiController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validamos los datos, pero ya NO obligamos al frontend a mandar la 'hora_fin'
+        // Validamos los datos, pero ya NO obligamos al frontend a mandar la 'hora_fin'
         $validated = $request->validate([
             'cliente_id'     => ['required', 'exists:clientes,id'],
             'profesional_id' => ['required', 'exists:profesionales,id'],
@@ -48,7 +48,7 @@ class ReservaApiController extends Controller
     {
         $reserva = Reserva::findOrFail($id);
 
-        // 1. Validamos los datos (quitamos 'hora_fin' de las reglas estrictas)
+        // Validamos los datos
         $validated = $request->validate([
             'fecha'       => ['required', 'date', 'after_or_equal:today'],
             'hora_inicio' => ['required', 'date_format:H:i'],
@@ -98,7 +98,7 @@ class ReservaApiController extends Controller
                 'message' => 'Estado de la reserva actualizado.',
                 'reserva' => $reservaActualizada
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
@@ -123,12 +123,12 @@ class ReservaApiController extends Controller
         $historial = $reservas->map(function ($reserva) use ($user) {
             $yaCalifico = $reserva->calificaciones->where('evaluador_id', $user->id)->isNotEmpty();
 
-            // 1. Formateamos solo la fecha (Ej: 26/05/2026)
+            // Formateamos solo la fecha (Ej: 26/05/2026)
             $soloFecha = $reserva->fecha 
                 ? \Carbon\Carbon::parse($reserva->fecha)->format('d/m/Y') 
                 : 'Fecha sin definir';
 
-            // 2. Extraemos la hora exacta de la columna hora_inicio
+            // Extraemos la hora exacta de la columna hora_inicio
             $soloHora = $reserva->hora_inicio 
                 ? \Carbon\Carbon::parse($reserva->hora_inicio)->format('H:i') 
                 : ''; 
@@ -137,12 +137,12 @@ class ReservaApiController extends Controller
                 ? \Carbon\Carbon::parse($reserva->hora_fin)->format('H:i') 
                 : '';
                 
-            // 3. Unimos ambas partes (Ej: "26/05/2026 14:30")
+            // Unimos ambas partes (Ej: "26/05/2026 14:30")
             $fechaFormateada = trim($soloFecha . ' ' . $soloHora . ' a ' . $soloHoraFin);
 
             $estadoReal = $reserva->estado ?? $reserva->estado_reserva ?? $reserva->estadoReserva ?? 'Pendiente';
 
-            // NUEVO: Identificamos qué rol cumplió el usuario en esta reserva
+            // Identificamos qué rol cumplió el usuario en esta reserva
             $rolContextual = ($reserva->cliente->user_id === $user->id) ? 'cliente' : 'profesional';
 
             return [

@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Reserva;
 use App\Models\Cliente;
+use App\Models\Profesional;
+use App\Models\Calificacion;
 use Carbon\Carbon;
 
 class DashboardService
@@ -27,7 +29,6 @@ class DashboardService
             $horaCarbon = Carbon::parse($reserva->hora_inicio);
             $userCliente = $reserva->cliente?->user;
             $nombreCliente = trim(($userCliente?->name ?? '') . ' ' . ($userCliente?->apellido ?? ''));
-            // BOTÓN DE ACCIÓN INTELIGENTE BASADO EN LA LISTA DE ENUMS
             $actionLabel = match ($reserva->estado_reserva) {
                 'pendiente'             => 'Confirmar',
                 'confirmada', 'pagada'  => 'Iniciar',
@@ -46,7 +47,7 @@ class DashboardService
                 'id'           => $reserva->id,
                 'time'         => $horaCarbon->format('H:i'), // Formato "14:30"
                 'period'       => $horaCarbon->format('A'), // "AM" o "PM"
-                'client_name'  => $nombreCliente ?: 'Paciente Anónimo',
+                'client_name'  => $nombreCliente ?: 'Cliente Anónimo',
                 'client_email' => $userCliente?->email ?? '',
                 'reason'       => 'Consulta de control general',
                 'status'       => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
@@ -161,7 +162,10 @@ class DashboardService
         })->toArray();
     }
 
-        public function obtenerProximasSesionesProfesional($profesionalId)
+    /**
+     * Obtener las próximas sesiones de un profesional (de hoy en adelante)
+     */
+    public function obtenerProximasSesionesProfesional($profesionalId)
     {
         $hoy = Carbon::today()->toDateString();
 
@@ -208,13 +212,13 @@ class DashboardService
      */
     public function obtenerResenasRecibidas($profesionalId)
     {
-        // 1. Buscamos el profesional usando su ID de la tabla 'profesionales'
-        $profesional = \App\Models\Profesional::find($profesionalId);
+        // Buscamos el profesional usando su ID de la tabla 'profesionales'
+        $profesional = Profesional::find($profesionalId);
         if (!$profesional) {
             return [];
         }
-        // 2. Usamos el 'user_id' para buscar sus calificaciones correspondientes
-        return \App\Models\Calificacion::where('evaluado_id', $profesional->user_id)
+        // Usamos el 'user_id' para buscar sus calificaciones correspondientes
+        return Calificacion::where('evaluado_id', $profesional->user_id)
             ->where('tipoCalificacion', 'ClienteAProfesional')
             ->with('evaluador')
             ->latest()

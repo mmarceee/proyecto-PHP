@@ -52,7 +52,7 @@ class ServicioApiController extends Controller
             'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
             'categoria_id'          => ['required', 'exists:categorias,id'],
             
-            // NUEVOS CAMPOS: Solo requeridos si la modalidad es Presencial
+            // Campos requeridos solo si la modalidad es Presencial
             'lugar_nombre'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
             'lugar_direccion'       => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
             'lugar_ciudad'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
