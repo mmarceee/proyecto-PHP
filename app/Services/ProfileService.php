@@ -44,21 +44,21 @@ class ProfileService
     {
         DB::transaction(function () use ($user) {
             
-            // 1. SI ES CLIENTE, lo borramos lógicamente
+            // SI ES CLIENTE, lo borramos lógicamente
             if ($user->esCliente()) { 
                 $user->cliente->delete(); 
             }
 
-            // 2. SI ES PROFESIONAL, lo borramos lógicamente
+            // SI ES PROFESIONAL, lo borramos lógicamente
             if ($user->profesional()->exists()) { 
                 $user->profesional->delete();
             }
 
-            // 3. CAMBIAMOS EL ESTADO VISUAL
+            // CAMBIAMOS EL ESTADO VISUAL
             $user->estado_usuario = 'eliminado';
             $user->save();
 
-            // 4. ELIMINAMOS AL USUARIO
+            // ELIMINAMOS AL USUARIO
             $user->delete();
         });
     }

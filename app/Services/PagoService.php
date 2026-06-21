@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Reserva;
 use App\Models\Pago;
 use App\Events\EstadoReservaCambiado; // IMPORTANTE: Agregado para el WebSocket
+use App\Models\Cliente;
+use App\Models\PaqueteServicio;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
+
 
 class PagoService
 {
@@ -21,7 +23,7 @@ class PagoService
         try {
             $this->provider->getAccessToken();
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('PayPal: fallo al obtener access token', [
+            Log::error('PayPal: fallo al obtener access token', [
                 'message' => $e->getMessage(),
             ]);
             throw new \RuntimeException('No se pudo conectar con PayPal. Intente nuevamente más tarde.');
@@ -110,16 +112,16 @@ class PagoService
                         'referencia_externa' => $captureId // Guardamos el Capture ID correcto
                     ]);
 
-                    \Illuminate\Support\Facades\DB::afterCommit(function () use ($reserva) {
-                        broadcast(new \App\Events\EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'pendiente'));
+                    DB::afterCommit(function () use ($reserva) {
+                        broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'pendiente'));
                     });
 
                     return $reserva;
 
                 } elseif ($payload['tipo'] === 'paquete') {
                     $paqueteService = app(PaqueteService::class);
-                    $cliente = \App\Models\Cliente::find($payload['datos']['cliente_id']);
-                    $paqueteServicio = \App\Models\PaqueteServicio::find($payload['datos']['paquete_id']);
+                    $cliente = Cliente::find($payload['datos']['cliente_id']);
+                    $paqueteServicio = PaqueteServicio::find($payload['datos']['paquete_id']);
                     
                     $compra = $paqueteService->comprarPaquete($cliente, $paqueteServicio);
 
@@ -162,7 +164,7 @@ class PagoService
             return true;
         }
 
-        \Illuminate\Support\Facades\Log::error("Fallo al reembolsar en PayPal: " . json_encode($response));
+        Log::error("Fallo al reembolsar en PayPal: " . json_encode($response));
         throw new Exception('No se pudo procesar el reembolso en PayPal.');
     }
 }

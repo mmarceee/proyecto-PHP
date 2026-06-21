@@ -43,7 +43,7 @@ class ProfileApiController extends Controller
     {
         $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', \Illuminate\Validation\Rules\Password::defaults(), 'confirmed'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
         ], [
             'current_password.required' => 'La contraseña actual es obligatoria.',
             'current_password.current_password' => 'La contraseña actual es incorrecta.',

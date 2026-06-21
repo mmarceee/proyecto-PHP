@@ -13,7 +13,6 @@ class VideoLlamadaService
      /**
      * Valida si el usuario tiene permiso para acceder a la videollamada de una reserva.
      */
-
     public function validarAcceso(User $user, Reserva $reserva): bool
     {
         
@@ -29,20 +28,20 @@ class VideoLlamadaService
      */
     public function generarToken(User $user, string $nombreSala): string
     {
-        // 1. Opciones del Token (Usamos los datos REALES del usuario autenticado)
+        // Opciones del Token (Usamos los datos REALES del usuario autenticado)
         $tokenOptions = (new AccessTokenOptions())
             ->setIdentity((string) $user->id)
             ->setName($user->name)
             ->setTtl(3600); // El token expira por seguridad en 1 hora
 
-        // 2. Permisos de la sala
+        // Permisos de la sala
         $videoGrant = (new VideoGrant())
             ->setRoomJoin(true)
             ->setRoomName($nombreSala)
             ->setCanPublish(true) // Puede emitir video/audio
             ->setCanSubscribe(true); // Puede recibir video/audio
 
-        // 3. Crear el Token
+        // Crear el Token
          $token = new AccessToken(
             config('services.livekit.api_key'),
             config('services.livekit.api_secret')
@@ -52,7 +51,7 @@ class VideoLlamadaService
         $token->init($tokenOptions);
         $token->setGrant($videoGrant);
 
-        // 4. Firmar y devolver el JWT final
+        // Firmar y devolver el JWT final
         return $token->toJwt();
     }
 }

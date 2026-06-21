@@ -2,14 +2,13 @@
 
 namespace App\Providers;
 
-use App\Models\Reserva;
 use App\Models\Pago;
-use App\Observers\ReservaObserver;
 use App\Observers\PagoObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
+use App\Services\EventLogService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,7 +30,6 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        Reserva::observe(ReservaObserver::class);
         Pago::observe(PagoObserver::class);
 
         // REGISTRO DE AUDITORÍA NOSQL PARA CORREOS ENVIADOS
@@ -42,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
             // Leemos la cabecera personalizada para clasificar la acción
             $actionHeader = $event->message->getHeaders()->get('X-Email-Action');
             $action = $actionHeader ? $actionHeader->getBodyAsString() : 'desconocido';
-            app(\App\Services\EventLogService::class)->log('email_enviado', [
+            app(EventLogService::class)->log('email_enviado', [
                 'accion'  => $action,
                 'subject' => $event->message->getSubject(),
                 'to'      => $to,

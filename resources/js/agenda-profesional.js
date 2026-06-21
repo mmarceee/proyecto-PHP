@@ -205,7 +205,7 @@ document.addEventListener('alpine:init', () => {
          * AGREGADO: Escucha en tiempo real sintonizando el ID de Profesional correcto
          */
         iniciarEscuchaRealtime() {
-            // 1. Intentamos buscar primero el ID de profesional real, si no, caemos al de usuario
+            // Intentamos buscar primero el ID de profesional real, si no, caemos al de usuario
             const profesionalId = document.querySelector('meta[name="profesional-id"]')?.getAttribute('content') 
                                || document.querySelector('meta[name="user-id"]')?.getAttribute('content');
             
@@ -217,7 +217,6 @@ document.addEventListener('alpine:init', () => {
             }
 
             if (window.Echo) {
-                // Ahora se va a suscribir a 'profesional.5' en lugar de 'profesional.13'
                 window.Echo.private(`profesional.${profesionalId}`)
                     .listen('.agenda.modificada', async (evento) => {
                         console.log("[WS DIAGNÓSTICO]  ¡LLEGÓ EL SOPLIDO! Re-sincronizando grilla...", evento);

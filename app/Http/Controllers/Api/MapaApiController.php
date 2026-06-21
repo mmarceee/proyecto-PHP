@@ -24,8 +24,7 @@ class MapaApiController extends Controller
         // Mapeamos los datos para enviar al frontend un JSON limpio y fácil de leer
         $lugaresFormateados = $lugares->map(function ($lugar) {
             
-            // Extraemos los datos dependiendo de tu estructura de base de datos.
-            // (Si el nombre está directo en el profesional, o en la relación de usuario)
+            // Extraemos los datos.
             $nombreProfesional = $lugar->profesional->usuario->nombre ?? $lugar->profesional->nombre ?? 'Profesional';
             $apellidoProfesional = $lugar->profesional->usuario->apellido ?? $lugar->profesional->apellido ?? '';
             $nombreComercial = $lugar->profesional->nombre_comercial ?? null;

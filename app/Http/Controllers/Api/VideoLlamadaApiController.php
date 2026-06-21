@@ -27,7 +27,7 @@ class VideoLlamadaApiController extends Controller
             ], 403);
         }
 
-        // El nombre de la sala ahora sí será el ID real de la base de datos
+        // El nombre de la sala ahora será el ID de la base de datos
         $nombreSala = 'reserva_' . $reserva->id;
 
         $token = $this->videoService->generarToken($user, $nombreSala);

@@ -15,7 +15,7 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Crear o actualizar el usuario base
+        // Crear o actualizar el usuario base
         $user = User::updateOrCreate(
             ['email' => 'gendarapp@gmail.com'], // Condición de búsqueda
             [
@@ -27,7 +27,7 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        // 2. Registrar el usuario en la tabla admins
+        // Registrar el usuario en la tabla admins
         Admin::firstOrCreate([
             'user_id' => $user->id
         ]);
