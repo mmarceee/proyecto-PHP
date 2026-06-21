@@ -25,7 +25,7 @@ document.addEventListener('alpine:init', () => {
         async init() {
             await this.cargarDashboard();
             
-            //  1. Iniciar la escucha de WebSockets apenas arranca el dashboard
+            // Iniciar la escucha de WebSockets apenas arranca el dashboard
             this.iniciarEscuchaRealtime();
         },
 
@@ -126,7 +126,7 @@ document.addEventListener('alpine:init', () => {
             }
 
             try {
-                // Golpeamos tu endpoint DELETE en la API
+                // Golpeamos el endpoint DELETE en la API
                 const response = await fetch(`/api/reservas/${this.reservaACancelar}`, {
                     method: 'DELETE',
                     credentials: 'same-origin',
@@ -230,7 +230,7 @@ document.addEventListener('alpine:init', () => {
         iniciarEscuchaRealtime() {
             if (!window.Echo) return;
 
-            // --- 1. SI ES CLIENTE: Escucha cambios de estado ---
+            // SI ES CLIENTE: Escucha cambios de estado
             if (this.tipo === 'cliente') {
                 const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
                 if (userId) {
@@ -243,7 +243,7 @@ document.addEventListener('alpine:init', () => {
                 }
             }
 
-            // --- 2. SI ES PROFESIONAL: Escucha nuevas reservas (¡Lo que faltaba!) ---
+            // SI ES PROFESIONAL: Escucha nuevas reservas
             if (this.tipo === 'profesional') {
                 const profesionalId = document.querySelector('meta[name="profesional-id"]')?.getAttribute('content');
                 if (profesionalId) {
@@ -365,8 +365,6 @@ document.addEventListener('alpine:init', () => {
                 console.error(e);
             }
         },
-
-
     }));
 });
 

@@ -4,17 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Services\ReservaService; //Inyectamos tu servicio de control
-use App\Models\Servicio;
+use App\Services\ReservaService;
+use App\Services\AgendaService;
 use App\Events\AgendaActualizada;
-use Carbon\Carbon;
 
 class AgendaApiController extends Controller
 {
     /**
      * Obtiene la agenda semanal para el panel de configuración del profesional
      */
-    public function obtenerAgenda(Request $request, \App\Services\AgendaService $agendaService)
+    public function obtenerAgenda(Request $request, AgendaService $agendaService)
     {
         //Obtenemos el usuario logueado y verificamos que sea profesional
         $user = $request->user();
@@ -26,7 +25,7 @@ class AgendaApiController extends Controller
         $fechaInicio = $request->query('fecha');
 
         try {
-            //Llamamos al servicio que armamos con el cruce de datos inteligente
+            //Llamamos al servicio que armamos con el cruce de datos
             $semana = $agendaService->obtenerAgendaSemana($user->profesional, $fechaInicio);
 
             return response()->json([
@@ -43,7 +42,7 @@ class AgendaApiController extends Controller
     /**
      * Procesa la reserva del paciente impidiendo superposiciones
      */
-        public function agendarTurno(Request $request, ReservaService $reservaService)
+    public function agendarTurno(Request $request, ReservaService $reservaService)
     {
         $validated = $request->validate([
             'profesional_id'    => ['required', 'exists:profesionales,id'],
@@ -77,7 +76,7 @@ class AgendaApiController extends Controller
         }
     }
 
-        public function bloquearTurno(Request $request, ReservaService $reservaService)
+    public function bloquearTurno(Request $request, ReservaService $reservaService)
     {
         $validated = $request->validate([
             'profesional_id' => ['required', 'exists:profesionales,id'],
@@ -88,7 +87,7 @@ class AgendaApiController extends Controller
         $clienteId = $request->user()->cliente->id;
 
         try {
-            // Delegación absoluta al servicio. Él se encarga de la caché y de notificar (broadcast).
+            // Delegación absoluta al servicio. El se encarga de la caché y de notificar (broadcast).
             $reservaService->bloquearTurnoTemporal(
                 $validated['profesional_id'],
                 $validated['fecha'],
@@ -108,14 +107,14 @@ class AgendaApiController extends Controller
     /**
      * Endpoint para guardar las reglas de disponibilidad desde el panel del profesional
      */
-    public function guardarReglas(Request $request, \App\Services\AgendaService $agendaService)
+    public function guardarReglas(Request $request, AgendaService $agendaService)
     {
         $user = $request->user();
         if (!$user || !$user->profesional) {
             return response()->json(['error' => 'Acceso denegado. No eres un profesional.'], 403);
         }
 
-        // Ahora validamos estrictamente el boolean "activo"
+        // Validamos estrictamente el boolean "activo"
         $validated = $request->validate([
             'reglas'                 => ['required', 'array'],
             'reglas.*.dia_semana'    => ['required', 'integer', 'between:0,6'],
@@ -142,7 +141,7 @@ class AgendaApiController extends Controller
         }
     }
 
-    public function guardarExcepcion(Request $request, \App\Services\AgendaService $agendaService)
+    public function guardarExcepcion(Request $request, AgendaService $agendaService)
     {
         $user = $request->user();
 
@@ -172,7 +171,7 @@ class AgendaApiController extends Controller
         }
     }
 
-    public function desbloquearDia(Request $request, \App\Services\AgendaService $agendaService)
+    public function desbloquearDia(Request $request, AgendaService $agendaService)
     {
         $user = $request->user();
 

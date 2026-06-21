@@ -2,20 +2,24 @@
 
 namespace App\Services;
 
+use App\Events\DashboardProfesionalActualizado;
 use App\Events\EstadoReservaCambiado;
 use App\Events\AgendaActualizada;
-use App\Models\Reserva;
 use App\Jobs\EnviarNotificacionReserva;
 use App\Jobs\EnviarSolicitudResenaJob;
+use App\Models\Reserva;
 use App\Models\CompraPaquete;
+use App\Models\PoliticaCancelacion;
+use App\Models\Pago;
+use App\Models\ReglaDisponibilidad;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ReservaService
 {
-    public function __construct(
-        private NotificacionService $notificacionService
-    ) {}
+    public function __construct(private NotificacionService $notificacionService) {}
 
     /**
      * Valida que no existan superposiciones horarias para el mismo profesional
@@ -68,7 +72,7 @@ class ReservaService
             $datos['cliente_id'] ?? null
         );
 
-        $reserva = \Illuminate\Support\Facades\DB::transaction(function () use ($datos, $compraPaqueteId) {
+        $reserva = DB::transaction(function () use ($datos, $compraPaqueteId) {
             
             $reserva = Reserva::create([
                 'cliente_id'     => $datos['cliente_id'],
@@ -93,11 +97,11 @@ class ReservaService
             return $reserva;
         });
 
-        \Illuminate\Support\Facades\DB::afterCommit(function () use ($reserva, $datos) {
+        DB::afterCommit(function () use ($reserva, $datos) {
             // Liberar el bloqueo temporal
-            $horaInicioFormateada = \Carbon\Carbon::parse($datos['hora_inicio'])->format('H:i:s');
+            $horaInicioFormateada = Carbon::parse($datos['hora_inicio'])->format('H:i:s');
             $llaveCache = "lock_turno_{$datos['profesional_id']}_{$datos['fecha']}_{$horaInicioFormateada}";
-            \Illuminate\Support\Facades\Cache::forget($llaveCache);
+            Cache::forget($llaveCache);
             // Disparar actualización por WebSocket en tiempo real
             $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
             
@@ -160,7 +164,7 @@ class ReservaService
         $userAutenticado = auth()->user();
         if ($userAutenticado && $userAutenticado->id === $reserva->cliente->user_id) {
             $esCliente = true;
-            $politica = \App\Models\PoliticaCancelacion::where('profesional_id', $reserva->profesional_id)->first();
+            $politica = PoliticaCancelacion::where('profesional_id', $reserva->profesional_id)->first();
             if ($politica) {
                 if (!$politica->permite_reprogramacion) {
                     throw new \Exception("El profesional no permite reprogramar turnos bajo su política de cancelación.");
@@ -174,8 +178,8 @@ class ReservaService
                 }
             }
         }
-        // 1. CAPTURA DE ESTADO ANTERIOR PARA AUDITORÍA NOSQL
-        $fechaOriginalStr = $reserva->fecha instanceof \Carbon\Carbon ? $reserva->fecha->format('Y-m-d') : $reserva->fecha;
+        // CAPTURA DE ESTADO ANTERIOR PARA AUDITORÍA NOSQL
+        $fechaOriginalStr = $reserva->fecha instanceof Carbon ? $reserva->fecha->format('Y-m-d') : $reserva->fecha;
         $horaInicioOriginal = $reserva->hora_inicio;
         $horaFinOriginal = $reserva->hora_fin;
 
@@ -220,7 +224,7 @@ class ReservaService
         // Notificar al Dashboard del profesional en tiempo real
         if ($esCliente) {
             try {
-                broadcast(new \App\Events\DashboardProfesionalActualizado($reserva->profesional_id));
+                broadcast(new DashboardProfesionalActualizado($reserva->profesional_id));
             } catch (\Exception $e) {
                 // Silencioso
             }
@@ -235,12 +239,12 @@ class ReservaService
                 'fecha_anterior'       => $fechaOriginalStr,
                 'hora_inicio_anterior' => $horaInicioOriginal,
                 'hora_fin_anterior'    => $horaFinOriginal,
-                'fecha_nueva'          => $reserva->fecha instanceof \Carbon\Carbon ? $reserva->fecha->format('Y-m-d') : $reserva->fecha,
+                'fecha_nueva'          => $reserva->fecha instanceof Carbon ? $reserva->fecha->format('Y-m-d') : $reserva->fecha,
                 'hora_inicio_nueva'    => $reserva->hora_inicio,
                 'hora_fin_nueva'       => $reserva->hora_fin,
             ], $reserva->cliente?->user_id);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Fallo al registrar auditoría NoSQL para reserva reprogramada: " . $e->getMessage());
+            Log::error("Fallo al registrar auditoría NoSQL para reserva reprogramada: " . $e->getMessage());
         }
         return $reserva;
     }
@@ -265,25 +269,25 @@ class ReservaService
         }
             
         // 1. Guardamos los cambios en la base de datos relacional y cerramos la transacción
-        $reserva = \Illuminate\Support\Facades\DB::transaction(function () use ($reserva, $motivo) {
+        $reserva = DB::transaction(function () use ($reserva, $motivo) {
             
             // --- REEMBOLSO AUTOMÁTICO EN PAYPAL ---
-            $pago = \App\Models\Pago::where('reserva_id', $reserva->id)->where('estado_pago', 'aprobado')->first();
+            $pago = Pago::where('reserva_id', $reserva->id)->where('estado_pago', 'aprobado')->first();
             if ($pago && $pago->metodo_pago === 'paypal') {
                 try {
                     $pagoService = app(\App\Services\PagoService::class);
                     $pagoService->reembolsarPago($pago, $motivo);
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Fallo en el reembolso automático: ' . $e->getMessage());
+                    Log::error('Fallo en el reembolso automático: ' . $e->getMessage());
                 }
             }
             // -------------------------------------------------------
-            // 1. Cancelamos la reserva normalmente
+            //  Cancelamos la reserva normalmente
             $reserva->update([
                 'estado_reserva'     => 'cancelada',
                 'motivo_cancelacion' => $motivo,
             ]);
-            // 2. LÓGICA DE REINTEGRO DE PAQUETES
+            // LÓGICA DE REINTEGRO DE PAQUETES
             $usoSesion = $reserva->uso_sesion_paquete;
             if ($usoSesion) {
                 $compra = $usoSesion->compraPaquete;
@@ -297,20 +301,20 @@ class ReservaService
                 $usoSesion->delete();
             }
             
-            // 4. NOTIFICACIONES
+            // NOTIFICACIONES
             $this->notificacionService->notificarReservaCancelada($reserva);
-            \App\Jobs\EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
+            EnviarNotificacionReserva::dispatch($reserva, 'Cancelada');
             
             return $reserva;
         });
 
-        // 3. WEBSOCKETS (Fuera de la transacción de MySQL para evitar condiciones de carrera)
+        //  WEBSOCKETS (Fuera de la transacción de MySQL para evitar condiciones de carrera)
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
 
-        \Illuminate\Support\Facades\Log::info("[WS BACKEND] Disparando cancelación al cliente (User ID): " . $reserva->cliente->user_id);
-        broadcast(new \App\Events\EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'cancelada'));
+        Log::info("[WS BACKEND] Disparando cancelación al cliente (User ID): " . $reserva->cliente->user_id);
+        broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, 'cancelada'));
         
-        // 5. REGISTRO DE AUDITORÍA NOSQL (Fuera de la transacción para evitar bloqueos)
+        // REGISTRO DE AUDITORÍA NOSQL (Fuera de la transacción para evitar bloqueos)
         try {
             app(\App\Services\EventLogService::class)->log('reserva_cancelada', [
                 'reserva_id' => $reserva->id,
@@ -318,7 +322,7 @@ class ReservaService
                 'motivo'     => $motivo,
             ], $reserva->cliente?->user_id);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Fallo al registrar auditoría NoSQL para reserva cancelada: " . $e->getMessage());
+            Log::error("Fallo al registrar auditoría NoSQL para reserva cancelada: " . $e->getMessage());
         }
         
         return $reserva;
@@ -366,7 +370,7 @@ class ReservaService
         $this->despacharCambioAgenda($reserva->profesional_id, $reserva->fecha);
 
         // Disparamos usando el user_id real del cliente para que coincida con el frontend
-        \Log::info("[WS BACKEND] Disparando evento de estado al cliente (User ID): " . $reserva->cliente->user_id); // es para ver si funciona, sale en la consola f12
+        Log::info("[WS BACKEND] Disparando evento de estado al cliente (User ID): " . $reserva->cliente->user_id); // es para ver si funciona, sale en la consola f12
         broadcast(new EstadoReservaCambiado($reserva->cliente->user_id, $reserva->id, $nuevoEstado));
 
         if ($estadoAnterior === 'confirmada' && $nuevoEstado === 'en_curso') {
@@ -395,7 +399,7 @@ class ReservaService
             ->get(['hora_inicio', 'hora_fin', 'estado_reserva'])
             ->toArray();
 
-        \Log::info("[WS BACKEND] Disparando broadcast para el profesional ID: " . $profesionalId); //lo mismo consola f12
+        Log::info("[WS BACKEND] Disparando broadcast para el profesional ID: " . $profesionalId); //lo mismo consola f12
 
         
         broadcast(new AgendaActualizada($profesionalId, $bloquesOcupados));
@@ -416,7 +420,7 @@ class ReservaService
     public function calcularHoraFin($profesionalId, $fecha, $horaInicio): string
     {
         $diaSemana = Carbon::parse($fecha)->dayOfWeek; // 0 = Domingo, 6 = Sábado
-        $regla = \App\Models\ReglaDisponibilidad::where('profesional_id', $profesionalId)
+        $regla = ReglaDisponibilidad::where('profesional_id', $profesionalId)
             ->where('dia_semana', $diaSemana)
             ->first();
         $duracion = $regla ? (int)$regla->duracion_turno : 60; // Por defecto 60 min

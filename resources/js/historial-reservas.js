@@ -17,7 +17,7 @@ document.addEventListener('alpine:init', () => {
         async init() {
             await this.cargarHistorial();
             
-            // 🛠️ 1. Iniciar la escucha de WebSockets apenas carga el historial
+            // Iniciar la escucha de WebSockets apenas carga el historial
             this.iniciarEscuchaRealtime();
         },
 
@@ -87,7 +87,7 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // 🛠️ 2. NUEVA FUNCIÓN: Escucha de WebSockets para el Historial
+        // NUEVA FUNCIÓN: Escucha de WebSockets para el Historial
         iniciarEscuchaRealtime() {
             // Buscamos el ID del usuario inyectado en el Blade
             const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');

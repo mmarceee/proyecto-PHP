@@ -27,8 +27,7 @@ class EventLogService
                     Request::userAgent()
                 );
             } catch (\Throwable $e) {
-                // Resiliencia: Si MongoDB no está disponible en producción, 
-                // no rompemos la app (Error 500). Solo enviamos el error al log del sistema.
+                // Si MongoDB no está disponible en producción, enviamos el error al log del sistema.
                 Log::error('Fallo al encolar auditoria MongoDB: ' . $e->getMessage());
             }
         }

@@ -18,8 +18,6 @@ class CategoriaApiController extends Controller
 
     public function listarCategorias()
     {
-        $user = auth()->user();
-
         $categorias = $this->categoriaService->listarCategorias();
 
         return response()->json([

@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Profesional;
 use App\Services\ProfesionalService;
 use App\Services\DashboardService;
-use App\Models\Calificacion;
 
 class DashboardApiController extends Controller
 {
@@ -20,7 +18,6 @@ class DashboardApiController extends Controller
 
         $esAdmin = $user?->esAdmin();
         $esProfesional = !$esAdmin && $user?->esProfesionalAprobado();
-        $esCliente = !$esAdmin && !$esProfesional;
 
         $hora = now()->hour;
 
@@ -87,7 +84,7 @@ class DashboardApiController extends Controller
         ]);
     }
 
-        public function obtenerCalendarioConsultas(Request $request, DashboardService $dashboardService)
+    public function obtenerCalendarioConsultas(Request $request, DashboardService $dashboardService)
     {
         $user = $request->user();
         if (!$user->esProfesionalAprobado()) {

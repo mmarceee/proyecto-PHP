@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\PaqueteService;
 use App\Models\PaqueteServicio;
+use App\Models\CompraPaquete;
 
 class PaqueteApiController extends Controller
 {
     protected $paqueteService;
 
-    // Inyectamos el Service que creamos recién
     public function __construct(PaqueteService $paqueteService)
     {
         $this->paqueteService = $paqueteService;
@@ -48,7 +48,7 @@ class PaqueteApiController extends Controller
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
-        $compras = \App\Models\CompraPaquete::with([
+        $compras = CompraPaquete::with([
                 'cliente.user',
                 'paqueteServicio.servicio',
             ])
@@ -126,7 +126,7 @@ class PaqueteApiController extends Controller
         $cliente = $request->user()->cliente;
         if (!$cliente) return response()->json(['error' => 'No autorizado'], 403);
 
-        $compras = \App\Models\CompraPaquete::with([
+        $compras = CompraPaquete::with([
                 'paqueteServicio.servicio', 
                 'paqueteServicio.profesional.user'
             ])
@@ -187,7 +187,7 @@ class PaqueteApiController extends Controller
         }
 
         // Buscamos una compra ACTIVA, que tenga saldo, y que coincida con el servicio
-        $compraActiva = \App\Models\CompraPaquete::where('cliente_id', $cliente->id)
+        $compraActiva = CompraPaquete::where('cliente_id', $cliente->id)
             ->where('estado_paquete', 'activo')
             ->where('sesiones_disponibles', '>', 0)
             ->whereHas('paqueteServicio', function($q) use ($servicioId) {
@@ -218,7 +218,7 @@ class PaqueteApiController extends Controller
         $cliente = $request->user()->cliente;
 
         // Buscamos la compra asegurándonos de que sea de este cliente
-        $compra = \App\Models\CompraPaquete::where('id', $id)
+        $compra = CompraPaquete::where('id', $id)
             ->where('cliente_id', $cliente->id)
             ->with(['uso_sesion_paquete.reserva.profesional.user']) 
             ->firstOrFail();

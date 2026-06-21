@@ -20,8 +20,6 @@ class CalificacionService
      */
     public function calificar(Reserva $reserva, $usuarioAutenticado, array $datos)
     {
-
-
         // Usamos strtolower para evitar choques entre 'finalizada', 'Finalizada' o 'FINALIZADA'
         $estado = $reserva->estado ?? $reserva->estado_reserva ?? '';
 
@@ -40,7 +38,7 @@ class CalificacionService
         $tipoCalificacion = null;
         $evaluadoId = null;
 
-        // CONTEXTO ESTRICTO: Determinar quién evalúa a quién basándonos en el ID del Usuario logueado
+        // Determinar quién evalúa a quién basándonos en el ID del Usuario logueado
         if ($clienteUserId === $usuarioAutenticado->id) {
             // El evaluador es el Cliente, el evaluado es el Profesional
             $tipoCalificacion = 'ClienteAProfesional';

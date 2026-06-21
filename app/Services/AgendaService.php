@@ -5,9 +5,10 @@ namespace App\Services;
 use App\Models\ReglaDisponibilidad;
 use App\Models\ExcepcionDisponibilidad;
 use App\Models\Reserva;
+use App\Models\Profesional;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Models\Profesional;
+use Illuminate\Support\Facades\Cache;
 
 class AgendaService
 {
@@ -22,10 +23,10 @@ class AgendaService
         $inicioSemana = $fechaInicioString ? Carbon::parse($fechaInicioString) : Carbon::now();
         $finSemana = $inicioSemana->copy()->addDays(6);
 
-        // 1. Traemos las reglas base semanales
+        // Traemos las reglas base semanales
         $reglasBase = $profesional->reglasDisponibilidad->keyBy('dia_semana');
 
-        // 2. Traemos las excepciones en el rango de estos 7 días flotantes
+        // Traemos las excepciones en el rango de estos 7 días flotantes
         $excepciones = ExcepcionDisponibilidad::where('profesional_id', $profesional->id)
             ->whereBetween('fecha', [$inicioSemana->toDateString(), $finSemana->toDateString()])
             ->get()
@@ -33,9 +34,7 @@ class AgendaService
                 return $e->fecha->toDateString();
             });
 
-        //SOLUCIÓN AL CLUSTERING DE FECHAS:
-        // Forzamos el agrupamiento usando estrictamente el formato 'YYYY-MM-DD' string limpio
-        // para romper el conflicto del cast 'date' del modelo Reserva.
+        // Forzamos el agrupamiento usando estrictamente el formato 'YYYY-MM-DD'
         $reservasExistentes = Reserva::where('profesional_id', $profesional->id)
             ->whereBetween('fecha', [$inicioSemana->toDateString(), $finSemana->toDateString()])
             ->whereNotIn('estado_reserva', ['cancelada', 'no_asistida'])
@@ -44,7 +43,7 @@ class AgendaService
                 return Carbon::parse($reserva->fecha)->toDateString();
             });
 
-        // 3. Iteramos 7 días hacia adelante a partir del día de inicio
+        // Iteramos 7 días hacia adelante a partir del día de inicio
         for ($i = 0; $i < 7; $i++) {
             $fechaActual = $inicioSemana->copy()->addDays($i);
             $fechaString = $fechaActual->toDateString();
@@ -87,7 +86,7 @@ class AgendaService
                 $esLaboral = count($bloques) > 0;
             }
 
-            //COMPROBACIÓN DE COLISIONES ULTRA-SEGURA
+            //COMPROBACIÓN DE COLISIONES
             if ($esLaboral && count($bloques) > 0) {
                 foreach ($bloques as &$bloque) {
                     
@@ -103,7 +102,6 @@ class AgendaService
 
                     $estaOcupado = false;
 
-                    // Ahora la comparación de llaves del array va a dar TRUE perfectamente
                     if (isset($reservasExistentes[$fechaString])) {
                         foreach ($reservasExistentes[$fechaString] as $reserva) {
                             
@@ -119,10 +117,10 @@ class AgendaService
                         }
                     }
 
-                    // Validar si existe un bloqueo temporal en caché (Hold Pattern)
+                    // Validar si existe un bloqueo temporal en caché
                     if (!$estaOcupado) {
                         $llaveCache = "lock_turno_{$profesional->id}_{$fechaString}_{$horaBloqueClean}:00";
-                        if (\Illuminate\Support\Facades\Cache::has($llaveCache)) {
+                        if (Cache::has($llaveCache)) {
                             $estaOcupado = true;
                         }
                     }
@@ -219,7 +217,7 @@ class AgendaService
 
     public function guardarExcepcion($profesional, array $datos)
     {
-        return \App\Models\ExcepcionDisponibilidad::create([
+        return ExcepcionDisponibilidad::create([
             'profesional_id' => $profesional->id,
             'fecha'          => $datos['fecha'],
             'tipo'           => $datos['tipo'],
@@ -231,7 +229,7 @@ class AgendaService
 
     public function eliminarExcepcion($profesional, $fecha)
     {
-        return \App\Models\ExcepcionDisponibilidad::where('profesional_id', $profesional->id)
+        return ExcepcionDisponibilidad::where('profesional_id', $profesional->id)
             ->where('fecha', $fecha)
             ->delete();
     }
