@@ -92,8 +92,17 @@
                             <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Categoría del Servicio:</label>
                             <select x-model="form.categoria_id" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500" required>
                                 <option value="" disabled selected>Selecciona una categoría...</option>
-                                <template x-for="cat in categorias" :key="cat.id">
-                                    <option :value="cat.id" x-text="cat.nombre"></option>
+                                <template
+                                    x-for="cat in categorias.filter(cat =>
+                                        cat.activa || (modoEdicion && String(cat.id) === form.categoria_id)
+                                    )"
+                                    :key="cat.id"
+                                >
+                                    <option
+                                        :value="cat.id"
+                                        :disabled="!cat.activa"
+                                        x-text="cat.nombre + (!cat.activa ? ' (desactivada)' : '')"
+                                    ></option>
                                 </template>
                             </select>
                         </div>

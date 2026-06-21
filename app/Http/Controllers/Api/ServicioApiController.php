@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Services\ServicioService;
-use App\Models\Categoria; 
+use App\Models\Categoria;
+use App\Models\Servicio; 
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ServicioApiController extends Controller
 {
@@ -30,7 +32,11 @@ class ServicioApiController extends Controller
         $profesional = $this->verificarProfesional($request);
         $servicios = $this->servicioService->listarPorProfesional($profesional->id);
         
-        $categorias = Categoria::orderBy('nombre', 'asc')->get();
+        $categorias = Categoria::query()
+            ->where('activa', true)
+            ->orWhereIn('id', $servicios->pluck('categoria_id'))
+            ->orderBy('nombre')
+            ->get();
         $lugarAtencion = $profesional->lugarAtencion;
         return response()->json([
             'servicios' => $servicios,
@@ -50,7 +56,7 @@ class ServicioApiController extends Controller
             'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
             'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
-            'categoria_id'          => ['required', 'exists:categorias,id'],
+            'categoria_id'          => ['required', Rule::exists('categorias', 'id') ->where('activa', true),],
             
             // Campos requeridos solo si la modalidad es Presencial
             'lugar_nombre'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
@@ -70,6 +76,10 @@ class ServicioApiController extends Controller
     public function update(Request $request, $id)
     {
         $profesional = $this->verificarProfesional($request);
+        
+        $servicio = Servicio::where('id', $id)
+            ->where('profesional_id', $profesional->id)
+            ->firstOrFail();
 
         $validated = $request->validate([
             'nombre'                => ['required', 'string', 'max:255'],
@@ -78,7 +88,7 @@ class ServicioApiController extends Controller
             'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
             'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
-            'categoria_id'          => ['required', 'exists:categorias,id'],
+            'categoria_id'          => ['required', Rule::exists('categorias', 'id')->where(fn ($query) => $query->where('activa', true)->orWhere('id', $servicio->categoria_id))],
             
             // NUEVOS CAMPOS PARA EDICIÓN
             'lugar_nombre'          => ['nullable', 'required_if:modalidad,Presencial', 'string', 'max:255'],
