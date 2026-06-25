@@ -10,7 +10,10 @@ class BusquedaService
     public function buscarProfesionales(?string $queryText, ?string $categoria)
     {
         $query = Profesional::with(['user', 'servicios'])
-            ->where('estado', 'aprobado');
+            ->where('estado', 'aprobado')
+            ->whereHas('user', function ($userQuery) {
+                $userQuery->where('estado_usuario', 'activo');
+            });
 
         if ($queryText) {
             $query->where(function ($q) use ($queryText) {

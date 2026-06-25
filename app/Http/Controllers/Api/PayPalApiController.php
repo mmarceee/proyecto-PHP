@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\PagoService;
 use App\Services\ReservaService;
+use App\Services\PaqueteService;
 use App\Models\Servicio;
 use App\Models\PaqueteServicio;
 use Illuminate\Support\Str;
@@ -24,6 +25,11 @@ class PayPalApiController extends Controller
             'fecha'             => ['required', 'date', 'after_or_equal:today'],
             'hora_inicio'       => ['required', 'date_format:H:i'],
         ]);
+
+        $reservaService->validarProfesionalDisponible(
+            $validated['profesional_id'],
+            $validated['servicio_id']
+        );
 
         $servicio = Servicio::findOrFail($validated['servicio_id']);
         
@@ -74,13 +80,16 @@ class PayPalApiController extends Controller
         }
     }
 
-    public function createPaymentPaquete(Request $request)
+    public function createPaymentPaquete(Request $request, PaqueteService $paqueteService)
     {
         $validated = $request->validate([
             'paquete_id' => ['required', 'exists:paquetes_servicios,id'],
         ]);
 
         $paquete = PaqueteServicio::findOrFail($validated['paquete_id']);
+
+        $paqueteService->validarDisponibleParaCompra($paquete);
+
         $clienteId = $request->user()->cliente->id;
 
         try {

@@ -169,6 +169,13 @@ class PaqueteApiController extends Controller
         // Traemos paquetes activos, incluyendo datos del servicio y del profesional (usuario)
         $paquetes = PaqueteServicio::with(['servicio', 'profesional.user'])
             ->where('activo', true)
+            ->whereHas('profesional', function ($profesionalQuery) {
+                $profesionalQuery
+                    ->where('estado', 'aprobado')
+                    ->whereHas('user', function ($userQuery) {
+                        $userQuery->where('estado_usuario', 'activo');
+                    });
+            })
             ->get();
 
         return response()->json($paquetes);
