@@ -230,34 +230,29 @@ document.addEventListener('alpine:init', () => {
         iniciarEscuchaRealtime() {
             if (!window.Echo) return;
 
-            // SI ES CLIENTE: Escucha cambios de estado
-            if (this.tipo === 'cliente') {
-                const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
-                if (userId) {
-                    console.log(`[WS CLIENTE] Sintonizando radio: 'usuario.${userId}'`);
-                    window.Echo.private(`usuario.${userId}`)
-                        .listen('.reserva.estado.cambiado', async (evento) => {
-                            console.log(" [WS CLIENTE] ¡El profesional cambió el estado!", evento);
-                            await this.cargarDashboard(); 
-                        });
-                }
+            //(Cliente, Profesional, Admin) escuchan su antena personal.
+            const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+            if (userId) {
+                console.log(`[WS USUARIO] Sintonizando radio: 'usuario.${userId}'`);
+                window.Echo.private(`usuario.${userId}`)
+                    .listen('.reserva.estado.cambiado', async (evento) => {
+                        console.log(" [WS USUARIO] ¡El profesional cambió el estado de tu reserva!", evento);
+                        await this.cargarDashboard(); 
+                    });
             }
-
-            // SI ES PROFESIONAL: Escucha nuevas reservas
-            if (this.tipo === 'profesional') {
-                const profesionalId = document.querySelector('meta[name="profesional-id"]')?.getAttribute('content');
-                if (profesionalId) {
-                    console.log(`[WS PROFESIONAL] Sintonizando radio de agenda: 'profesional.${profesionalId}'`);
-                    window.Echo.private(`profesional.${profesionalId}`)
-                        .listen('.agenda.modificada', async (evento) => {
-                            console.log(" [WS PROFESIONAL] ¡Te cayó una nueva reserva u otra modificación de agenda!", evento);
-                            await this.cargarDashboard(); 
-                        })
-                        .listen('.dashboard.actualizado', async (evento) => {
-                            console.log(" [WS PROFESIONAL] ¡Un cliente reprogramó una reserva, actualizando dashboard!", evento);
-                            await this.cargarDashboard(); 
-                        });
-                }
+            //SOLO LOS PROFESIONALES escuchan su antena de agenda (para gestionar a sus pacientes).
+            const profesionalId = document.querySelector('meta[name="profesional-id"]')?.getAttribute('content');
+            if (profesionalId) {
+                console.log(`[WS PROFESIONAL] Sintonizando radio de agenda: 'profesional.${profesionalId}'`);
+                window.Echo.private(`profesional.${profesionalId}`)
+                    .listen('.agenda.modificada', async (evento) => {
+                        console.log(" [WS PROFESIONAL] ¡Te cayó una nueva reserva u otra modificación de agenda!", evento);
+                        await this.cargarDashboard(); 
+                    })
+                    .listen('.dashboard.actualizado', async (evento) => {
+                        console.log(" [WS PROFESIONAL] ¡Un cliente reprogramó una reserva, actualizando dashboard!", evento);
+                        await this.cargarDashboard(); 
+                    });
             }
         },
 
