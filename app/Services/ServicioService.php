@@ -27,7 +27,7 @@ class ServicioService
                 'precio'                => $datos['precio'],
                 'duracion'              => $datos['duracion'] ?? 60,
                 'modalidad'             => $datos['modalidad'],
-                'bufferEntreTurnos'     => $datos['bufferEntreTurnos'] ?? 0,
+                'bufferEntreTurnos'     => 0,
                 'categoria_id' => $datos['categoria_id'], 
             ]);
 
@@ -70,7 +70,7 @@ class ServicioService
                 'precio'                => $datos['precio'],
                 'duracion'              => $datos['duracion'] ?? 60,
                 'modalidad'             => $datos['modalidad'],
-                'bufferEntreTurnos'     => $datos['bufferEntreTurnos'] ?? 0,
+                'bufferEntreTurnos'     => 0,
                 'categoria_id'          => $datos['categoria_id'],
             ]);
 
