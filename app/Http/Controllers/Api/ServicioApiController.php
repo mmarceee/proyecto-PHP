@@ -53,9 +53,7 @@ class ServicioApiController extends Controller
             'nombre'                => ['required', 'string', 'max:255'],
             'descripcion'           => ['nullable', 'string'],
             'precio'                => ['required', 'numeric', 'min:0'],
-            'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
-            'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
             'categoria_id'          => ['required', Rule::exists('categorias', 'id') ->where('activa', true),],
             
             // Campos requeridos solo si la modalidad es Presencial
@@ -85,9 +83,7 @@ class ServicioApiController extends Controller
             'nombre'                => ['required', 'string', 'max:255'],
             'descripcion'           => ['nullable', 'string'],
             'precio'                => ['required', 'numeric', 'min:0'],
-            'duracion'              => ['required', 'integer', 'min:1'],
             'modalidad'             => ['required', 'in:Virtual,Presencial'],
-            'bufferEntreTurnos'     => ['nullable', 'integer', 'min:0'],
             'categoria_id'          => ['required', Rule::exists('categorias', 'id')->where(fn ($query) => $query->where('activa', true)->orWhere('id', $servicio->categoria_id))],
             
             // NUEVOS CAMPOS PARA EDICIÓN

@@ -48,7 +48,7 @@
                                 <h4 class="text-lg font-bold text-gray-900 dark:text-white" x-text="servicio.nombre"></h4>
                                 <span :class="servicio.modalidad === 'Virtual' ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'" class="text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider" x-text="servicio.modalidad"></span>
                             </div>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1" x-text="'Duración: ' + servicio.duracion + ' min + ' + (servicio.bufferEntreTurnos ?? 0) + ' min descanso'"></p>
+                            
                             
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-3 line-clamp-2 italic" x-text="servicio.descripcion ?? 'Sin descripción añadida.'"></p>
                         </div>
@@ -127,24 +127,8 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Duración (min):</label>
-                                <select x-model="form.duracion" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
-                                    <option value="15">15 min</option>
-                                    <option value="30">30 min</option>
-                                    <option value="45">45 min</option>
-                                    <option value="60">1 hora</option>
-                                    <option value="120">2 horas</option>
-                                    <option value="180">3 horas</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Descanso posterior (min):</label>
-                                <select x-model="form.bufferEntreTurnos" class="w-full p-2.5 rounded-xl border border-gray-300 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500">
-                                    <option value="0">Sin descanso</option>
-                                    <option value="15">15 min</option>
-                                </select>
-                            </div>
+                            
+                        
                         </div>
 
                         <template x-if="form.modalidad === 'Presencial'">
