@@ -51,13 +51,21 @@ document.addEventListener('alpine:init', () => {
                     },
                     credentials: 'same-origin'
                 });
+
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status}`);
+                }
+
                 const data = await response.json();
                 
-                this.servicios = data.servicios;
-                this.categorias = data.categorias;
-                this.lugar_atencion_preestablecido = data.lugar_atencion; 
+                this.servicios = data.servicios || [];
+                this.categorias = data.categorias || [];
+                this.lugar_atencion_preestablecido = data.lugar_atencion || null; 
             } catch (err) {
                 console.error('Error cargando servicios:', err);
+                this.servicios = [];
+                this.categorias = [];
+                this.error = 'No se pudieron cargar los servicios.';
             } finally {
                 this.cargando = false;
             }
