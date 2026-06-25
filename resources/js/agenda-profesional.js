@@ -154,6 +154,7 @@ document.addEventListener('alpine:init', () => {
                 this.formExcepcion.motivo = '';
                 await this.cargarAgenda();
             } catch (err) {
+                this.mostrarModalExcepcion = false;
                 this.error = err.message;
             } finally {
                 this.guardandoExcepcion = false;
