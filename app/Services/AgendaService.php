@@ -217,6 +217,23 @@ class AgendaService
 
     public function guardarExcepcion($profesional, array $datos)
     {
+        $tieneReservasActivas = Reserva::query()
+            ->where('profesional_id', $profesional->id)
+            ->whereDate('fecha', $datos['fecha'])
+            ->whereIn('estado_reserva', [
+                'pendiente',
+                'confirmada',
+                'pagada',
+                'en_curso',
+            ])
+            ->exists();
+
+        if ($tieneReservasActivas) {
+            throw new \Exception(
+                'No podés bloquear este día porque tiene reservas activas. Cancelalas primero desde tu calendario de consultas.'
+            );
+        }
+
         return ExcepcionDisponibilidad::create([
             'profesional_id' => $profesional->id,
             'fecha'          => $datos['fecha'],
