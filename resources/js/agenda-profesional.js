@@ -143,7 +143,11 @@ document.addEventListener('alpine:init', () => {
                     body: JSON.stringify(this.formExcepcion)
                 });
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'No se pudo registrar el bloqueo.');
+                if (!response.ok) {
+                    throw new Error(
+                        data.error || data.message || 'No se pudo registrar el bloqueo.'
+                    );
+                }
 
                 this.mensajeExito = 'El día seleccionado ha sido bloqueado con éxito.';
                 this.mostrarModalExcepcion = false;
