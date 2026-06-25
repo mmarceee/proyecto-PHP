@@ -18,12 +18,12 @@ class DashboardService
         $hoy = Carbon::today()->toDateString();
 
         // Traemos las reservas de hoy que no estén canceladas
-        $reservas = Reserva::with('cliente.user')
-            ->where('profesional_id', $profesionalId)
-            ->where('fecha', $hoy)
-            ->whereNotIn('estado_reserva', ['cancelada', 'no_asistida'])
-            ->orderBy('hora_inicio', 'asc')
-            ->get();
+        $reservas = Reserva::with(['cliente.user', 'servicio'])
+             ->where('profesional_id', $profesionalId)
+             ->where('fecha', $hoy)
+             ->whereNotIn('estado_reserva', ['cancelada', 'no_asistida'])
+             ->orderBy('hora_inicio', 'asc')
+             ->get();
 
         return $reservas->map(function ($reserva) {
             $horaCarbon = Carbon::parse($reserva->hora_inicio);
@@ -49,12 +49,13 @@ class DashboardService
                 'period'       => $horaCarbon->format('A'), // "AM" o "PM"
                 'client_name'  => $nombreCliente ?: 'Cliente Anónimo',
                 'client_email' => $userCliente?->email ?? '',
-                'reason'       => 'Consulta de control general',
+                'reason'       => $reserva->servicio?->nombre ?? 'Servicio',
                 'status'       => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'status_raw'   => $reserva->estado_reserva,
                 'action_label' => $actionLabel,
                 'packages'     => [], 
                 'date_raw'     => $reserva->fecha->format('Y-m-d'), // Utilizado para validación en el frontend
+                'modalidad'    => $reserva->servicio?->modalidad ?? 'Virtual',
             ];
         })->toArray();
     }
@@ -158,6 +159,7 @@ class DashboardService
                 'status' => ucfirst(str_replace('_', ' ', $reserva->estado_reserva)),
                 'packages' => [], // Estructura reservada para mantener reactividad en Alpine
                 'date_raw'     => $reserva->fecha->format('Y-m-d'),
+                'modalidad'    => $reserva->servicio?->modalidad ?? 'Virtual',
             ];
         })->toArray();
     }
