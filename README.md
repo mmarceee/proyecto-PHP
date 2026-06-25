@@ -23,28 +23,39 @@ proyecto.
 ### 1. Instalar las dependencias de PHP
 
 Como Laravel Sail esta dentro de `vendor`, la primera instalacion se realiza con
-una imagen de Composer:
+la imagen oficial de Composer:
 
 ```bash
 docker run --rm \
     -u "$(id -u):$(id -g)" \
-    -v "$(pwd):/var/www/html" \
-    -w /var/www/html \
-    laravelsail/php85-composer:latest \
-    composer install --ignore-platform-reqs
+    -v "$(pwd):/app" \
+    -w /app \
+    composer:2 \
+    install --ignore-platform-reqs
 ```
 
 Explicacion del comando:
 
-* docker run --rm: crea un contenedor temporal y lo elimina al terminar.
-* -u "$(id -u):$(id -g)": evita que los archivos queden propiedad de root.
-* -v "$(pwd):/var/www/html": monta el proyecto dentro del contenedor.
-* -w /var/www/html: establece esa carpeta como directorio de trabajo.
-* laravelsail/php85-composer:latest: imagen con PHP 8.5 y Composer.
-* composer install: instala exactamente las dependencias de composer.lock.
-* --ignore-platform-reqs: evita problemas de extensiones PHP ausentes en el contenedor temporal. El contenedor definitivo de Sail sí las incluye.
+- `docker run --rm`: crea un contenedor temporal y lo elimina al terminar.
+- `-u "$(id -u):$(id -g)"`: utiliza el usuario actual de WSL para evitar que
+  los archivos generados pertenezcan a `root`.
+- `-v "$(pwd):/app"`: monta la carpeta actual del proyecto dentro del
+  contenedor, en `/app`.
+- `-w /app`: establece `/app` como directorio de trabajo.
+- `composer:2`: utiliza la imagen oficial de Composer 2.
+- `install`: instala las versiones indicadas en `composer.lock` y genera
+  `vendor/`, donde tambien queda disponible `vendor/bin/sail`.
+- `--ignore-platform-reqs`: permite hacer esta instalacion inicial aunque la
+  imagen temporal no tenga todas las extensiones PHP del proyecto. El
+  contenedor definitivo de Sail incluye el entorno configurado para la
+  aplicacion.
 
-Este comando no seria necesario si entregaramos vendor/ pero no se entrega porque ocupa mucho espacio y se puede regenerar para una instalación limpia.
+La imagen `composer:2` ya ejecuta Composer como comando principal; por eso al
+final se escribe `install` y no `composer install`.
+
+Este paso es necesario en una instalacion limpia porque `vendor/` no se incluye
+en la entrega: contiene dependencias que Composer puede regenerar a partir de
+`composer.lock`.
 
 ### 2. Crear y configurar el entorno
 
