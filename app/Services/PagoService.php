@@ -67,6 +67,20 @@ class PagoService
 
     public function capturarPago(string $token, array $payload)
     {
+        if ($payload['tipo'] === 'reserva') { //si el administrador bloquea al profesional mientras el cliente está en PayPal, el sistema rechazará la operación antes de capturar el dinero.
+            app(ReservaService::class)->validarProfesionalDisponible(
+                $payload['datos']['profesional_id'],
+                $payload['datos']['servicio_id']
+            );
+        } elseif ($payload['tipo'] === 'paquete') {
+            $paquete = PaqueteServicio::findOrFail(
+                $payload['datos']['paquete_id']
+            );
+
+            app(PaqueteService::class)
+                ->validarDisponibleParaCompra($paquete);
+        }
+
         $response = $this->provider->capturePaymentOrder($token);
         if (isset($response['status']) && $response['status'] === 'COMPLETED') {
             // --- VALIDACIÓN DE MONTO ---

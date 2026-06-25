@@ -36,9 +36,7 @@ class PaqueteService
      */
     public function comprarPaquete(Cliente $cliente, PaqueteServicio $paquete)
     {
-        if (!$paquete->estaActivoParaVenta()) {
-            throw new \Exception("Este paquete ya no está disponible para la compra.");
-        }
+        $this->validarDisponibleParaCompra($paquete);
 
         $compra = DB::transaction(function () use ($cliente, $paquete) {
             return CompraPaquete::create([
@@ -81,5 +79,27 @@ class PaqueteService
             ]);
         });
         return $compra;
+    }
+
+    public function validarDisponibleParaCompra(PaqueteServicio $paquete): void
+    {
+        $profesionalDisponible = $paquete->profesional()
+            ->where('estado', 'aprobado')
+            ->whereHas('user', function ($userQuery) {
+                $userQuery->where('estado_usuario', 'activo');
+            })
+            ->exists();
+
+        if (!$profesionalDisponible) {
+            throw new \Exception(
+                'Este paquete no está disponible porque el profesional está inhabilitado.'
+            );
+        }
+
+        if (!$paquete->estaActivoParaVenta()) {
+            throw new \Exception(
+                'Este paquete ya no está disponible para la compra.'
+            );
+        }
     }
 }

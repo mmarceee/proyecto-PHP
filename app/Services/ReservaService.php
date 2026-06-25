@@ -12,6 +12,8 @@ use App\Models\CompraPaquete;
 use App\Models\PoliticaCancelacion;
 use App\Models\Pago;
 use App\Models\ReglaDisponibilidad;
+use App\Models\Profesional;
+use App\Models\Servicio;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -50,11 +52,43 @@ class ReservaService
         }
     }
 
+    public function validarProfesionalDisponible(int $profesionalId, ?int $servicioId = null): void 
+    {
+        $profesionalDisponible = Profesional::query()
+            ->whereKey($profesionalId)
+            ->where('estado', 'aprobado')
+            ->whereHas('user', function ($userQuery) {
+                $userQuery->where('estado_usuario', 'activo');
+            })
+            ->exists();
+
+        if (!$profesionalDisponible) {
+            throw new \Exception(
+                'El profesional no se encuentra disponible para recibir reservas.'
+            );
+        }
+
+        if ($servicioId !== null) {
+            $servicioValido = Servicio::query()
+                ->whereKey($servicioId)
+                ->where('profesional_id', $profesionalId)
+                ->exists();
+
+            if (!$servicioValido) {
+                throw new \Exception(
+                    'El servicio seleccionado no pertenece al profesional.'
+                );
+            }
+        }
+    }
+
     /**
      * Crear una nueva reserva desde el backend verificando choques
     */
     public function crear(array $datos)
     {
+        $this->validarProfesionalDisponible($datos['profesional_id'], $datos['servicio_id']);
+
         $compraPaqueteId = $datos['compra_paquete_id'] ?? null;
         unset($datos['compra_paquete_id']);
 
@@ -133,6 +167,8 @@ class ReservaService
     */
     public function bloquearTurnoTemporal($profesionalId, $fecha, $horaInicio, $clienteId, $minutos = 10)
     {
+        $this->validarProfesionalDisponible($profesionalId);
+
         $this->validarInicioFuturo($fecha, $horaInicio); 
 
         $horaInicioFormateada = Carbon::parse($horaInicio)->format('H:i:s');

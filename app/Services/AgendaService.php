@@ -236,8 +236,13 @@ class AgendaService
 
     public function obtenerAgendaProfesional($profesionalId, ?string $fechaInicio = null)
     {
-        $profesional = Profesional::findOrFail($profesionalId);
-        
+        $profesional = Profesional::query()
+            ->where('estado', 'aprobado')
+            ->whereHas('user', function ($userQuery) {
+                $userQuery->where('estado_usuario', 'activo');
+            })
+            ->findOrFail($profesionalId);
+
         return $this->obtenerAgendaSemana($profesional, $fechaInicio);
     }
 }
