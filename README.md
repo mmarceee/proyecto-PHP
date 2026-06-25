@@ -20,6 +20,16 @@ equipo anfitrion.
 Ejecutar todos los comandos desde una terminal de WSL2, dentro de la carpeta del
 proyecto.
 
+Comprobar que la terminal utiliza un usuario normal de Ubuntu:
+
+```bash
+whoami
+```
+
+El resultado no debe ser `root`. Ejecutar la instalacion como `root` puede hacer
+que `vendor/`, `node_modules/`, `storage/` y otros archivos queden con permisos
+incorrectos.
+
 ### 1. Instalar las dependencias de PHP
 
 Como Laravel Sail esta dentro de `vendor`, la primera instalacion se realiza con
@@ -61,7 +71,11 @@ en la entrega: contiene dependencias que Composer puede regenerar a partir de
 
 ```bash
 cp .env.example .env
+sed -i 's/\r$//' .env
 ```
+
+El comando `sed` convierte los finales de linea de Windows (`CRLF`) al formato
+de Linux (`LF`) y evita errores como `$'\r': command not found`.
 
 Editar `.env` y, como minimo, configurar estos valores para los servicios de
 `compose.yaml`:
@@ -143,6 +157,19 @@ ejemplo `APP_PORT=8081`, `FORWARD_DB_PORT=3307` o
 ./vendor/bin/sail npm install
 ./vendor/bin/sail artisan migrate
 ```
+
+Si `npm install` devuelve un error `EACCES` al crear `node_modules`, corregir los
+permisos desde el contenedor y volver a intentarlo:
+
+```bash
+./vendor/bin/sail root-shell -c \
+    "chown -R sail:sail /var/www/html"
+
+./vendor/bin/sail npm install
+```
+
+Este problema suele ocurrir cuando el proyecto fue copiado, descomprimido o
+preparado utilizando el usuario `root`.
 
 ## Arranque habitual
 
